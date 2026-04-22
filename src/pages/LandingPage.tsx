@@ -89,8 +89,8 @@ export default function LandingPage() {
             <span className="text-primary">תתחיל לסגור עסקאות.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EasyDocs מחליף את הוואטסאפ, האקסלים והבלאגן במערכת אחת פשוטה –
-            פורטל ללקוח, חתימות דיגיטליות, תזכורות אוטומטיות ושליחה לבנקאי בקליק.
+            EasyDocs מחליף את הוואטסאפ, האקסלים והבלאגן במערכת אחת פשוטה ליועצי מס –
+            פורטל ללקוח, חתימות דיגיטליות, תזכורות אוטומטיות והעברה מסודרת של כל התיק.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
@@ -116,10 +116,10 @@ export default function LandingPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">מכיר את זה?</h2>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "לקוחות שולחים מסמכים בוואטסאפ ואתה מחפש אותם שעות",
-              "בנקאים מחכים ואתה עדיין רודף אחרי חתימה אחת חסרה",
+              "לקוחות שולחים טפסי 106 וקבלות בוואטסאפ ואתה מחפש אותם שעות",
+              "מועד הגשת הדוח קרב ועדיין חסרים אישורי הכנסות מהלקוח",
               "אין לך מושג מי העלה מה ואיפה כל מסמך נמצא",
-              "אתה מבלה יותר זמן על אדמיניסטרציה מאשר על ייעוץ",
+              "אתה מבלה יותר זמן ברדיפה אחרי מסמכים מאשר בעבודה המקצועית",
             ].map((pain, i) => (
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
@@ -153,7 +153,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto text-center space-y-8">
           <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד שליחה לבנקאי
+            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
           </p>
           {!showVideo ? (
             <button
@@ -186,7 +186,7 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold">כל מה שצריך כדי לנהל מסמכים כמו מקצוען</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              EasyDocs כוללת את כל הכלים שיועץ משכנתאות צריך – במערכת אחת, בעברית, עם ממשק פשוט
+              EasyDocs כוללת את כל הכלים שיועץ מס צריך – במערכת אחת, בעברית, עם ממשק פשוט
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -224,9 +224,9 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm">
                 {[
                   "מסמכים מפוזרים בוואטסאפ ובמייל",
-                  "רדיפה ידנית אחרי כל לקוח",
-                  "חתימות על נייר, פגישות מיותרות",
-                  "שליחה ידנית של כל מסמך לבנקאי",
+                  "רדיפה ידנית אחרי כל לקוח לקראת הגשת הדוח",
+                  "חתימות על הצהרות בנייר, פגישות מיותרות",
+                  "חוסרים שמתגלים ברגע האחרון",
                   "שעות של עבודה אדמיניסטרטיבית",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -242,11 +242,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "כל המסמכים במקום אחד מסודר",
-                  "תזכורות אוטומטיות ללקוחות",
-                  "חתימות דיגיטליות אונליין",
-                  "שליחה לבנקאי בלחיצת כפתור",
-                  "יותר זמן לייעוץ, פחות אדמיניסטרציה",
+                  "כל המסמכים במקום אחד מסודר לפי תיק",
+                  "תזכורות אוטומטיות ללקוחות על מסמכים חסרים",
+                  "חתימות דיגיטליות על הצהרות אונליין",
+                  "אחוז השלמה ברור לכל תיק לפני הגשה",
+                  "יותר זמן לעבודה מקצועית, פחות אדמיניסטרציה",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
@@ -262,7 +262,7 @@ export default function LandingPage() {
       {/* ─── TESTIMONIALS ─── */}
       <section className="py-20 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">מה יועצים אומרים</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">מה יועצי מס אומרים</h2>
           <div className="grid sm:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
               <div key={i} className="rounded-2xl border border-border bg-background p-6 space-y-4">
