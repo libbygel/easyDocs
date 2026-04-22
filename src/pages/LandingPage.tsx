@@ -71,7 +71,7 @@ export default function LandingPage() {
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
             <Button size="sm" onClick={() => navigate("/signup")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-              הרשמה חינם
+              קבל הצעה משתלמת
             </Button>
           </div>
         </div>
