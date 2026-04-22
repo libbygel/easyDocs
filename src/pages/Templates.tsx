@@ -143,8 +143,8 @@ export default function Templates() {
               <FileText className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">תבניות</h1>
-              <p className="text-sm text-muted-foreground">ניהול תבניות מסמכים לסוגי תיקים</p>
+              <h1 className="text-2xl font-bold">תבניות תיקי מס</h1>
+              <p className="text-sm text-muted-foreground">ניהול תבניות מסמכים לפי סוג תיק (שכיר, עצמאי, החזר מס וכו׳)</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -215,8 +215,8 @@ export default function Templates() {
           <Card className="shadow-sm">
             <CardContent className="py-12 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-               <p className="text-muted-foreground">אין תבניות</p>
-               <p className="text-sm text-muted-foreground mt-1">לחץ על "תבנית חדשה" להתחלה</p>
+               <p className="text-muted-foreground">אין תבניות עדיין</p>
+               <p className="text-sm text-muted-foreground mt-1">לחץ על "ייבא תבניות מס מוכנות" כדי להתחיל מהר, או צור תבנית משלך</p>
             </CardContent>
           </Card>
         ) : (
