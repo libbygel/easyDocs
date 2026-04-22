@@ -113,7 +113,7 @@ export default function Templates() {
                      <Input
                        value={newCaseTypeName}
                        onChange={(e) => setNewCaseTypeName(e.target.value)}
-                       placeholder="לדוגמה: משכנתא"
+                       placeholder="לדוגמה: שכיר / עצמאי / החזר מס"
                      />
                   </div>
                   <Button 

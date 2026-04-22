@@ -178,7 +178,7 @@ export function CreateCaseDialog({ open, onOpenChange, onSuccess }: CreateCaseDi
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="לדוגמה: מיחזור משכנתא - כהן"
+              placeholder="לדוגמה: החזר מס 2024 - כהן"
               required
             />
           </div>
