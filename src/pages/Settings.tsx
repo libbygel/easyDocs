@@ -118,10 +118,10 @@ export default function Settings() {
               <Input
                 value={senderDisplayName}
                 onChange={(e) => setSenderDisplayName(e.target.value)}
-                placeholder="לדוגמה: דניאל כהן - משכנתאות"
+                placeholder="לדוגמה: דניאל כהן - יועץ מס"
               />
               <p className="text-xs text-muted-foreground">
-                השם הזה יופיע כשולח המייל בשליחה לבנקאי ובמיילים אחרים. אם ריק, יוצג "EasyDocs".
+                השם הזה יופיע כשולח המייל בשליחה לרואה חשבון ובמיילים אחרים. אם ריק, יוצג "EasyDocs".
               </p>
             </div>
           </CardContent>
