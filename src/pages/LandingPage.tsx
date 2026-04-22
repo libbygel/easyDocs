@@ -189,9 +189,9 @@ export default function LandingPage() {
       <section id="features" className="py-20 px-4 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold">כל מה שצריך כדי לנהל מסמכים כמו מקצוען</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">EasyDocs לא עוד מערכת לניהול מסמכים</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              EasyDocs כוללת את כל הכלים שיועץ מס צריך – במערכת אחת, בעברית, עם ממשק פשוט
+              היא מערכת שמוודאת דבר אחד: שהתיק שלך מוכן באמת לפני שאתה נוגע בו.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -228,11 +228,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "מסמכים מפוזרים בוואטסאפ ובמייל",
-                  "רדיפה ידנית אחרי כל לקוח לקראת הגשת הדוח",
-                  "חתימות על הצהרות בנייר, פגישות מיותרות",
-                  "חוסרים שמתגלים ברגע האחרון",
-                  "שעות של עבודה אדמיניסטרטיבית",
+                  "אתה מגלה חוסרים קריטיים ברגע האחרון",
+                  "אתה עוצר עבודה באמצע התיק כי חסר מסמך",
+                  "אתה רודף ידנית אחרי לקוחות לפני כל דדליין",
+                  "אתה מתקן טעויות שכבר אפשר היה למנוע",
+                  "אתה עובד פעמיים על אותו תיק",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-destructive mt-0.5">✕</span>
@@ -247,11 +247,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "כל המסמכים במקום אחד מסודר לפי תיק",
-                  "תזכורות אוטומטיות ללקוחות על מסמכים חסרים",
-                  "חתימות דיגיטליות על הצהרות אונליין",
-                  "אחוז השלמה ברור לכל תיק לפני הגשה",
-                  "יותר זמן לעבודה מקצועית, פחות אדמיניסטרציה",
+                  "אתה מתחיל לעבוד רק על תיקים מוכנים",
+                  "אתה יודע בדיוק מה חסר לפני שמתחילים",
+                  "אתה חוסך תיקונים, עיכובים ועבודה כפולה",
+                  "תזכורות אוטומטיות ללקוח עד שהתיק מושלם",
+                  "אתה עובד רגוע, מסודר ומדויק",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
@@ -291,10 +291,10 @@ export default function LandingPage() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
           <Shield className="h-10 w-10 text-primary mx-auto" />
-          <h2 className="text-2xl font-bold">אבטחה מקסימלית</h2>
+          <h2 className="text-2xl font-bold">אבטחה מלאה</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            כל המסמכים מאוחסנים בענן מאובטח. גישה לפורטל רק עם תעודת זהות.
-            הנתונים שלך ושל הלקוחות שלך מוגנים בסטנדרטים הגבוהים ביותר.
+            כל המידע נשמר בצורה מאובטחת. גישה רק ללקוח וליועץ המס.
+            שליטה מלאה על כל מסמך, בכל שלב.
           </p>
         </div>
       </section>
@@ -317,8 +317,11 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">מוכן להפסיק לרדוף אחרי מסמכים?</h2>
-          <p className="text-lg text-muted-foreground">הצטרף עכשיו בחינם ותתחיל לעבוד חכם יותר.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold">מוכנים לעבוד אחרת?</h2>
+          <p className="text-lg text-muted-foreground">
+            לא עוד רדיפה אחרי מסמכים. לא עוד הפתעות בדוחות.<br />
+            רק תיקים מוכנים לעבודה.
+          </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
             🚀 הירשם עכשיו – חינם לחלוטין!
             <ArrowLeft className="h-5 w-5" />
