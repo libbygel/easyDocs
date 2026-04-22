@@ -71,7 +71,7 @@ export default function LandingPage() {
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
             <Button size="sm" onClick={() => navigate("/signup")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-              הרשמה חינם
+              קבל הצעה משתלמת
             </Button>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              🚀 התחל לאסוף מסמכים בצורה מסודרת
+              💎 קבל הצעה שווה ומשתלמת
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
@@ -105,7 +105,7 @@ export default function LandingPage() {
           </div>
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 max-w-md mx-auto mt-4">
             <p className="text-sm font-medium text-primary">
-              ✨ הרשמה חינמית לחלוטין – תוך 24 שעות החשבון שלך יופעל ותוכל להתחיל לעבוד!
+              ✨ הצעה אישית מותאמת למשרד שלך – תוך 24 שעות תקבל מענה ותוכל להתחיל לעבוד!
             </p>
           </div>
         </div>
@@ -322,10 +322,10 @@ export default function LandingPage() {
             ולך מקום אחד מסודר לקבל את הכל.
           </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            🚀 התחל בחינם עכשיו
+            💎 קבל הצעה שווה ומשתלמת
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <p className="text-sm text-muted-foreground">תוך 24 שעות החשבון פעיל</p>
+          <p className="text-sm text-muted-foreground">מענה אישי תוך 24 שעות • ללא התחייבות</p>
         </div>
       </section>
 
@@ -335,7 +335,7 @@ export default function LandingPage() {
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} EasyDocs. כל הזכויות שמורות.</span>
           <div className="flex gap-4">
             <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">התחברות</button>
-            <button onClick={() => navigate("/signup")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">הרשמה</button>
+            <button onClick={() => navigate("/signup")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">קבל הצעה</button>
           </div>
         </div>
       </footer>
