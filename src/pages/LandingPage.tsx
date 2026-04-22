@@ -95,7 +95,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              🚀 התחל לאסוף מסמכים בצורה מסודרת
+              💎 קבל הצעה שווה ומשתלמת
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
@@ -105,7 +105,7 @@ export default function LandingPage() {
           </div>
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 max-w-md mx-auto mt-4">
             <p className="text-sm font-medium text-primary">
-              ✨ הרשמה חינמית לחלוטין – תוך 24 שעות החשבון שלך יופעל ותוכל להתחיל לעבוד!
+              ✨ הצעה אישית מותאמת למשרד שלך – תוך 24 שעות תקבל מענה ותוכל להתחיל לעבוד!
             </p>
           </div>
         </div>
