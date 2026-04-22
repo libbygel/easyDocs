@@ -7,11 +7,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, FileText, FolderOpen, ChevronLeft, Search, Loader2 } from 'lucide-react';
+import { Plus, FileText, FolderOpen, ChevronLeft, Search, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { TAX_TEMPLATES_SEED } from '@/lib/taxTemplatesSeed';
 
 type TemplateWithType = DocTemplate & {
   case_types: CaseType | null;
@@ -33,6 +34,7 @@ export default function Templates() {
   const [newCaseTypeOpen, setNewCaseTypeOpen] = useState(false);
   const [newCaseTypeName, setNewCaseTypeName] = useState('');
   const [creatingType, setCreatingType] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const fetchData = async () => {
     if (!user) return;
@@ -75,6 +77,56 @@ export default function Templates() {
       fetchData();
     }
     setCreatingType(false);
+  };
+
+  const handleImportTaxTemplates = async () => {
+    if (!user) return;
+    setImporting(true);
+    try {
+      const existingNames = new Set(caseTypes.map((t) => t.name));
+      const toCreate = TAX_TEMPLATES_SEED.filter((t) => !existingNames.has(t.caseTypeName));
+
+      if (toCreate.length === 0) {
+        toast({ title: 'כל תבניות המס המוכנות כבר קיימות במערכת' });
+        setImporting(false);
+        return;
+      }
+
+      // 1. Insert case types
+      const { data: insertedTypes, error: typesErr } = await supabase
+        .from('case_types')
+        .insert(toCreate.map((t) => ({ name: t.caseTypeName, advisor_id: user.id })))
+        .select();
+
+      if (typesErr || !insertedTypes) throw typesErr ?? new Error('Failed to create case types');
+
+      // 2. Insert all docs in one shot
+      const docsToInsert = insertedTypes.flatMap((ct) => {
+        const seed = toCreate.find((t) => t.caseTypeName === ct.name);
+        if (!seed) return [];
+        return seed.documents.map((d) => ({
+          advisor_id: user.id,
+          case_type_id: ct.id,
+          doc_name: d.doc_name,
+          default_required: d.required,
+          document_type: 'request',
+        }));
+      });
+
+      if (docsToInsert.length > 0) {
+        const { error: docsErr } = await supabase.from('doc_templates').insert(docsToInsert);
+        if (docsErr) throw docsErr;
+      }
+
+      toast({
+        title: 'התבניות יובאו בהצלחה',
+        description: `נוצרו ${insertedTypes.length} תבניות מס עם ${docsToInsert.length} מסמכים`,
+      });
+      fetchData();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בייבוא', description: err.message, variant: 'destructive' });
+    }
+    setImporting(false);
   };
 
   const filteredTypes = caseTypes.filter(type =>
