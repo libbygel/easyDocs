@@ -4,58 +4,58 @@ import { Button } from "@/components/ui/button";
 import {
   FileText, Send, Bell, PenTool, Users, FolderOpen,
   CheckCircle2, ArrowLeft, Shield, Zap, Clock, Star,
-  ChevronDown, Smartphone, LayoutDashboard, Play
+  ChevronDown, Smartphone, LayoutDashboard, Play, Gauge, AlertTriangle
 } from "lucide-react";
 
 const features = [
   {
-    icon: FolderOpen,
-    title: "פורטל לקוח חכם",
-    desc: "הלקוח מקבל לינק אישי, מעלה מסמכים ישירות מהנייד – בלי וואטסאפ, בלי בלאגן.",
+    icon: Gauge,
+    title: "ציון מוכנות לכל תיק",
+    desc: "תוך שניות תדע אם התיק Ready לעבודה או Not Ready – ומה בדיוק חסר כדי להתחיל.",
     highlight: true,
   },
   {
-    icon: PenTool,
-    title: "חתימות דיגיטליות",
-    desc: "הלקוח חותם על הצהרות ומסמכים ישירות בפורטל – החתימה מתווספת ל-PDF אוטומטית.",
+    icon: AlertTriangle,
+    title: "זיהוי מסמכים קריטיים",
+    desc: "המערכת מדגישה אוטומטית מה חוסם אותך עכשיו ומה חייב להיות לפני שמתחילים בדוח.",
     highlight: true,
   },
   {
     icon: Bell,
-    title: "תזכורות אוטומטיות",
-    desc: "המערכת שולחת תזכורות ללקוחות שלא העלו מסמכים – בלי שתצטרך לרדוף אחריהם.",
+    title: "תזכורות חכמות ללקוחות",
+    desc: "לא רדיפה ולא לחץ – רק עדכון אוטומטי ללקוח עד שהתיק מושלם.",
     highlight: false,
   },
   {
     icon: FileText,
-    title: "תבניות מסמכים",
-    desc: "הגדר תבנית פעם אחת לכל סוג תיק – כל תיק חדש נפתח עם רשימת מסמכים מוכנה.",
+    title: "תבניות מס מוכנות",
+    desc: "שכיר, עצמאי, החזר מס, הצהרת הון – כל סוג תיק עם רשימת מסמכים מוגדרת מראש.",
     highlight: false,
   },
   {
-    icon: Send,
-    title: "שליחה לרואה חשבון בקליק",
-    desc: "בחר מסמכים, בחר רואה חשבון או גורם מקצועי מרשימת אנשי הקשר – והכל נשלח במייל מסודר.",
+    icon: FolderOpen,
+    title: "פורטל לקוח חכם",
+    desc: "הלקוח מקבל לינק אישי, מעלה מסמכים מהנייד – בלי וואטסאפ ובלי בלאגן.",
     highlight: true,
   },
   {
     icon: LayoutDashboard,
-    title: "דשבורד ניהולי",
-    desc: "תמונת מצב מלאה של כל התיקים, המסמכים החסרים, ההתראות – במסך אחד.",
+    title: "שליטה מלאה בכל תיק",
+    desc: "דאשבורד אחד שמראה מה מוכן, מה חסר, מה תקוע ומה אפשר כבר להעביר לטיפול.",
     highlight: false,
   },
 ];
 
 const steps = [
-  { num: "1", title: "צור תבנית", desc: "הגדר אילו מסמכים דרושים לכל סוג תיק" },
-  { num: "2", title: "שלח לינק ללקוח", desc: "הלקוח מקבל לינק מאובטח להעלאת מסמכים" },
-  { num: "3", title: "נהל ואשר", desc: "עקוב, אשר או דחה מסמכים – הכל במקום אחד" },
+  { num: "1", title: "בחר תבנית מס", desc: "שכיר, עצמאי, החזר מס – רשימת המסמכים נטענת אוטומטית" },
+  { num: "2", title: "שלח לינק ללקוח", desc: "הלקוח מעלה מסמכים בעצמו, אתה מקבל התראה על כל פעולה" },
+  { num: "3", title: "התחל לעבוד רק כשמוכן", desc: "ציון המוכנות מראה לך בדיוק מתי התיק Ready להגשה" },
 ];
 
 const testimonials = [
-  { name: "אורי כ.", role: "יועץ מס", text: "מאז שאני משתמש ב-EasyDocs אני חוסך לפחות שעתיים ביום. הלקוחות פשוט מעלים הכל לבד." },
-  { name: "מיכל ד.", role: "יועצת מס", text: "החתימות הדיגיטליות חסכו לי את הריצה ללקוחות. הכל נגמר אונליין." },
-  { name: "יוסי ש.", role: "יועץ מס בכיר", text: "אני מקבל את כל המסמכים מסודרים לפני הגשת הדוח – בלי חוסרים ובלי בלאגן." },
+  { name: "אורי כ.", role: "יועץ מס", text: "אני לא פותח תיק עד שאני רואה שהוא מוכן – וזה שינה לי את כל העבודה." },
+  { name: "מיכל ד.", role: "יועצת מס", text: "סוף סוף אני יודעת מראש מה חסר, לא מגלה את זה מאוחר מדי לפני הגשת הדוח." },
+  { name: "יוסי ש.", role: "יועץ מס בכיר", text: "זה הוריד לי את כל הבלאגן של הרגע האחרון לפני דוחות. עובד רגוע ומדויק." },
 ];
 
 export default function LandingPage() {
@@ -82,15 +82,16 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium">
             <Zap className="h-4 w-4" />
+            ליועצי מס בישראל
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            תפסיק לרדוף אחרי מסמכים.
+            תפסיק להגיש דוחות עם סימני שאלה.
             <br />
-            <span className="text-primary">תתחיל לסגור עסקאות.</span>
+            <span className="text-primary">תתחיל לעבוד רק על תיקים מוכנים.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EasyDocs מחליף את הוואטסאפ, האקסלים והבלאגן במערכת אחת פשוטה ליועצי מס –
-            פורטל ללקוח, חתימות דיגיטליות, תזכורות אוטומטיות והעברה מסודרת של כל התיק.
+            EasyDocs נותן ליועצי מס דבר אחד שלא היה להם עד היום:
+            שליטה מלאה על מוכנות התיק לפני שמתחילים לעבוד עליו. לא עוד חוסרים ברגע האחרון, לא עוד עבודה כפולה על אותו תיק.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
@@ -113,13 +114,17 @@ export default function LandingPage() {
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">מכיר את זה?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">הבעיה האמיתית של יועצי מס</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
+            זה לא איסוף מסמכים. זה לא וואטסאפ. זה לא לקוחות איטיים.<br />
+            הבעיה האמיתית – אתה מתחיל לעבוד על תיק שלא באמת מוכן.
+          </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "לקוחות שולחים טפסי 106 וקבלות בוואטסאפ ואתה מחפש אותם שעות",
-              "מועד הגשת הדוח קרב ועדיין חסרים אישורי הכנסות מהלקוח",
-              "אין לך מושג מי העלה מה ואיפה כל מסמך נמצא",
-              "אתה מבלה יותר זמן ברדיפה אחרי מסמכים מאשר בעבודה המקצועית",
+              "אתה מתחיל לעבוד על תיק – ומגלה באמצע שהוא לא באמת מוכן",
+              "חוסרים קריטיים צפים ברגע הכי לא נכון, מול הלקוח או מול הרשות",
+              "טעויות מתגלות אחרי שכבר השקעת שעות עבודה בתיק",
+              "דוחות מתעכבים בגלל מסמך אחד חסר שאף אחד לא שם לב אליו",
             ].map((pain, i) => (
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
@@ -184,9 +189,9 @@ export default function LandingPage() {
       <section id="features" className="py-20 px-4 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold">כל מה שצריך כדי לנהל מסמכים כמו מקצוען</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">EasyDocs לא עוד מערכת לניהול מסמכים</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              EasyDocs כוללת את כל הכלים שיועץ מס צריך – במערכת אחת, בעברית, עם ממשק פשוט
+              היא מערכת שמוודאת דבר אחד: שהתיק שלך מוכן באמת לפני שאתה נוגע בו.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -223,11 +228,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "מסמכים מפוזרים בוואטסאפ ובמייל",
-                  "רדיפה ידנית אחרי כל לקוח לקראת הגשת הדוח",
-                  "חתימות על הצהרות בנייר, פגישות מיותרות",
-                  "חוסרים שמתגלים ברגע האחרון",
-                  "שעות של עבודה אדמיניסטרטיבית",
+                  "אתה מגלה חוסרים קריטיים ברגע האחרון",
+                  "אתה עוצר עבודה באמצע התיק כי חסר מסמך",
+                  "אתה רודף ידנית אחרי לקוחות לפני כל דדליין",
+                  "אתה מתקן טעויות שכבר אפשר היה למנוע",
+                  "אתה עובד פעמיים על אותו תיק",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-destructive mt-0.5">✕</span>
@@ -242,11 +247,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "כל המסמכים במקום אחד מסודר לפי תיק",
-                  "תזכורות אוטומטיות ללקוחות על מסמכים חסרים",
-                  "חתימות דיגיטליות על הצהרות אונליין",
-                  "אחוז השלמה ברור לכל תיק לפני הגשה",
-                  "יותר זמן לעבודה מקצועית, פחות אדמיניסטרציה",
+                  "אתה מתחיל לעבוד רק על תיקים מוכנים",
+                  "אתה יודע בדיוק מה חסר לפני שמתחילים",
+                  "אתה חוסך תיקונים, עיכובים ועבודה כפולה",
+                  "תזכורות אוטומטיות ללקוח עד שהתיק מושלם",
+                  "אתה עובד רגוע, מסודר ומדויק",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
@@ -286,10 +291,10 @@ export default function LandingPage() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
           <Shield className="h-10 w-10 text-primary mx-auto" />
-          <h2 className="text-2xl font-bold">אבטחה מקסימלית</h2>
+          <h2 className="text-2xl font-bold">אבטחה מלאה</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            כל המסמכים מאוחסנים בענן מאובטח. גישה לפורטל רק עם תעודת זהות.
-            הנתונים שלך ושל הלקוחות שלך מוגנים בסטנדרטים הגבוהים ביותר.
+            כל המידע נשמר בצורה מאובטחת. גישה רק ללקוח וליועץ המס.
+            שליטה מלאה על כל מסמך, בכל שלב.
           </p>
         </div>
       </section>
@@ -312,8 +317,11 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">מוכן להפסיק לרדוף אחרי מסמכים?</h2>
-          <p className="text-lg text-muted-foreground">הצטרף עכשיו בחינם ותתחיל לעבוד חכם יותר.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold">מוכנים לעבוד אחרת?</h2>
+          <p className="text-lg text-muted-foreground">
+            לא עוד רדיפה אחרי מסמכים. לא עוד הפתעות בדוחות.<br />
+            רק תיקים מוכנים לעבודה.
+          </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
             🚀 הירשם עכשיו – חינם לחלוטין!
             <ArrowLeft className="h-5 w-5" />
