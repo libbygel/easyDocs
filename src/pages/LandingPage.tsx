@@ -227,11 +227,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "אתה מגלה חוסרים קריטיים ברגע האחרון",
-                  "אתה עוצר עבודה באמצע התיק כי חסר מסמך",
-                  "אתה רודף ידנית אחרי לקוחות לפני כל דדליין",
-                  "אתה מתקן טעויות שכבר אפשר היה למנוע",
-                  "אתה עובד פעמיים על אותו תיק",
+                  "מסמכים מפוזרים בין וואטסאפ, מייל ושיחות",
+                  "רדיפה ידנית אחרי כל לקוח לקראת הגשה",
+                  "חוסר סדר בתיקיות ובקבצים שמגיעים",
+                  "חוסר ודאות מה התקבל ומה עוד חסר",
+                  "תהליך איסוף שפשוט 'קורה', בלי שליטה",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-destructive mt-0.5">✕</span>
@@ -246,11 +246,11 @@ export default function LandingPage() {
               </h3>
               <ul className="space-y-2 text-sm">
                 {[
-                  "אתה מתחיל לעבוד רק על תיקים מוכנים",
-                  "אתה יודע בדיוק מה חסר לפני שמתחילים",
-                  "אתה חוסך תיקונים, עיכובים ועבודה כפולה",
-                  "תזכורות אוטומטיות ללקוח עד שהתיק מושלם",
-                  "אתה עובד רגוע, מסודר ומדויק",
+                  "כל המסמכים נכנסים למקום אחד מסודר",
+                  "הלקוח יודע בדיוק מה לשלוח ומתי",
+                  "אין רדיפה – יש תהליך עם תזכורות אוטומטיות",
+                  "כל תיק מסודר מהרגע הראשון, לפי לקוח",
+                  "שליטה מלאה על מה התקבל ומה עוד חסר",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
@@ -316,13 +316,13 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">מוכנים לעבוד אחרת?</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold">תעשה סדר באיסוף המסמכים שלך</h2>
           <p className="text-lg text-muted-foreground">
-            לא עוד רדיפה אחרי מסמכים. לא עוד הפתעות בדוחות.<br />
-            רק תיקים מוכנים לעבודה.
+            תן ללקוחות דרך אחת ברורה לשלוח הכל –<br />
+            ולך מקום אחד מסודר לקבל את הכל.
           </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            🚀 הירשם עכשיו – חינם לחלוטין!
+            🚀 התחל בחינם עכשיו
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <p className="text-sm text-muted-foreground">תוך 24 שעות החשבון פעיל</p>
