@@ -188,9 +188,9 @@ export default function LandingPage() {
       <section id="features" className="py-20 px-4 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold">EasyDocs לא עוד מערכת לניהול מסמכים</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">EasyDocs מרכז את כל איסוף המסמכים במקום אחד</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              היא מערכת שמוודאת דבר אחד: שהתיק שלך מוכן באמת לפני שאתה נוגע בו.
+              כל לקוח מקבל לינק אחד פשוט ומעלה את כל המסמכים ישירות למערכת שלך – מסודר וברור.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
