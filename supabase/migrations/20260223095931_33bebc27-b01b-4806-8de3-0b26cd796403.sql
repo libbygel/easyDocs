@@ -1,0 +1,1 @@
+ALTER TABLE public.doc_templates ADD COLUMN document_type text NOT NULL DEFAULT 'request';

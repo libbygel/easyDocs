@@ -1,0 +1,172 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { Client } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Search, Users, Trash2, Edit2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { CreateClientDialog } from '@/components/clients/CreateClientDialog';
+import { EditClientDialog } from '@/components/clients/EditClientDialog';
+import { useToast } from '@/hooks/use-toast';
+import { useTableSort } from '@/hooks/useTableSort';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
+
+export default function Clients() {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchClients = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('clients').select('*').eq('advisor_id', user.id).order('full_name');
+    if (data) setClients(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchClients(); }, [user]);
+
+  const filteredClients = clients.filter(c =>
+    c.full_name.includes(searchTerm) || 
+    c.email?.includes(searchTerm) || 
+    c.phone?.includes(searchTerm) ||
+    c.id_number?.includes(searchTerm)
+  );
+
+  const { sortedData, sortConfig, requestSort } = useTableSort(filteredClients, 'full_name');
+
+  const handleEditClick = (client: Client) => {
+    setEditingClient(client);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setClientToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!clientToDelete) return;
+    await supabase.from('clients').delete().eq('id', clientToDelete);
+    toast({ title: 'הלקוח נמחק' });
+    setDeleteDialogOpen(false);
+    setClientToDelete(null);
+    fetchClients();
+  };
+
+  return (
+    <AppLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div>
+            <h1 className="text-2xl font-bold">לקוחות</h1>
+            <p className="text-muted-foreground mt-1">ניהול רשימת הלקוחות שלך</p>
+          </div>
+          <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            לקוח חדש
+          </Button>
+        </div>
+
+        <Card className="shadow-sm">
+          <CardContent className="pt-4">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="חיפוש..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pr-10" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              לקוחות ({filteredClients.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">טוען...</div>
+            ) : filteredClients.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">אין לקוחות</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <SortableTableHead<Client> sortKey="full_name" sortConfig={sortConfig} onSort={requestSort}>
+                        שם מלא
+                      </SortableTableHead>
+                      <SortableTableHead<Client> sortKey="id_number" sortConfig={sortConfig} onSort={requestSort}>
+                        ת.ז.
+                      </SortableTableHead>
+                      <SortableTableHead<Client> sortKey="phone" sortConfig={sortConfig} onSort={requestSort}>
+                        טלפון
+                      </SortableTableHead>
+                      <SortableTableHead<Client> sortKey="email" sortConfig={sortConfig} onSort={requestSort}>
+                        אימייל
+                      </SortableTableHead>
+                      <SortableTableHead<Client> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
+                        נוצר
+                      </SortableTableHead>
+                      <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground w-24">פעולות</th>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedData.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.full_name}</TableCell>
+                        <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
+                        <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
+                        <TableCell dir="ltr" className="text-start">{client.email || '-'}</TableCell>
+                        <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(client.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <CreateClientDialog open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={fetchClients} />
+      <EditClientDialog 
+        open={editDialogOpen} 
+        onOpenChange={setEditDialogOpen} 
+        client={editingClient}
+        onSuccess={fetchClients} 
+      />
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="מחיקת לקוח"
+        description="האם אתה בטוח שברצונך למחוק לקוח זה? כל התיקים המשויכים אליו יימחקו גם כן."
+      />
+    </AppLayout>
+  );
+}

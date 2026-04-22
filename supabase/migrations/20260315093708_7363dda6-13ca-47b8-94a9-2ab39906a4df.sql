@@ -1,0 +1,1 @@
+ALTER TABLE public.cases ADD COLUMN last_portal_link_sent_at timestamp with time zone DEFAULT NULL;

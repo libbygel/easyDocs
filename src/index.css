@@ -1,0 +1,188 @@
+@import '@fontsource/manrope/400.css';
+@import '@fontsource/manrope/500.css';
+@import '@fontsource/manrope/600.css';
+@import '@fontsource/manrope/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* EasyDocs - Professional Mortgage Advisor Design System */
+/* Primary: #1E3A8A | Accent: #F59E0B | Success: #10B981 | Info: #3B82F6 */
+
+@layer base {
+  :root {
+    /* ─── PRIMARY: Deep Blue #1E3A8A ───
+       Usage: Main CTA buttons, sidebar, page headers, active nav items, primary links */
+    --primary: 224 64% 33%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Primary subtle variants */
+    --primary-light: 224 58% 42%;   /* hover on primary buttons */
+    --primary-muted: 224 50% 93%;   /* primary tinted backgrounds */
+
+    /* ─── SECONDARY: Very Light Gray #F3F4F6 ───
+       Usage: General background surfaces, input fills, subtle dividers */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 221 39% 11%;
+
+    /* ─── BACKGROUNDS ─── */
+    --background: 220 14% 96%;      /* #F3F4F6 - page bg */
+    --foreground: 221 39% 11%;      /* #111827 - primary text */
+
+    /* Cards & content containers: White */
+    --card: 0 0% 100%;
+    --card-foreground: 221 39% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 39% 11%;
+
+    /* ─── MUTED / SECONDARY SURFACES ─── */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;  /* #6B7280 - secondary text */
+
+    /* ─── ACCENT: Golden Orange #F59E0B ───
+       Usage: CTA buttons, highlights, tags, attention elements */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* ─── BORDERS & INPUTS ─── */
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 224 64% 33%;
+
+    /* ─── STATUS COLORS ─── */
+
+    /* SUCCESS/OPEN: Green #10B981 */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    /* WARNING: Golden Orange (reusing accent) */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* DESTRUCTIVE: Red */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* INFO/IN-REVIEW: Light Blue #3B82F6 */
+    --info: 217 92% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --radius: 0.5rem;
+
+    /* ─── SIDEBAR ─── */
+    --sidebar-background: 224 64% 26%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 58% 34%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 224 50% 30%;
+    --sidebar-ring: 38 92% 50%;
+  }
+
+  .dark {
+    --background: 224 39% 8%;
+    --foreground: 220 20% 94%;
+
+    --card: 224 35% 12%;
+    --card-foreground: 220 20% 94%;
+
+    --popover: 224 35% 12%;
+    --popover-foreground: 220 20% 94%;
+
+    --primary: 217 92% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 30% 18%;
+    --secondary-foreground: 220 20% 94%;
+
+    --muted: 224 25% 16%;
+    --muted-foreground: 220 9% 60%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 20% 95%;
+
+    --success: 160 75% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 85% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217 85% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 224 25% 20%;
+    --input: 224 25% 20%;
+    --ring: 38 92% 50%;
+
+    --sidebar-background: 224 64% 10%;
+    --sidebar-foreground: 220 20% 88%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 50% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 224 40% 16%;
+    --sidebar-ring: 38 92% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    direction: rtl;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Manrope', 'Assistant', sans-serif;
+    font-size: 15px;
+  }
+
+  h1, h2 { font-size: 1.375rem; } /* ~22px */
+  h3      { font-size: 1.125rem; } /* ~18px */
+
+  /* Hebrew number alignment */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ─── STATUS BADGE STYLES ─────────────────────────────── */
+@layer components {
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium;
+  }
+
+  /* Green badge - completed/approved docs */
+  .status-success {
+    @apply bg-success/10 text-success;
+  }
+
+  /* Orange badge - pending/awaiting action */
+  .status-warning {
+    @apply bg-warning/10 text-warning;
+  }
+
+  /* Red badge - rejected/error */
+  .status-error {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  /* Light blue badge - info/neutral notifications */
+  .status-info {
+    @apply bg-info/10 text-info;
+  }
+
+  /* Muted badge - default/unknown state */
+  .status-pending {
+    @apply bg-muted text-muted-foreground;
+  }
+}

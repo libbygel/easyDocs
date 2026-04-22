@@ -1,0 +1,713 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      case_activity_log: {
+        Row: {
+          action_type: Database["public"]["Enums"]["case_activity_type"]
+          case_id: string
+          created_at: string
+          description: string
+          id: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["case_activity_type"]
+          case_id: string
+          created_at?: string
+          description: string
+          id?: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["case_activity_type"]
+          case_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_activity_log_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_documents: {
+        Row: {
+          advisor_note: string | null
+          case_id: string
+          client_note: string | null
+          created_at: string
+          declaration_statement: string | null
+          display_order: number | null
+          doc_name: string
+          document_type: string
+          due_date: string | null
+          id: string
+          last_upload_id: string | null
+          required: boolean
+          review_status: Database["public"]["Enums"]["review_status"]
+          sent_status: Database["public"]["Enums"]["sent_status"]
+          sent_to_client_at: string | null
+        }
+        Insert: {
+          advisor_note?: string | null
+          case_id: string
+          client_note?: string | null
+          created_at?: string
+          declaration_statement?: string | null
+          display_order?: number | null
+          doc_name: string
+          document_type?: string
+          due_date?: string | null
+          id?: string
+          last_upload_id?: string | null
+          required?: boolean
+          review_status?: Database["public"]["Enums"]["review_status"]
+          sent_status?: Database["public"]["Enums"]["sent_status"]
+          sent_to_client_at?: string | null
+        }
+        Update: {
+          advisor_note?: string | null
+          case_id?: string
+          client_note?: string | null
+          created_at?: string
+          declaration_statement?: string | null
+          display_order?: number | null
+          doc_name?: string
+          document_type?: string
+          due_date?: string | null
+          id?: string
+          last_upload_id?: string | null
+          required?: boolean
+          review_status?: Database["public"]["Enums"]["review_status"]
+          sent_status?: Database["public"]["Enums"]["sent_status"]
+          sent_to_client_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_last_upload"
+            columns: ["last_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_types: {
+        Row: {
+          advisor_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          advisor_id?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      cases: {
+        Row: {
+          advisor_id: string
+          case_type_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          last_client_activity_at: string | null
+          last_portal_link_sent_at: string | null
+          last_reminder_sent_at: string | null
+          portal_enabled: boolean
+          portal_password: string | null
+          portal_token: string
+          status: Database["public"]["Enums"]["case_status"]
+          title: string
+        }
+        Insert: {
+          advisor_id: string
+          case_type_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          last_client_activity_at?: string | null
+          last_portal_link_sent_at?: string | null
+          last_reminder_sent_at?: string | null
+          portal_enabled?: boolean
+          portal_password?: string | null
+          portal_token?: string
+          status?: Database["public"]["Enums"]["case_status"]
+          title: string
+        }
+        Update: {
+          advisor_id?: string
+          case_type_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_client_activity_at?: string | null
+          last_portal_link_sent_at?: string | null
+          last_reminder_sent_at?: string | null
+          portal_enabled?: boolean
+          portal_password?: string | null
+          portal_token?: string
+          status?: Database["public"]["Enums"]["case_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cases_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          advisor_id: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          id_number: string | null
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          advisor_id: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          advisor_id: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          role: string | null
+        }
+        Insert: {
+          advisor_id: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+      doc_templates: {
+        Row: {
+          advisor_id: string
+          case_type_id: string
+          created_at: string
+          declaration_statement: string | null
+          default_due_days: number | null
+          default_required: boolean
+          doc_name: string
+          document_type: string
+          id: string
+          template_file_url: string | null
+        }
+        Insert: {
+          advisor_id: string
+          case_type_id: string
+          created_at?: string
+          declaration_statement?: string | null
+          default_due_days?: number | null
+          default_required?: boolean
+          doc_name: string
+          document_type?: string
+          id?: string
+          template_file_url?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          case_type_id?: string
+          created_at?: string
+          declaration_statement?: string | null
+          default_due_days?: number | null
+          default_required?: boolean
+          doc_name?: string
+          document_type?: string
+          id?: string
+          template_file_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doc_templates_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "doc_templates_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_logs: {
+        Row: {
+          advisor_id: string
+          body_preview: string | null
+          case_id: string | null
+          client_id: string | null
+          email_type: Database["public"]["Enums"]["email_type"]
+          id: string
+          sent_at: string
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          advisor_id: string
+          body_preview?: string | null
+          case_id?: string | null
+          client_id?: string | null
+          email_type: Database["public"]["Enums"]["email_type"]
+          id?: string
+          sent_at?: string
+          subject: string
+          to_email: string
+        }
+        Update: {
+          advisor_id?: string
+          body_preview?: string | null
+          case_id?: string | null
+          client_id?: string | null
+          email_type?: Database["public"]["Enums"]["email_type"]
+          id?: string
+          sent_at?: string
+          subject?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "email_logs_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          advisor_id: string
+          case_id: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          advisor_id: string
+          case_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          advisor_id?: string
+          case_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "notifications_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          document_preview_mode: string
+          email: string
+          enable_daily_reminders: boolean
+          enable_urgent_alerts: boolean
+          id: string
+          inactivity_days: number
+          is_paid: boolean
+          name: string
+          reminder_hour: number
+          sender_display_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_preview_mode?: string
+          email: string
+          enable_daily_reminders?: boolean
+          enable_urgent_alerts?: boolean
+          id?: string
+          inactivity_days?: number
+          is_paid?: boolean
+          name: string
+          reminder_hour?: number
+          sender_display_name?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_preview_mode?: string
+          email?: string
+          enable_daily_reminders?: boolean
+          enable_urgent_alerts?: boolean
+          id?: string
+          inactivity_days?: number
+          is_paid?: boolean
+          name?: string
+          reminder_hour?: number
+          sender_display_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      uploads: {
+        Row: {
+          case_document_id: string
+          case_id: string
+          created_at: string
+          file_name: string
+          file_type: string | null
+          file_url: string
+          id: string
+          uploaded_at: string
+          uploaded_by: Database["public"]["Enums"]["uploaded_by_type"]
+        }
+        Insert: {
+          case_document_id: string
+          case_id: string
+          created_at?: string
+          file_name: string
+          file_type?: string | null
+          file_url: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by: Database["public"]["Enums"]["uploaded_by_type"]
+        }
+        Update: {
+          case_document_id?: string
+          case_id?: string
+          created_at?: string
+          file_name?: string
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by?: Database["public"]["Enums"]["uploaded_by_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploads_case_document_id_fkey"
+            columns: ["case_document_id"]
+            isOneToOne: false
+            referencedRelation: "case_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uploads_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      case_activity_type:
+        | "העלאת מסמך"
+        | "אישור מסמך"
+        | "דחיית מסמך"
+        | "שליחת תזכורת"
+        | "שליחת לינק"
+        | "השלמת תיק"
+        | "מחיקת מסמך"
+      case_status: "פתוח" | "ממתין למסמכים" | "בבדיקה" | "הושלם" | "מוקפא"
+      email_type: "הודעה על העלאה" | "תזכורת יומית" | "לינק פורטל" | "מסמך נדחה"
+      review_status: "חסר" | "הועלה" | "תקין" | "לא תקין" | "נחתם"
+      sent_status: "לא נשלח" | "נשלח"
+      uploaded_by_type: "לקוח" | "יועץ"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      case_activity_type: [
+        "העלאת מסמך",
+        "אישור מסמך",
+        "דחיית מסמך",
+        "שליחת תזכורת",
+        "שליחת לינק",
+        "השלמת תיק",
+        "מחיקת מסמך",
+      ],
+      case_status: ["פתוח", "ממתין למסמכים", "בבדיקה", "הושלם", "מוקפא"],
+      email_type: ["הודעה על העלאה", "תזכורת יומית", "לינק פורטל", "מסמך נדחה"],
+      review_status: ["חסר", "הועלה", "תקין", "לא תקין", "נחתם"],
+      sent_status: ["לא נשלח", "נשלח"],
+      uploaded_by_type: ["לקוח", "יועץ"],
+    },
+  },
+} as const

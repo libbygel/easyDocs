@@ -1,0 +1,1 @@
+ALTER TABLE public.case_documents ADD COLUMN sent_to_client_at timestamp with time zone DEFAULT NULL;

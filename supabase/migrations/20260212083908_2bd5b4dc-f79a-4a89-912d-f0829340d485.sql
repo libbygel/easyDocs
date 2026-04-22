@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS document_preview_mode text NOT NULL DEFAULT 'new_tab';
