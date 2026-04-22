@@ -148,6 +148,15 @@ export default function Templates() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button
+              variant="default"
+              className="gap-2 bg-gradient-to-l from-primary to-accent"
+              onClick={handleImportTaxTemplates}
+              disabled={importing}
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              ייבא תבניות מס מוכנות
+            </Button>
             <Dialog open={newCaseTypeOpen} onOpenChange={setNewCaseTypeOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
