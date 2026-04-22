@@ -85,17 +85,17 @@ export default function LandingPage() {
             ליועצי מס בישראל
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            תפסיק להגיש דוחות עם סימני שאלה.
+            תפסיק לרדוף אחרי מסמכים.
             <br />
-            <span className="text-primary">תתחיל לעבוד רק על תיקים מוכנים.</span>
+            <span className="text-primary">תסגור את האיסוף בצורה מסודרת.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EasyDocs נותן ליועצי מס דבר אחד שלא היה להם עד היום:
-            שליטה מלאה על מוכנות התיק לפני שמתחילים לעבוד עליו. לא עוד חוסרים ברגע האחרון, לא עוד עבודה כפולה על אותו תיק.
+            EasyDocs מרכז את כל תהליך איסוף המסמכים מול הלקוח במקום אחד –
+            בלי וואטסאפ, בלי בלאגן, ובלי חוסרים שנופלים בין הכיסאות.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              🚀 הירשם עכשיו בחינם
+              🚀 התחל לאסוף מסמכים בצורה מסודרת
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
@@ -114,17 +114,16 @@ export default function LandingPage() {
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">הבעיה האמיתית של יועצי מס</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">אם אתה יועץ מס – זה בטוח מוכר לך</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-            זה לא איסוף מסמכים. זה לא וואטסאפ. זה לא לקוחות איטיים.<br />
-            הבעיה האמיתית – אתה מתחיל לעבוד על תיק שלא באמת מוכן.
+            האיסוף לא באמת מנוהל – הוא פשוט "קורה" איפשהו בין וואטסאפ, מייל ושיחות.
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "אתה מתחיל לעבוד על תיק – ומגלה באמצע שהוא לא באמת מוכן",
-              "חוסרים קריטיים צפים ברגע הכי לא נכון, מול הלקוח או מול הרשות",
-              "טעויות מתגלות אחרי שכבר השקעת שעות עבודה בתיק",
-              "דוחות מתעכבים בגלל מסמך אחד חסר שאף אחד לא שם לב אליו",
+              "לקוחות שולחים מסמכים בוואטסאפ ואתה לא מוצא אותם אחר כך",
+              "חלק מהמסמכים מגיעים באיחור ואתה רודף אחריהם ידנית",
+              "אין לך תמונה ברורה מה התקבל ומה עדיין חסר",
+              "כל תיק מרגיש מפוזר בין כמה מקומות בלי סדר אמיתי",
             ].map((pain, i) => (
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
