@@ -99,19 +99,17 @@ export default function LandingPage() {
       {/* ─── HERO ─── */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium">
-            <Zap className="h-4 w-4" />
-            ליועצי מס בישראל
-          </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
             גם אצלכם איסוף המסמכים עדיין מתבצע
             <br />
             <span className="text-primary">במיילים ובוואטסאפ?</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            מסמכים מפוזרים, רדיפה אחרי לקוחות, וחוסר ודאות רגע לפני הגשה.
+            האיסוף מתפזר בין כמה ערוצים, השליטה הולכת לאיבוד,
             <br />
-            <strong className="text-foreground">EasyDocs</strong> הופך את איסוף המסמכים לתהליך מסודר, ברור וסגור – מהתיק הראשון ועד האחרון.
+            והלחץ מגיע רגע לפני הגשה.
+            <br />
+            <strong className="text-foreground">EasyDocs</strong> מחזיר סדר ושליטה לכל תיק – מתחילתו ועד סגירתו.
           </p>
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
             <span>🔗 לינק אחד ללקוח</span>
