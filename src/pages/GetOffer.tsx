@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function GetOffer() {
   const navigate = useNavigate();
@@ -78,44 +78,7 @@ export default function GetOffer() {
       </nav>
 
       <section className="pt-28 pb-16 px-4">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-start">
-          {/* LEFT — context / value */}
-          <div className="space-y-6 md:sticky md:top-28">
-            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent-foreground border border-accent/20 rounded-full px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="h-4 w-4 text-accent" />
-              הצעה מותאמת אישית למשרד שלך
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-              נשמח להכיר את המשרד שלך
-              <br />
-              <span className="text-primary">ולבנות לך הצעה משתלמת</span>
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              השאר/י פרטים קצרים – ונחזור אליך עם הצעה שמותאמת בדיוק לכמות הלקוחות, לסוג התיקים ולאופי העבודה במשרד שלך.
-            </p>
-
-            <div className="space-y-3 pt-4">
-              {[
-                { icon: CheckCircle2, text: "הצעה אישית – לא מחירון אחיד" },
-                { icon: ShieldCheck, text: "ללא מחויבות, ללא כרטיס אשראי" },
-                { icon: Clock, text: "ליווי והדרכה אישית בהטמעה" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 text-foreground">
-                  <item.icon className="h-5 w-5 text-primary shrink-0" />
-                  <span className="text-base">{item.text}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-card border border-border rounded-xl p-5 mt-6">
-              <p className="text-sm text-muted-foreground mb-2">מעדיפ/ה ליצור קשר ישיר?</p>
-              <a href="mailto:dv4343@gmail.com" className="text-primary font-medium hover:underline">
-                dv4343@gmail.com
-              </a>
-            </div>
-          </div>
-
-          {/* RIGHT — form */}
+        <div className="max-w-2xl mx-auto">
           <div className="bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
             {submitted ? (
               <div className="text-center py-12 space-y-4">
