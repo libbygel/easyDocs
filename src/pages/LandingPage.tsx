@@ -136,7 +136,7 @@ export default function LandingPage() {
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">אם אתה יועץ מס – זה בטוח מוכר לך</h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto text-xl">
             האיסוף לא באמת מנוהל – הוא פשוט "קורה" איפשהו בין וואטסאפ, מייל ושיחות.
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
@@ -148,7 +148,7 @@ export default function LandingPage() {
             ].map((pain, i) => (
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
-                <p className="text-foreground">{pain}</p>
+                <p className="text-foreground text-base">{pain}</p>
               </div>
             ))}
           </div>
@@ -158,7 +158,7 @@ export default function LandingPage() {
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד? 5 צעדים פשוטים</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד?&nbsp;</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
             {steps.map((step) => (
               <div key={step.num} className="space-y-3">
