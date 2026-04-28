@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import {
   FileText, Send, Bell, PenTool, Users, FolderOpen,
   CheckCircle2, ArrowLeft, Shield, Zap, Clock, Star,
-  ChevronDown, Smartphone, LayoutDashboard, Play, Inbox, Eye
+  ChevronDown, Smartphone, LayoutDashboard, Play, Inbox, Eye,
+  Cloud, BellRing, Mail, UserCheck
 } from "lucide-react";
 
 const features = [
@@ -15,9 +16,33 @@ const features = [
     highlight: true,
   },
   {
+    icon: Cloud,
+    title: "סנכרון אוטומטי ל-Google Drive",
+    desc: "המערכת בונה אוטומטית תיקייה ב-Drive לכל תיק חדש – וכל מסמך שהלקוח מעלה נשמר שם בזמן אמת. גיבוי מלא, בלי מאמץ.",
+    highlight: true,
+  },
+  {
     icon: Bell,
     title: "תזכורות אוטומטיות",
-    desc: "אם חסר מסמך – המערכת שולחת תזכורת ללקוח במקומך, עד שכל האיסוף נסגר.",
+    desc: "אם הלקוח לא העלה מסמך נדרש – המערכת שולחת לו תזכורת מייל אוטומטית, ומתריעה גם לך. אתה לא צריך לרדוף אחרי אף אחד.",
+    highlight: true,
+  },
+  {
+    icon: BellRing,
+    title: "התראות בזמן אמת ליועץ",
+    desc: "כל פעם שלקוח מעלה מסמך – אתה מקבל התראה מיידית. תמיד יודע מה קורה בכל תיק, בלי לבדוק ידנית.",
+    highlight: true,
+  },
+  {
+    icon: PenTool,
+    title: "חתימה דיגיטלית מובנית",
+    desc: "מעלה מסמך לחתימה – המערכת מוסיפה לו אוטומטית דף חתימה מקצועי, והלקוח חותם אונליין ישר מהפורטל.",
+    highlight: true,
+  },
+  {
+    icon: Users,
+    title: "שליחה ישירה לאנשי קשר",
+    desc: "כשהתיק מוכן – שלח את כל המסמכים לבנקאי, רואה חשבון או כל גורם מקצועי ישירות מהמערכת בקליק אחד.",
     highlight: true,
   },
   {
@@ -30,18 +55,12 @@ const features = [
     icon: Eye,
     title: "שליטה במה התקבל ומה חסר",
     desc: "תמונה ברורה בזמן אמת – מה נכנס, ממי, ומה עדיין לא נשלח. אפס ניחושים.",
-    highlight: true,
+    highlight: false,
   },
   {
     icon: FileText,
     title: "תבניות מס מוכנות",
     desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת המסמכים נטענת מוכנה לכל תיק חדש.",
-    highlight: false,
-  },
-  {
-    icon: Send,
-    title: "העברה מסודרת הלאה",
-    desc: "כשהאיסוף נסגר – שלח את כל המסמכים לרואה החשבון או לכל גורם מקצועי בקליק אחד.",
     highlight: false,
   },
 ];
@@ -310,14 +329,16 @@ export default function LandingPage() {
       {/* ─── COMING SOON ─── */}
       <section className="py-16 px-4 bg-primary/5 border-y border-primary/10">
         <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 bg-accent/10 text-accent rounded-full px-4 py-1.5 text-sm font-medium">
-            <Clock className="h-4 w-4" />
-            בקרוב
+          <div className="inline-flex items-center gap-2 bg-success/10 text-success rounded-full px-4 py-1.5 text-sm font-medium">
+            <CheckCircle2 className="h-4 w-4" />
+            כבר פעיל במערכת
           </div>
-          <h2 className="text-2xl font-bold">סנכרון ל-Google Drive</h2>
+          <Cloud className="h-10 w-10 text-primary mx-auto" />
+          <h2 className="text-2xl font-bold">סנכרון אוטומטי ל-Google Drive</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            בקרוב תוכל לסנכרן את כל המסמכים שהלקוחות מעלים ישירות לתיקייה ב-Google Drive שלך –
-            כך שתמיד יהיה לך גיבוי מסודר בענן.
+            לכל תיק חדש שאתה פותח – המערכת יוצרת אוטומטית תיקייה ב-Google Drive שלך.
+            כל מסמך שהלקוח מעלה נשמר שם מיד, בלי שתצטרך לעשות כלום.
+            גיבוי מלא ומסודר בענן, אוטומטית.
           </p>
         </div>
       </section>
