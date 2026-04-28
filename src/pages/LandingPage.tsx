@@ -49,19 +49,19 @@ const features = [
     icon: Inbox,
     title: "כל המסמכים במקום אחד",
     desc: "אין יותר חיפוש בוואטסאפ ובמייל – כל תיק מסודר לפי לקוח, עם כל הקבצים שלו.",
-    highlight: false,
+    highlight: true,
   },
   {
     icon: Eye,
     title: "שליטה במה התקבל ומה חסר",
     desc: "תמונה ברורה בזמן אמת – מה נכנס, ממי, ומה עדיין לא נשלח. אפס ניחושים.",
-    highlight: false,
+    highlight: true,
   },
   {
     icon: FileText,
     title: "תבניות מס מוכנות",
     desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת המסמכים נטענת מוכנה לכל תיק חדש.",
-    highlight: false,
+    highlight: true,
   },
 ];
 
