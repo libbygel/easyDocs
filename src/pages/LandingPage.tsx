@@ -325,13 +325,13 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">תעשה סדר באיסוף המסמכים שלך</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold">הגיע הזמן לעשות סדר באיסוף המסמכים</h2>
           <p className="text-lg text-muted-foreground">
-            תן ללקוחות דרך אחת ברורה לשלוח הכל –<br />
-            ולך מקום אחד מסודר לקבל את הכל.
+            לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
+            ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            💎 קבל הצעה שווה ומשתלמת
+            💎 קבל הצעה משתלמת מותאמת למשרד שלך
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <p className="text-sm text-muted-foreground">מענה אישי תוך 24 שעות • ללא התחייבות</p>
