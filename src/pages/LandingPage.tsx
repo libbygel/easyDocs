@@ -85,17 +85,26 @@ export default function LandingPage() {
             ליועצי מס בישראל
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            תפסיק לרדוף אחרי מסמכים.
+            גם אצלכם איסוף המסמכים עדיין מתבצע
             <br />
-            <span className="text-primary">תסגור את האיסוף בצורה מסודרת.</span>
+            <span className="text-primary">במיילים ובוואטסאפ?</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EasyDocs מרכז את כל תהליך איסוף המסמכים מול הלקוח במקום אחד –
-            בלי וואטסאפ, בלי בלאגן, ובלי חוסרים שנופלים בין הכיסאות.
+            מסמכים מפוזרים, רדיפה אחרי לקוחות, וחוסר ודאות רגע לפני הגשה.
+            <br />
+            <strong className="text-foreground">EasyDocs</strong> הופך את איסוף המסמכים לתהליך מסודר, ברור וסגור – מהתיק הראשון ועד האחרון.
+          </p>
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
+            <span>🔗 לינק אחד ללקוח</span>
+            <span className="text-muted-foreground">•</span>
+            <span>📁 מקום אחד לכל המסמכים</span>
+          </div>
+          <p className="text-base text-muted-foreground max-w-xl mx-auto">
+            בלי רדיפות, בלי ניחושים, ובלי חוסרים ברגע האחרון.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              💎 קבל הצעה שווה ומשתלמת
+              💎 קבל הצעה מותאמת למשרד שלך
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
@@ -105,7 +114,7 @@ export default function LandingPage() {
           </div>
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 max-w-md mx-auto mt-4">
             <p className="text-sm font-medium text-primary">
-              ✨ הצעה אישית מותאמת למשרד שלך – תוך 24 שעות תקבל מענה ותוכל להתחיל לעבוד!
+              ✨ מענה אישי תוך 24 שעות • ללא התחייבות
             </p>
           </div>
         </div>
@@ -316,13 +325,13 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">תעשה סדר באיסוף המסמכים שלך</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold">הגיע הזמן לעשות סדר באיסוף המסמכים</h2>
           <p className="text-lg text-muted-foreground">
-            תן ללקוחות דרך אחת ברורה לשלוח הכל –<br />
-            ולך מקום אחד מסודר לקבל את הכל.
+            לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
+            ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            💎 קבל הצעה שווה ומשתלמת
+            💎 קבל הצעה משתלמת מותאמת למשרד שלך
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <p className="text-sm text-muted-foreground">מענה אישי תוך 24 שעות • ללא התחייבות</p>
