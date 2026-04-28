@@ -7,7 +7,7 @@ export const Scene3CreateCase = () => {
   const arrowS = spring({ frame: frame - 60, fps, config: { damping: 14 } });
   const resultS = spring({ frame: frame - 80, fps, config: { damping: 16 } });
 
-  const autoDocs = ["תלוש שכר", "צילום ת.ז", "אישור יתרה", "דו״ח בנק"];
+  const autoDocs = ["טופס 106", "אישורי ניכוי מס", "תעודת זהות", "אישור הפקדות לפנסיה"];
 
   return (
     <AbsoluteFill style={{ justifyContent: "center", padding: "0 100px", direction: "rtl" }}>
@@ -31,8 +31,8 @@ export const Scene3CreateCase = () => {
         }}>
           {[
             { label: "לקוח", value: "ישראל ישראלי" },
-            { label: "סוג תיק (תבנית)", value: "🔽 משכנתא חדשה" },
-            { label: "שם התיק", value: "משכנתא - ישראל" },
+            { label: "סוג תיק (תבנית)", value: "🔽 דוח שנתי – שכיר" },
+            { label: "שם התיק", value: "דוח שנתי 2025 - ישראל" },
           ].map((item, i) => {
             const s = spring({ frame: frame - 15 - i * 10, fps, config: { damping: 20 } });
             return (

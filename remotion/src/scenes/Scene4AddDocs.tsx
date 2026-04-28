@@ -5,10 +5,10 @@ export const Scene4AddDocs = () => {
   const { fps } = useVideoConfig();
   const titleS = spring({ frame: frame - 5, fps, config: { damping: 20 } });
 
-  const templateDocs = ["תלוש שכר", "צילום ת.ז", "אישור יתרה", "דו״ח בנק"];
+  const templateDocs = ["טופס 106", "אישורי ניכוי מס", "תעודת זהות", "אישור הפקדות לפנסיה"];
   const extraDocs = [
-    { name: "תדפיס עו״ש", type: "בקשה מהלקוח" },
-    { name: "הצהרת בריאות", type: "לחתימה" },
+    { name: "אישור תרומות", type: "בקשה מהלקוח" },
+    { name: "ייפוי כוח לרשויות המס", type: "לחתימה" },
   ];
 
   return (

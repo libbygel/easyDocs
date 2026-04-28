@@ -6,7 +6,7 @@ export const Scene9SendToBanker = () => {
   const titleS = spring({ frame: frame - 5, fps, config: { damping: 20 } });
   const sendS = spring({ frame: frame - 85, fps, config: { damping: 14 } });
 
-  const docs = ["תלוש שכר", "צילום ת.ז", "אישור יתרה", "הצהרת לקוח חתומה"];
+  const docs = ["טופס 106", "תעודת זהות", "אישורי ניכוי מס", "ייפוי כוח חתום"];
 
   return (
     <AbsoluteFill style={{ justifyContent: "center", padding: "0 100px", direction: "rtl" }}>
@@ -18,11 +18,11 @@ export const Scene9SendToBanker = () => {
           transform: `scale(${spring({ frame, fps, config: { damping: 12 } })})`,
         }}>8</div>
         <div style={{ fontSize: 56, fontWeight: 800, color: "#fff", opacity: titleS, fontFamily: "sans-serif" }}>
-          שליחה לבנקאי
+          שליחה לביטוח לאומי / כל גורם
         </div>
       </div>
       <div style={{ fontSize: 26, color: "rgba(255,255,255,0.5)", marginBottom: 36, fontFamily: "sans-serif", opacity: titleS }}>
-        בחרו מסמכים → בחרו בנקאי → שלחו מייל מסודר עם כל הקבצים!
+        בחרו מסמכים → בחרו נמען (ביטוח לאומי, רו״ח, כל גורם) → שלחו מייל מסודר!
       </div>
 
       <div style={{ display: "flex", gap: 40 }}>
@@ -63,7 +63,7 @@ export const Scene9SendToBanker = () => {
               נמען:
             </div>
             <div style={{ fontSize: 24, color: "#fff", fontFamily: "sans-serif" }}>
-              דני הבנקאי — danny@bank.co.il
+              ביטוח לאומי — claims@btl.gov.il
             </div>
           </div>
 

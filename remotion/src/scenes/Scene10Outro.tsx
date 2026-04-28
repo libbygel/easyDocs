@@ -27,7 +27,7 @@ export const Scene10Outro = () => {
           fontSize: 36, color: "rgba(255,255,255,0.7)", opacity: textS,
           fontFamily: "sans-serif", lineHeight: 1.8,
         }}>
-          ניהול מסמכים חכם ליועצי משכנתאות
+          ניהול מסמכים חכם ליועצי מס
         </div>
         <div style={{
           marginTop: 36, opacity: ctaS, transform: `translateY(${interpolate(ctaS, [0, 1], [20, 0])}px)`,

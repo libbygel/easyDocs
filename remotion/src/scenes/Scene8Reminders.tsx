@@ -6,8 +6,8 @@ export const Scene8Reminders = () => {
   const titleS = spring({ frame: frame - 5, fps, config: { damping: 20 } });
 
   const emails = [
-    { client: "ישראל ישראלי", docs: "תלוש שכר, אישור יתרה", time: "לפני 3 ימים" },
-    { client: "רחל כהן", docs: "דו״ח בנק", time: "לפני 5 ימים" },
+    { client: "ישראל ישראלי", docs: "טופס 106, אישורי ניכוי מס", time: "לפני 3 ימים" },
+    { client: "רחל כהן", docs: "אישור הפקדות לפנסיה", time: "לפני 5 ימים" },
   ];
 
   return (
