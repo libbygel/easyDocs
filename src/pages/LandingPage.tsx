@@ -69,6 +69,8 @@ const steps = [
   { num: "1", title: "צור תיק ובחר תבנית", desc: "רשימת המסמכים נטענת אוטומטית לפי סוג התיק" },
   { num: "2", title: "שלח לינק אחד ללקוח", desc: "הלקוח מעלה את כל המסמכים ישירות לתיק שלו" },
   { num: "3", title: "סגור את האיסוף בשליטה", desc: "רואה הכל במקום אחד – מה התקבל ומה עדיין חסר" },
+  { num: "4", title: "כל המסמכים בתיקייה מסודרת של הלקוח", desc: "כל קובץ נשמר אוטומטית בתיקייה ייעודית לכל לקוח – מסודר, נגיש וזמין בכל רגע" },
+  { num: "5", title: "שלח להגשה בלחיצה אחת", desc: "כל המסמכים מוכנים לשליחה לביטוח לאומי, רשויות המס או כל גורם אחר – ישירות מהמערכת" },
 ];
 
 const testimonials = [
@@ -105,11 +107,9 @@ export default function LandingPage() {
             <span className="text-primary">במיילים ובוואטסאפ?</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            האיסוף מתפזר בין כמה ערוצים, השליטה הולכת לאיבוד,
+            אצל רוב המשרדים האיסוף לא באמת מנוהל — הוא פשוט קורה.
             <br />
-            והלחץ מגיע רגע לפני הגשה.
-            <br />
-            <strong className="text-foreground">EasyDocs</strong> מחזיר סדר ושליטה לכל תיק – מתחילתו ועד סגירתו.
+            <strong className="text-foreground">EasyDocs</strong> הופך אותו לתהליך קל, מסודר וברור.
           </p>
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
             <span>🔗 לינק אחד ללקוח</span>
@@ -158,8 +158,8 @@ export default function LandingPage() {
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד? 3 צעדים פשוטים</h2>
-          <div className="grid sm:grid-cols-3 gap-8">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד? 5 צעדים פשוטים</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
             {steps.map((step) => (
               <div key={step.num} className="space-y-3">
                 <div className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto">
