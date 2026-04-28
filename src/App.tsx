@@ -21,6 +21,7 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
 import LandingPage from "./pages/LandingPage";
+import GetOffer from "./pages/GetOffer";
 import NotFound from "./pages/NotFound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldX } from "lucide-react";
@@ -113,6 +114,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Navigate to="/login" replace />} />
     <Route path="/landing" element={<LandingPage />} />
+    <Route path="/get-offer" element={<GetOffer />} />
     <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
     <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

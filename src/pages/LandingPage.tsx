@@ -89,7 +89,7 @@ export default function LandingPage() {
           <span className="text-xl font-bold text-primary">EasyDocs</span>
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
-            <Button size="sm" onClick={() => navigate("/signup")} className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
               קבל הצעה משתלמת
             </Button>
           </div>
@@ -122,7 +122,7 @@ export default function LandingPage() {
             בלי רדיפות, בלי ניחושים, ובלי חוסרים ברגע האחרון.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
               💎 קבל הצעה מותאמת למשרד שלך
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -130,11 +130,6 @@ export default function LandingPage() {
               מה כלול?
               <ChevronDown className="h-4 w-4" />
             </Button>
-          </div>
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 max-w-md mx-auto mt-4">
-            <p className="text-sm font-medium text-primary">
-              ✨ מענה אישי תוך 24 שעות • ללא התחייבות
-            </p>
           </div>
         </div>
       </section>
@@ -254,7 +249,7 @@ export default function LandingPage() {
           <div className="text-center mt-12">
             <Button
               size="lg"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/get-offer")}
               className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-xl shadow-primary/30 font-bold"
             >
               💎 קבל הצעה מותאמת למשרד שלך
@@ -435,11 +430,10 @@ export default function LandingPage() {
             לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
-          <Button size="lg" onClick={() => navigate("/signup")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
+          <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
             💎 קבל הצעה משתלמת מותאמת למשרד שלך
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <p className="text-sm text-muted-foreground">מענה אישי תוך 24 שעות • ללא התחייבות</p>
         </div>
       </section>
 
@@ -449,7 +443,7 @@ export default function LandingPage() {
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} EasyDocs. כל הזכויות שמורות.</span>
           <div className="flex gap-4">
             <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">התחברות</button>
-            <button onClick={() => navigate("/signup")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">קבל הצעה</button>
+            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">קבל הצעה</button>
           </div>
         </div>
       </footer>
