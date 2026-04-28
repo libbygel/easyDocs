@@ -180,6 +180,90 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── KEY HIGHLIGHTS (NEW) ─── */}
+      <section className="py-20 px-4 bg-gradient-to-b from-primary/10 via-accent/5 to-background border-y border-primary/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-sm font-bold shadow-lg">
+              <Zap className="h-4 w-4" />
+              הפיצ'רים שמשנים את כל המשחק
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold">
+              לא עוד כלי איסוף.<br />
+              <span className="text-primary">מערכת שעובדת בשבילך.</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              אוטומציה מלאה מהרגע שהלקוח מקבל את הלינק ועד שהתיק מוכן להגשה.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {[
+              {
+                icon: Cloud,
+                title: "סנכרון אוטומטי ל-Google Drive",
+                desc: "המערכת בונה אוטומטית תיקייה ב-Drive לכל תיק חדש. כל מסמך שהלקוח מעלה נשמר שם בזמן אמת – גיבוי מלא בלי לגעת.",
+                color: "bg-blue-500",
+              },
+              {
+                icon: BellRing,
+                title: "התראות מיידיות ליועץ",
+                desc: "לקוח העלה מסמך? אתה מקבל התראה מיידית. תמיד יודע מה קורה בכל תיק – בלי להיכנס ולבדוק.",
+                color: "bg-amber-500",
+              },
+              {
+                icon: Mail,
+                title: "תזכורות מייל אוטומטיות ללקוח",
+                desc: "חסר מסמך? המערכת שולחת ללקוח תזכורת מייל אוטומטית, ומתריעה גם לך. אפס רדיפה ידנית.",
+                color: "bg-rose-500",
+              },
+              {
+                icon: PenTool,
+                title: "חתימה דיגיטלית עם דף חתימה אוטומטי",
+                desc: "מעלה מסמך לחתימה – המערכת מוסיפה אוטומטית דף חתימה מקצועי, והלקוח חותם אונליין ישר מהפורטל.",
+                color: "bg-purple-500",
+              },
+              {
+                icon: Users,
+                title: "שליחה ישירה לאנשי קשר",
+                desc: "התיק מוכן? שלח את כל המסמכים לבנקאי, רואה חשבון או כל גורם מקצועי – ישירות מהמערכת בקליק אחד.",
+                color: "bg-emerald-500",
+              },
+              {
+                icon: FolderOpen,
+                title: "פורטל לקוח – לינק אחד פשוט",
+                desc: "הלקוח מקבל לינק אחד ומעלה את כל המסמכים. בלי וואטסאפ, בלי מיילים, בלי בלאגן.",
+                color: "bg-primary",
+              },
+            ].map((feat) => (
+              <div
+                key={feat.title}
+                className="group relative bg-card rounded-2xl p-6 border-2 border-border hover:border-primary/40 hover:shadow-xl transition-all flex gap-4"
+              >
+                <div className={`shrink-0 w-14 h-14 ${feat.color} text-white rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                  <feat.icon className="h-7 w-7" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="font-bold text-lg text-foreground">{feat.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{feat.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Button
+              size="lg"
+              onClick={() => navigate("/signup")}
+              className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-xl shadow-primary/30 font-bold"
+            >
+              💎 קבל הצעה מותאמת למשרד שלך
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* ─── VIDEO DEMO ─── */}
       <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
         <div className="max-w-5xl mx-auto text-center space-y-8">
