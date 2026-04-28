@@ -1,11 +1,11 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
 const docs = [
-  { name: "תלוש שכר", status: "הועלה", color: "#3b82f6" },
-  { name: "צילום ת.ז", status: "תקין", color: "#10b981" },
-  { name: "אישור יתרה", status: "חסר", color: "#ef4444" },
-  { name: "דו״ח בנק", status: "חסר", color: "#ef4444" },
-  { name: "הצהרת לקוח", status: "ממתין לחתימה", color: "#f59e0b" },
+  { name: "טופס 106", status: "הועלה", color: "#3b82f6" },
+  { name: "תעודת זהות", status: "תקין", color: "#10b981" },
+  { name: "אישורי ניכוי מס", status: "חסר", color: "#ef4444" },
+  { name: "אישור הפקדות לפנסיה", status: "חסר", color: "#ef4444" },
+  { name: "ייפוי כוח לרשויות המס", status: "ממתין לחתימה", color: "#f59e0b" },
 ];
 
 export const Scene6ClientPortal = () => {

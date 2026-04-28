@@ -28,7 +28,7 @@ export const Scene1Intro = () => {
           transform: `translateY(${interpolate(subS, [0, 1], [30, 0])}px)`,
           fontFamily: "sans-serif",
         }}>
-          ניהול מסמכים חכם ליועצי משכנתאות
+          ניהול מסמכים חכם ליועצי מס
         </div>
         <div style={{
           marginTop: 36, opacity: badgeS, transform: `scale(${badgeS})`,
