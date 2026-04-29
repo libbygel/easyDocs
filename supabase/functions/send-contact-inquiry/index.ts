@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,32 +61,32 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    if (!BREVO_API_KEY) {
-      console.error("BREVO_API_KEY is not configured");
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "שירות המייל אינו מוגדר כרגע" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        sender: { name: "EasyDocs Leads", email: "dg.smarter1@gmail.com" },
-        replyTo: { email, name },
-        to: [{ email: "dv4343@gmail.com", name: "EasyDocs" }],
+        from: "EasyDocs Leads <onboarding@resend.dev>",
+        to: ["dv4343@gmail.com"],
+        reply_to: email,
         subject,
-        htmlContent: body,
+        html: body,
       }),
     });
 
     if (!res.ok) {
       const errorData = await res.text();
-      console.error("Brevo API error:", errorData);
+      console.error("Resend API error:", errorData);
       return new Response(
         JSON.stringify({ error: "שגיאה בשליחת הפנייה" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data = await res.json();
-    console.log("Inquiry sent successfully via Brevo:", data);
+    console.log("Inquiry sent successfully via Resend:", data);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
