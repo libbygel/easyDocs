@@ -696,7 +696,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="requests" dir="rtl">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-5 mb-4">
                 <TabsTrigger value="requests" className="gap-2">
                   <UploadIcon className="h-4 w-4" />
                   מסמכים נדרשים ({requestDocs.length})
@@ -712,6 +712,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                 <TabsTrigger value="banker" className="gap-2">
                   <Landmark className="h-4 w-4" />
                   שליחה לבנקאי
+                </TabsTrigger>
+                <TabsTrigger value="finance" className="gap-2">
+                  💰 חיובים וזמן
                 </TabsTrigger>
               </TabsList>
 
