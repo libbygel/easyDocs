@@ -50,8 +50,14 @@ serve(async (req: Request): Promise<Response> => {
       } catch (_) {}
     }
 
-    const { data, error } = await supa.functions.invoke("send-transactional-email", {
-      body: {
+    const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+        apikey: supabaseServiceKey,
+      },
+      body: JSON.stringify({
         templateName: "reminder",
         recipientEmail: clientEmail,
         idempotencyKey: `reminder-${portalLink}-${Date.now()}`,
@@ -64,9 +70,12 @@ serve(async (req: Request): Promise<Response> => {
           advisorName,
           personalMessage,
         },
-      },
+      }),
     });
-    if (error) throw error;
+    const data = await sendRes.json().catch(() => ({}));
+    if (!sendRes.ok) {
+      throw new Error(`send-transactional-email ${sendRes.status}: ${JSON.stringify(data)}`);
+    }
 
     return new Response(JSON.stringify({ success: true, data }), {
       status: 200,
