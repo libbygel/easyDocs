@@ -20,9 +20,9 @@ const composition = await selectComposition({ serveUrl: bundled, id: "main", pup
 
 await renderMedia({
   composition, serveUrl: bundled, codec: "h264",
-  outputLocation: "/mnt/documents/easydocs-guide-v2.mp4",
+  outputLocation: "/mnt/documents/easydocs-guide-v3.mp4",
   puppeteerInstance: browser, muted: true, concurrency: 1,
 });
 
 await browser.close({ silent: false });
-console.log("✅ Rendered to /mnt/documents/easydocs-guide-v2.mp4");
+console.log("✅ Rendered to /mnt/documents/easydocs-guide-v3.mp4");
