@@ -12,12 +12,13 @@ import { format } from 'date-fns';
 import { CreateClientDialog } from '@/components/clients/CreateClientDialog';
 import { EditClientDialog } from '@/components/clients/EditClientDialog';
 import { SendGroupEmailDialog } from '@/components/clients/SendGroupEmailDialog';
+import { BulkCreateCasesDialog } from '@/components/cases/BulkCreateCasesDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
-import { Mail } from 'lucide-react';
+import { Mail, FolderPlus } from 'lucide-react';
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -25,6 +26,7 @@ export default function Clients() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [groupEmailOpen, setGroupEmailOpen] = useState(false);
   const [groupEmailInitialCategory, setGroupEmailInitialCategory] = useState<string | undefined>(undefined);
+  const [bulkCasesOpen, setBulkCasesOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -103,6 +105,10 @@ export default function Clients() {
           <Button onClick={() => setDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             לקוח חדש
+          </Button>
+          <Button variant="outline" onClick={() => setBulkCasesOpen(true)} className="gap-2">
+            <FolderPlus className="h-4 w-4" />
+            פתחי תיקים מרובים
           </Button>
           <Button variant="outline" onClick={() => { setGroupEmailInitialCategory(undefined); setGroupEmailOpen(true); }} className="gap-2">
             <Mail className="h-4 w-4" />
@@ -228,6 +234,7 @@ export default function Clients() {
         onSuccess={fetchClients} 
       />
       <SendGroupEmailDialog open={groupEmailOpen} onOpenChange={setGroupEmailOpen} initialCategoryId={groupEmailInitialCategory} />
+      <BulkCreateCasesDialog open={bulkCasesOpen} onOpenChange={setBulkCasesOpen} />
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
