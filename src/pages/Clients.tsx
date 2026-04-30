@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Client } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
