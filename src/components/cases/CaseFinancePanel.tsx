@@ -200,7 +200,15 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
     [charges, payments, timeEntries, hourlyRate],
   );
   const hours = summary.totalSeconds / 3600;
-  const timeCharged = hourlyRate && hourlyRate > 0 ? hours * hourlyRate : 0;
+  // Accurate per-row computation (uses each entry's override when set).
+  const timeCharged = useMemo(
+    () =>
+      timeEntries.reduce((sum, e) => {
+        const rate = effectiveHourlyRate(e, hourlyRate);
+        return sum + ((e.duration_seconds || 0) / 3600) * rate;
+      }, 0),
+    [timeEntries, hourlyRate],
+  );
   const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
 
   const handleAddCharge = async () => {
