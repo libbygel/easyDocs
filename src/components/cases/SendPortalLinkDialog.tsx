@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { Loader2, Mail, Copy, Check, ExternalLink } from 'lucide-react';
 
 interface SendPortalLinkDialogProps {
@@ -47,12 +48,7 @@ export function SendPortalLinkDialog({
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('profiles')
-      .select('name')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => setAdvisorName((data as any)?.name || ''));
+    fetchCurrentAdvisorProfile(user).then((profile) => setAdvisorName(profile.displayName || ''));
   }, [user]);
 
   const handleSendEmail = async () => {
@@ -88,7 +84,7 @@ export function SendPortalLinkDialog({
         caseTitle: caseTitle || '',
         portalLink,
         advisorEmail: user?.email || '',
-        advisorName,
+        advisorName: advisorName || user?.user_metadata?.name || user?.email?.split('@')[0] || '',
         emailType: effectiveEmailType,
       });
 
