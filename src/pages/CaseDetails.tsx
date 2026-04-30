@@ -255,6 +255,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       await logCaseActivity(id, 'אישור מסמך', `המסמך "${docName}" אושר`);
     }
     
+    await syncCaseStatus(id, documents.map(d => d.id === docId ? { ...d, review_status: 'תקין' as const } : d), caseData?.status);
     fetchData();
     toast({ title: 'המסמך אושר בהצלחה' });
   };
@@ -271,6 +272,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       await logCaseActivity(id, 'דחיית מסמך', `המסמך "${docName}" נדחה: ${note}`);
     }
     
+    await syncCaseStatus(id, documents.map(d => d.id === docId ? { ...d, review_status: 'לא תקין' as const } : d), caseData?.status);
     fetchData();
     setReviewDoc(null);
 
