@@ -55,6 +55,7 @@ export function AddUploadDocumentDialog({
   const [success, setSuccess] = useState(false);
   const [sendingLink, setSendingLink] = useState(false);
   const { user } = useAuth();
+  const advisorName = useAdvisorName();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
