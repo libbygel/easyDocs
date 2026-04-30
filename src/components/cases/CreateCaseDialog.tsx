@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, UserPlus } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { InlineCreateClientDialog } from './InlineCreateClientDialog';
+import { InlineCreateCaseTypeDialog } from './InlineCreateCaseTypeDialog';
 
 interface CreateCaseDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ export function CreateCaseDialog({ open, onOpenChange, onSuccess }: CreateCaseDi
   const [clients, setClients] = useState<Client[]>([]);
   const [caseTypes, setCaseTypes] = useState<CaseType[]>([]);
   const [showCreateClient, setShowCreateClient] = useState(false);
+  const [showCreateCaseType, setShowCreateCaseType] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -50,6 +52,12 @@ export function CreateCaseDialog({ open, onOpenChange, onSuccess }: CreateCaseDi
     await fetchData();
     setClientId(newClientId);
     setShowCreateClient(false);
+  };
+
+  const handleCaseTypeCreated = async (newTypeId: string) => {
+    await fetchData();
+    setCaseTypeId(newTypeId);
+    setShowCreateCaseType(false);
   };
 
   const fetchData = async () => {
@@ -217,7 +225,19 @@ export function CreateCaseDialog({ open, onOpenChange, onSuccess }: CreateCaseDi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="caseType">סוג תיק (תבנית)</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="caseType">סוג תיק (תבנית)</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto py-1 px-2 text-xs gap-1"
+                onClick={() => setShowCreateCaseType(true)}
+              >
+                <Plus className="h-3 w-3" />
+                תבנית חדשה
+              </Button>
+            </div>
             <Select value={caseTypeId} onValueChange={setCaseTypeId} required>
               <SelectTrigger>
                 <SelectValue placeholder="בחר סוג תיק" />
@@ -263,6 +283,12 @@ export function CreateCaseDialog({ open, onOpenChange, onSuccess }: CreateCaseDi
           open={showCreateClient}
           onOpenChange={setShowCreateClient}
           onClientCreated={handleClientCreated}
+        />
+
+        <InlineCreateCaseTypeDialog
+          open={showCreateCaseType}
+          onOpenChange={setShowCreateCaseType}
+          onCreated={handleCaseTypeCreated}
         />
       </DialogContent>
     </Dialog>

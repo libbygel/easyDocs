@@ -5,7 +5,6 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -234,41 +233,53 @@ export function DraggableDocumentRow({
       </TableCell>
       <TableCell>
         {doc.review_status === 'הועלה' || doc.review_status === 'נחתם' ? (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={false}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onApprove(doc.id, doc.doc_name);
-                } else {
-                  onReject(doc);
-                }
-              }}
-              className="data-[state=checked]:bg-success"
-            />
-            <span className="text-sm text-muted-foreground">סמן כתקין</span>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1 border-success text-success hover:bg-success hover:text-success-foreground"
+              onClick={() => onApprove(doc.id, doc.doc_name)}
+            >
+              <Check className="h-3.5 w-3.5" />
+              תקין
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              onClick={() => onReject(doc)}
+            >
+              <X className="h-3.5 w-3.5" />
+              לא תקין
+            </Button>
           </div>
         ) : doc.review_status === 'תקין' ? (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={true}
-              onCheckedChange={() => onReject(doc)}
-              className="data-[state=checked]:bg-success"
-            />
-            <span className="text-sm text-success">תקין</span>
+          <div className="flex items-center gap-1">
+            <span className="status-badge status-success"><Check className="h-3.5 w-3.5" />תקין</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1 text-xs text-destructive hover:bg-destructive/10"
+              onClick={() => onReject(doc)}
+              title="שנה ללא תקין"
+            >
+              <X className="h-3 w-3" />
+              שנה
+            </Button>
           </div>
         ) : doc.review_status === 'לא תקין' ? (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={false}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onApprove(doc.id, doc.doc_name);
-                }
-              }}
-              className="data-[state=unchecked]:bg-destructive"
-            />
-            <span className="text-sm text-destructive">לא תקין</span>
+          <div className="flex items-center gap-1">
+            <span className="status-badge status-error"><X className="h-3.5 w-3.5" />לא תקין</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1 text-xs text-success hover:bg-success/10"
+              onClick={() => onApprove(doc.id, doc.doc_name)}
+              title="סמן כתקין"
+            >
+              <Check className="h-3 w-3" />
+              אשר
+            </Button>
           </div>
         ) : (
           <span className="text-muted-foreground text-sm">ממתין להעלאה</span>

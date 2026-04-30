@@ -171,7 +171,11 @@ export default function Clients() {
                   </TableHeader>
                   <TableBody>
                     {sortedData.map((client) => (
-                      <TableRow key={client.id}>
+                      <TableRow
+                        key={client.id}
+                        className="cursor-pointer hover:bg-accent/50"
+                        onClick={() => handleEditClick(client)}
+                      >
                         <TableCell className="font-medium">{client.full_name}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
@@ -186,7 +190,7 @@ export default function Clients() {
                           )}
                         </TableCell>
                         <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>
                               <Edit2 className="h-4 w-4" />
