@@ -481,6 +481,9 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
                       </Select>
                     </div>
                     <div className="font-semibold tabular-nums shrink-0">{formatCurrency(p.amount)}</div>
+                    <Button variant="ghost" size="sm" onClick={() => openEditPayment(p)} title="ערוך תשלום">
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDeletePayment(p.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
