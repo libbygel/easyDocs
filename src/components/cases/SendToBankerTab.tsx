@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,9 +51,7 @@ export function SendToBankerTab({ caseId, caseTitle, documents, advisorName }: S
     supabase.from('email_logs').select('to_email, sent_at, body_preview').eq('case_id', caseId).eq('email_type', 'הודעה על העלאה' as const)
       .then(({ data }) => { if (data) setPreviousSends(data); });
 
-    // Load effective sender name: custom sender name first, otherwise advisor profile name
-    supabase.from('profiles').select('sender_display_name, name').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data) setSenderDisplayName((data as any).sender_display_name || (data as any).name || ''); });
+    fetchCurrentAdvisorProfile(user).then((profile) => setSenderDisplayName(profile.displayName || ''));
   }, [user, caseId]);
 
   // All docs that have files (uploaded/signed/approved)
