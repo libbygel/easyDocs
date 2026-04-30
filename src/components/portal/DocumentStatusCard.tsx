@@ -21,6 +21,7 @@ interface DocumentStatusCardProps {
   deleting: string | null;
   onUpload: (file: File) => void;
   onDelete: (uploadId: string, fileUrl: string) => void;
+  readOnly?: boolean;
 }
 
 const statusConfig = {
@@ -61,11 +62,12 @@ export function DocumentStatusCard({
   deleting,
   onUpload,
   onDelete,
+  readOnly = false,
 }: DocumentStatusCardProps) {
   const status = statusConfig[reviewStatus as keyof typeof statusConfig] || statusConfig['חסר'];
   const Icon = status.icon;
   const isUploaded = uploadedFiles.length > 0;
-  const canUpload = reviewStatus !== 'תקין';
+  const canUpload = !readOnly && reviewStatus !== 'תקין';
 
   return (
     <Card className={`shadow-sm transition-colors border ${status.className}`}>
@@ -114,7 +116,7 @@ export function DocumentStatusCard({
               <div key={file.id} className="flex items-center gap-2 p-2 bg-background rounded group">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm flex-1 truncate">{file.fileName}</span>
-                {canUpload && (
+                {canUpload && !readOnly && (
                   <Button
                     variant="ghost"
                     size="sm"

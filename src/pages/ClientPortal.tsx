@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchAdvisorProfileByUserId } from '@/lib/advisorProfile';
@@ -21,6 +21,8 @@ interface DocUploads {
 
 export default function ClientPortal() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const readOnly = searchParams.get('view') === '1';
   const [caseData, setCaseData] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -576,22 +578,23 @@ export default function ClientPortal() {
             {documents
               .filter(doc => doc.isSignatureDoc)
               .map((doc) => (
-                <SignatureDocumentCard
-                  key={doc.id}
-                  docId={doc.id}
-                  docName={doc.doc_name}
-                  required={doc.required}
-                  reviewStatus={doc.review_status}
-                  advisorNote={doc.advisor_note}
-                  declarationStatement={doc.declaration_statement}
-                  fileUrl={doc.advisorUpload?.file_url}
-                  fileName={doc.advisorUpload?.file_name}
-                  caseId={caseData.id}
-                  clientName={caseData.clients?.full_name || ''}
-                  clientIdNumber={caseData.clients?.id_number || ''}
-                  clientSignedUrl={doc.clientUpload?.file_url}
-                  onSignComplete={fetchData}
-                />
+                <div key={doc.id} className={readOnly ? 'pointer-events-none opacity-90' : ''}>
+                  <SignatureDocumentCard
+                    docId={doc.id}
+                    docName={doc.doc_name}
+                    required={doc.required}
+                    reviewStatus={doc.review_status}
+                    advisorNote={doc.advisor_note}
+                    declarationStatement={doc.declaration_statement}
+                    fileUrl={doc.advisorUpload?.file_url}
+                    fileName={doc.advisorUpload?.file_name}
+                    caseId={caseData.id}
+                    clientName={caseData.clients?.full_name || ''}
+                    clientIdNumber={caseData.clients?.id_number || ''}
+                    clientSignedUrl={doc.clientUpload?.file_url}
+                    onSignComplete={fetchData}
+                  />
+                </div>
               ))}
           </div>
         )}
@@ -619,6 +622,7 @@ export default function ClientPortal() {
                     deleting={deleting}
                     onUpload={(file) => handleUpload(doc.id, doc.doc_name, file)}
                     onDelete={(uploadId, fileUrl) => handleDeleteFile(uploadId, doc.id, fileUrl)}
+                    readOnly={readOnly}
                   />
                 );
               })}
@@ -626,6 +630,7 @@ export default function ClientPortal() {
         )}
 
         {/* Send Button */}
+        {!readOnly && (
         <Card className="shadow-sm sticky bottom-4">
           <CardContent className="pt-4 pb-4">
             <Button 
@@ -653,6 +658,15 @@ export default function ClientPortal() {
             )}
           </CardContent>
         </Card>
+        )}
+
+        {readOnly && (
+          <Card className="shadow-sm sticky bottom-4 border-info/40 bg-info/5">
+            <CardContent className="pt-4 pb-4 text-center text-sm text-info font-medium">
+              👁️ מצב צפייה בלבד — לא ניתן לבצע שינויים בתיק זה
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Confirmation Dialog */}
