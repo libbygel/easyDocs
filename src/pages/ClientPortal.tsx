@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchAdvisorProfileByUserId } from '@/lib/advisorProfile';
@@ -21,6 +21,8 @@ interface DocUploads {
 
 export default function ClientPortal() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const readOnly = searchParams.get('view') === '1';
   const [caseData, setCaseData] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
