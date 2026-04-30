@@ -263,6 +263,16 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
     });
   };
 
+  const copyMasterPortalLink = () => {
+    if (!caseData?.client_id) return;
+    const link = `${window.location.origin}/client-portal/${caseData.client_id}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: 'קישור פורטל הלקוח הועתק',
+      description: 'קישור צפייה בלבד לכל התיקים של הלקוח',
+    });
+  };
+
   const handleApprove = async (docId: string, docName: string) => {
     await supabase
       .from('case_documents')
@@ -618,6 +628,22 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   >
                     <ExternalLink className="h-4 w-4" />
                     צפה בטופס הלקוח
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={copyMasterPortalLink}
+                  >
+                    <Copy className="h-4 w-4" />
+                    העתק קישור פורטל לקוח (צפייה)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => caseData.client_id && window.open(`/client-portal/${caseData.client_id}`, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    פתח פורטל לקוח (צפייה)
                   </Button>
                   <Button
                     variant="outline"
