@@ -737,7 +737,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                 </TabsTrigger>
                 <TabsTrigger value="banker" className="gap-2">
                   <Landmark className="h-4 w-4" />
-                  שליחה לבנקאי
+                  שליחה לאיש קשר
                 </TabsTrigger>
                 <TabsTrigger value="finance" className="gap-2">
                   💰 חיובים וזמן

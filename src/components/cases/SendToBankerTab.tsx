@@ -143,7 +143,7 @@ export function SendToBankerTab({ caseId, caseTitle, documents, advisorName }: S
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
           <div className="flex items-center gap-2 text-sm font-medium text-primary">
             <Check className="h-4 w-4" />
-            נשלח לבנקאי בעבר ({previousSends.length} פעמים)
+            נשלח לאיש קשר בעבר ({previousSends.length} פעמים)
           </div>
           {previousSends.slice(0, 3).map((s, i) => (
             <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground mr-6">
@@ -211,7 +211,7 @@ export function SendToBankerTab({ caseId, caseTitle, documents, advisorName }: S
                    <TableHead>שם מסמך</TableHead>
                    <TableHead>סוג</TableHead>
                    <TableHead>סטטוס</TableHead>
-                   <TableHead>נשלח לבנקאי</TableHead>
+                   <TableHead>נשלח לאיש קשר</TableHead>
                    <TableHead>קבצים</TableHead>
                 </TableRow>
               </TableHeader>
