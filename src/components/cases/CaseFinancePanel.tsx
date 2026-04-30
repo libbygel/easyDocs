@@ -80,11 +80,13 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId, refreshKey]);
 
-  const summary = useMemo(() => summarizeCase(charges, payments, timeEntries), [charges, payments, timeEntries]);
+  const summary = useMemo(
+    () => summarizeCase(charges, payments, timeEntries, hourlyRate),
+    [charges, payments, timeEntries, hourlyRate],
+  );
   const hours = summary.totalSeconds / 3600;
-  const profitability = hourlyRate != null
-    ? summary.totalCharged - hours * hourlyRate
-    : null;
+  const timeCharged = hourlyRate && hourlyRate > 0 ? hours * hourlyRate : 0;
+  const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
 
   const handleAddCharge = async () => {
     if (!user) return;
