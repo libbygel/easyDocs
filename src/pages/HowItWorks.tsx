@@ -12,6 +12,9 @@ import {
   Sparkles,
   Shield,
   PenTool,
+  Wallet,
+  Clock,
+  LayoutDashboard,
 } from 'lucide-react';
 
 const steps = [
@@ -97,6 +100,21 @@ const features = [
     title: 'תזכורות אוטומטיות',
     desc: 'המערכת שולחת תזכורות ללקוחות שלא השלימו את העלאת המסמכים — בלי שתצטרכו לעקוב.',
   },
+  {
+    icon: Wallet,
+    title: 'ניהול חיובים ותשלומים',
+    desc: 'רשמו חיוב לכל תיק, עקבו אחרי תשלומים שהתקבלו וצפו ביתרה לתשלום — לכל לקוח ולכל תיק בנפרד.',
+  },
+  {
+    icon: Clock,
+    title: 'מעקב זמן עבודה',
+    desc: 'הפעילו טיימר ידני או אוטומטי לכל תיק. ראו כמה זמן הושקע בכל תיק וחשבו כדאיות לפי תעריף שעתי.',
+  },
+  {
+    icon: LayoutDashboard,
+    title: 'פורטל לקוח לצפייה בלבד',
+    desc: 'שלחו ללקוח קישור אישי שבו הוא רואה את כל התיקים שלו, סיכום פיננסי, זמן עבודה והיסטוריית פעילות — ללא יכולת לערוך.',
+  },
 ];
 
 export default function HowItWorks() {
@@ -158,7 +176,7 @@ export default function HowItWorks() {
           <h2 className="text-xl font-bold text-foreground text-center">
             ועוד יתרונות שכדאי להכיר
           </h2>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f) => {
               const Icon = f.icon;
               return (
@@ -175,6 +193,35 @@ export default function HowItWorks() {
             })}
           </div>
         </div>
+
+        {/* Two link types explainer */}
+        <Card className="border-primary/20 border-2 bg-primary/5">
+          <CardContent className="p-6 space-y-4">
+            <h2 className="text-xl font-bold text-foreground text-center">
+              שני סוגי קישורים ללקוח
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-card rounded-lg p-4 border border-border space-y-2">
+                <div className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  <h3 className="font-bold">קישור להעלאת מסמכים</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  קישור ספציפי לתיק אחד — הלקוח מעלה מסמכים, חותם דיגיטלית ושולח אליכם.
+                </p>
+              </div>
+              <div className="bg-card rounded-lg p-4 border border-border space-y-2">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-primary" />
+                  <h3 className="font-bold">קישור לפורטל לקוח (צפייה בלבד)</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  קישור מרכזי לכל התיקים של הלקוח — סטטוס, סיכום פיננסי, זמן עבודה והיסטוריית פעילות, ללא אפשרות עריכה.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
