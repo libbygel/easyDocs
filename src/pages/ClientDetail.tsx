@@ -6,7 +6,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload } from 'lucide-react';
+import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
@@ -36,6 +37,7 @@ interface CaseRow {
   title: string;
   status: string;
   created_at: string;
+  portal_token?: string;
 }
 
 interface ActivityRow {
@@ -51,6 +53,10 @@ export default function ClientDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [advisorName, setAdvisorName] = useState('');
+  const [sendingViewLink, setSendingViewLink] = useState(false);
+  const [sendingUploadLink, setSendingUploadLink] = useState(false);
+  const [uploadCasePickerOpen, setUploadCasePickerOpen] = useState(false);
 
   const [client, setClient] = useState<ClientRow | null>(null);
   const [cases, setCases] = useState<CaseRow[]>([]);
@@ -67,7 +73,7 @@ export default function ClientDetail() {
       try {
         const [clientRes, casesRes, ch, pa, te, profile] = await Promise.all([
           supabase.from('clients').select('*').eq('id', id).eq('advisor_id', user.id).maybeSingle(),
-          supabase.from('cases').select('id,title,status,created_at').eq('client_id', id).eq('advisor_id', user.id).order('created_at', { ascending: false }),
+          supabase.from('cases').select('id,title,status,created_at,portal_token').eq('client_id', id).eq('advisor_id', user.id).order('created_at', { ascending: false }),
           listClientCharges(id),
           listClientPayments(id),
           listClientTimeEntries(id),
@@ -81,6 +87,7 @@ export default function ClientDetail() {
         setPayments(pa);
         setTimeEntries(te);
         setHourlyRate(profile.hourlyRate);
+        setAdvisorName(profile.displayName || '');
 
         if (caseList.length > 0) {
           const ids = caseList.map((c) => c.id);
@@ -120,6 +127,67 @@ export default function ClientDetail() {
   const profitability = hourlyRate != null
     ? totals.totalCharged - (totals.totalSeconds / 3600) * hourlyRate
     : null;
+
+  const masterPortalLink = client ? `${window.location.origin}/client-portal/${client.id}` : '';
+
+  const sendViewOnlyPortalLink = async () => {
+    if (!client) return;
+    if (!client.email) {
+      toast({ title: 'אין כתובת מייל ללקוח', variant: 'destructive' });
+      return;
+    }
+    setSendingViewLink(true);
+    try {
+      const response = await invokeEdgeFunction('send-portal-link', {
+        clientName: client.full_name,
+        clientEmail: client.email,
+        caseTitle: 'אזור אישי - צפייה בכל התיקים',
+        portalLink: masterPortalLink,
+        advisorEmail: user?.email || '',
+        advisorName: advisorName || user?.email?.split('@')[0] || '',
+        emailType: 'reminder',
+      });
+      if ((response as any)?.error) throw new Error((response as any).error);
+      toast({ title: 'הקישור נשלח', description: `קישור צפייה נשלח ל-${client.email}` });
+    } catch (err: any) {
+      toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSendingViewLink(false);
+    }
+  };
+
+  const sendUploadPortalLink = async (caseRow: CaseRow) => {
+    if (!client?.email) {
+      toast({ title: 'אין כתובת מייל ללקוח', variant: 'destructive' });
+      return;
+    }
+    if (!caseRow.portal_token) {
+      toast({ title: 'לתיק זה אין קישור פורטל', variant: 'destructive' });
+      return;
+    }
+    setSendingUploadLink(true);
+    try {
+      const portalLink = `${window.location.origin}/portal/${caseRow.portal_token}`;
+      const response = await invokeEdgeFunction('send-portal-link', {
+        clientName: client.full_name,
+        clientEmail: client.email,
+        caseTitle: caseRow.title,
+        portalLink,
+        advisorEmail: user?.email || '',
+        advisorName: advisorName || user?.email?.split('@')[0] || '',
+        emailType: 'reminder',
+      });
+      if ((response as any)?.error) throw new Error((response as any).error);
+      const now = new Date().toISOString();
+      await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', caseRow.id);
+      toast({ title: 'הקישור נשלח', description: `קישור להעלאת מסמכים נשלח ל-${client.email}` });
+      setUploadCasePickerOpen(false);
+    } catch (err: any) {
+      toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSendingUploadLink(false);
+    }
+  };
 
   if (loading) {
     return (
