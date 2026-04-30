@@ -55,7 +55,7 @@ serve(async (req: Request): Promise<Response> => {
         templateData: {
           clientName,
           caseTitle,
-          portalLink,
+          portalUrl: portalLink,
           missingDocs,
           rejectedDocs,
           advisorName,
