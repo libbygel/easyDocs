@@ -896,7 +896,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   <CaseFinancePanel
                     caseId={id!}
                     clientId={caseData.client_id}
-                    hourlyRate={hourlyRate}
+                    hourlyRate={(caseData as any).clients?.hourly_rate ?? hourlyRate}
                     refreshKey={financeRefresh}
                   />
                 </div>
