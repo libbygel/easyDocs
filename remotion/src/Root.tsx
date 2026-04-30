@@ -1,12 +1,12 @@
 import { Composition } from "remotion";
 import { MainVideo } from "./MainVideo";
 
-// 10 scenes, ~75 seconds total (slower pacing for clarity)
+// 13 scenes, ~97 seconds total (added: billing, timer, client area)
 export const RemotionRoot = () => (
   <Composition
     id="main"
     component={MainVideo}
-    durationInFrames={2300}
+    durationInFrames={2940}
     fps={30}
     width={1920}
     height={1080}

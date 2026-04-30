@@ -279,7 +279,7 @@ export default function LandingPage() {
           ) : (
             <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
               <video
-                src="/easydocs-guide-v2.mp4"
+                src="/easydocs-guide-v3.mp4"
                 controls
                 autoPlay
                 className="w-full h-full object-cover"
