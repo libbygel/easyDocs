@@ -63,3 +63,29 @@ export function fetchCurrentAdvisorProfile(user: User | null | undefined) {
   if (!user) return Promise.resolve({ email: '', name: '', senderDisplayName: '', displayName: '' });
   return fetchAdvisorProfileByUserId(user.id, user.email || '', getUserFallbackName(user));
 }
+
+async function updateProfileBy(column: 'user_id' | 'id', userId: string, values: Record<string, any>) {
+  const result = await supabase.from('profiles').update(values as any).eq(column, userId);
+  if (result.error && isMissingColumnError(result.error, 'sender_display_name')) {
+    const { sender_display_name: _ignored, ...safeValues } = values;
+    return supabase.from('profiles').update(safeValues as any).eq(column, userId);
+  }
+  return result;
+}
+
+export async function updateCurrentAdvisorProfile(
+  user: User,
+  values: { name: string; email: string; senderDisplayName: string },
+) {
+  const payload = {
+    name: values.name,
+    email: values.email,
+    sender_display_name: values.senderDisplayName,
+  };
+
+  let result = await updateProfileBy('user_id', user.id, payload);
+  if (result.error && isMissingColumnError(result.error, 'user_id')) {
+    result = await updateProfileBy('id', user.id, payload);
+  }
+  if (result.error) throw result.error;
+}
