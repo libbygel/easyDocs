@@ -19,6 +19,7 @@ import { Plus, Search, FolderOpen, Eye, Trash2, Send } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { CreateCaseDialog } from '@/components/cases/CreateCaseDialog';
+import { BulkCreateCasesDialog } from '@/components/cases/BulkCreateCasesDialog';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
@@ -45,6 +46,7 @@ export default function Cases() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
@@ -163,10 +165,16 @@ export default function Cases() {
               ניהול כל התיקים שלך במקום אחד
             </p>
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            תיק חדש
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setBulkDialogOpen(true)} className="gap-2">
+              <FolderOpen className="h-4 w-4" />
+              פתיחה מרובה
+            </Button>
+            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              תיק חדש
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
@@ -350,6 +358,11 @@ export default function Cases() {
       <CreateCaseDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onSuccess={fetchCases}
+      />
+      <BulkCreateCasesDialog
+        open={bulkDialogOpen}
+        onOpenChange={setBulkDialogOpen}
         onSuccess={fetchCases}
       />
       <DeleteConfirmationDialog

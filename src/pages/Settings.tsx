@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Settings as SettingsIcon, Bell, Clock, Mail, Save, Loader2, Eye } from 'lucide-react';
+import { CategoriesManager } from '@/components/settings/CategoriesManager';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -126,6 +127,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Client Categories */}
+        <CategoriesManager />
 
         {/* Document Preview */}
         <Card>

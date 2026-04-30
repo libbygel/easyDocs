@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Save } from 'lucide-react';
 
@@ -22,7 +25,14 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
   const [email, setEmail] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [spouseFullName, setSpouseFullName] = useState('');
+  const [spouseIdNumber, setSpouseIdNumber] = useState('');
+  const [spousePhone, setSpousePhone] = useState('');
+  const [spouseEmail, setSpouseEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,40 +42,53 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       setEmail(client.email || '');
       setIdNumber(client.id_number || '');
       setNotes(client.notes || '');
+      setCategoryId((client as any).category_id || '');
+      setSpouseFullName((client as any).spouse_full_name || '');
+      setSpouseIdNumber((client as any).spouse_id_number || '');
+      setSpousePhone((client as any).spouse_phone || '');
+      setSpouseEmail((client as any).spouse_email || '');
     }
   }, [client]);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    supabase
+      .from('client_categories' as any)
+      .select('id, name')
+      .eq('advisor_id', user.id)
+      .order('name')
+      .then(({ data }) => setCategories((data as any) || []));
+  }, [open, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client) return;
     setLoading(true);
 
-    // Try with notes first, fallback without if column doesn't exist
-    let error: any = null;
-    const { error: err1 } = await supabase
-      .from('clients')
-      .update({
+    const fullPayload: any = {
+      full_name: fullName,
+      phone: phone || null,
+      email: email || null,
+      id_number: idNumber || null,
+      notes: notes || null,
+      category_id: categoryId || null,
+      spouse_full_name: spouseFullName || null,
+      spouse_id_number: spouseIdNumber || null,
+      spouse_phone: spousePhone || null,
+      spouse_email: spouseEmail || null,
+    };
+
+    let { error } = await supabase.from('clients').update(fullPayload).eq('id', client.id);
+    // Fallback: drop unknown columns and retry
+    if (error && /column .* does not exist/i.test(error.message)) {
+      const minimal: any = {
         full_name: fullName,
         phone: phone || null,
         email: email || null,
         id_number: idNumber || null,
-        notes: notes || null,
-      })
-      .eq('id', client.id);
-    
-    if (err1?.message?.includes('notes')) {
-      const { error: err2 } = await supabase
-        .from('clients')
-        .update({
-          full_name: fullName,
-          phone: phone || null,
-          email: email || null,
-          id_number: idNumber || null,
-        })
-        .eq('id', client.id);
-      error = err2;
-    } else {
-      error = err1;
+      };
+      const retry = await supabase.from('clients').update(minimal).eq('id', client.id);
+      error = retry.error;
     }
 
     if (error) {
@@ -80,11 +103,11 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>עריכת לקוח</DialogTitle>
+          <DialogTitle className="text-right">עריכת לקוח</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto pr-1">
           <div className="space-y-2">
             <Label htmlFor="fullName">שם מלא</Label>
             <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
@@ -100,13 +123,27 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
               maxLength={9}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">טלפון</Label>
-            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="phone">טלפון</Label>
+              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">אימייל</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" />
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">אימייל</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" />
+            <Label>סיווג לקוח</Label>
+            <Select value={categoryId || 'none'} onValueChange={(v) => setCategoryId(v === 'none' ? '' : v)}>
+              <SelectTrigger><SelectValue placeholder="ללא סיווג" /></SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="none">ללא סיווג</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">הערות</Label>
@@ -117,6 +154,28 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
               placeholder="הערות על הלקוח..."
               rows={3}
             />
+          </div>
+          <Separator />
+          <div className="space-y-3">
+            <Label className="text-base">פרטי בן/בת זוג (אופציונלי)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="spouseFullName" className="text-sm">שם מלא</Label>
+              <Input id="spouseFullName" value={spouseFullName} onChange={(e) => setSpouseFullName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="spouseId" className="text-sm">תעודת זהות</Label>
+              <Input id="spouseId" value={spouseIdNumber} onChange={(e) => setSpouseIdNumber(e.target.value)} dir="ltr" maxLength={9} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="spousePhone" className="text-sm">טלפון</Label>
+                <Input id="spousePhone" type="tel" value={spousePhone} onChange={(e) => setSpousePhone(e.target.value)} dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="spouseEmail" className="text-sm">אימייל</Label>
+                <Input id="spouseEmail" type="email" value={spouseEmail} onChange={(e) => setSpouseEmail(e.target.value)} dir="ltr" />
+              </div>
+            </div>
           </div>
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={loading} className="flex-1">
