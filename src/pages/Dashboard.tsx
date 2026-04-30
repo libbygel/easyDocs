@@ -51,6 +51,7 @@ export default function Dashboard() {
             .from('cases')
             .select(`
               id, title, status, created_at,
+              clients!cases_client_id_fkey ( full_name ),
               case_documents (id, doc_name, due_date, review_status)
             `)
             .eq('advisor_id', user.id),
@@ -75,7 +76,8 @@ export default function Dashboard() {
           (c.case_documents || []).map((d: any) => ({
             ...d,
             case_id: c.id,
-            case_title: c.title
+            case_title: c.title,
+            client_name: (c as any).clients?.full_name || 'לקוח'
           }))
         );
 
@@ -155,8 +157,8 @@ export default function Dashboard() {
               advisor_id: user.id,
               case_id: d.case_id,
               type: 'מסמך_דחוף',
-              title: `מסמך דחוף: ${d.doc_name}`,
-              message: `לתיק: ${d.case_title}\nתאריך יעד: ${format(new Date(d.due_date), 'dd/MM/yyyy')}`,
+              title: `מסמך דחוף: ${d.doc_name} - ${d.client_name}`,
+              message: `לקוח: ${d.client_name}\nתיק: ${d.case_title}\nתאריך יעד: ${format(new Date(d.due_date), 'dd/MM/yyyy')}`,
               is_read: false,
             }));
 

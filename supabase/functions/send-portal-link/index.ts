@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
@@ -18,7 +19,16 @@ interface SendPortalLinkRequest {
   emailType?: "new_case" | "reminder" | "new_document";
 }
 
-function getEmailContent(emailType: string, clientName: string, caseTitle: string, portalLink: string): { subject: string; body: string } {
+function getEmailContent(
+  emailType: string,
+  clientName: string,
+  caseTitle: string,
+  portalLink: string,
+  advisorName?: string,
+): { subject: string; body: string } {
+  const fromLine = advisorName
+    ? `<p style="font-size: 15px; color: #555; margin: 4px 0 16px;">מאת: <strong>${advisorName}</strong></p>`
+    : '';
   const buttonHtml = `
     <div style="text-align: center; margin: 30px 0;">
       <a href="${portalLink}" style="background-color: #4361ee; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold;">
@@ -41,15 +51,18 @@ function getEmailContent(emailType: string, clientName: string, caseTitle: strin
   switch (emailType) {
     case "new_case":
       return {
-        subject: `נפתח תיק חדש - ${caseTitle}`,
+        subject: advisorName
+          ? `${advisorName} פתח/ה עבורך תיק חדש - ${caseTitle}`
+          : `נפתח תיק חדש - ${caseTitle}`,
         body: `
           <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #1a1a2e;">שלום ${clientName},</h1>
+            ${fromLine}
             <p style="font-size: 16px; line-height: 1.6;">
-              נפתח עבורך תיק חדש: <strong>${caseTitle}</strong>
+              נפתח עבורך תיק חדש${advisorName ? ` על ידי <strong>${advisorName}</strong>` : ''}: <strong>${caseTitle}</strong>
             </p>
             <p style="font-size: 16px; line-height: 1.6;">
-              לחץ/י על הכפתור למטה כדי להעלות את המסמכים הנדרשים:
+              להלן רשימת המסמכים הנדרשים. אנא לחץ/י על הכפתור למטה כדי להתחיל בהעלאה:
             </p>
             ${buttonHtml}
             ${footer}
@@ -59,12 +72,15 @@ function getEmailContent(emailType: string, clientName: string, caseTitle: strin
 
     case "new_document":
       return {
-        subject: `נוסף מסמך חדש לתיק - ${caseTitle}`,
+        subject: advisorName
+          ? `${advisorName} הוסיף/ה מסמך חדש לתיק ${caseTitle}`
+          : `נוסף מסמך חדש לתיק - ${caseTitle}`,
         body: `
           <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #1a1a2e;">שלום ${clientName},</h1>
+            ${fromLine}
             <p style="font-size: 16px; line-height: 1.6;">
-              נוסף מסמך חדש לתיק <strong>${caseTitle}</strong> שדורש את טיפולך.
+              ${advisorName ? `<strong>${advisorName}</strong> הוסיף/ה` : 'נוסף'} מסמך חדש לתיק <strong>${caseTitle}</strong> שדורש את טיפולך.
             </p>
             <p style="font-size: 16px; line-height: 1.6;">
               לחץ/י על הכפתור למטה כדי לצפות ולהעלות את המסמכים:
@@ -82,8 +98,9 @@ function getEmailContent(emailType: string, clientName: string, caseTitle: strin
         body: `
           <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #1a1a2e;">שלום ${clientName},</h1>
+            ${fromLine}
             <p style="font-size: 16px; line-height: 1.6;">
-              זוהי תזכורת בנוגע לתיק <strong>${caseTitle}</strong> — ישנם מסמכים שעדיין ממתינים להעלאה.
+              זוהי תזכורת${advisorName ? ` מ<strong>${advisorName}</strong>` : ''} בנוגע לתיק <strong>${caseTitle}</strong> — ישנם מסמכים שעדיין ממתינים להעלאה.
             </p>
             <p style="font-size: 16px; line-height: 1.6;">
               לחץ/י על הכפתור למטה כדי להעלות את המסמכים:
@@ -102,7 +119,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { clientName, clientEmail, caseTitle, portalLink, advisorEmail, advisorName, emailType }: SendPortalLinkRequest = await req.json();
+    const { clientName, clientEmail, caseTitle, portalLink, advisorEmail, advisorName: advisorNameRaw, emailType }: SendPortalLinkRequest = await req.json();
+    let advisorName = advisorNameRaw;
+
+    // If we don't have a name but do have an email, try to look it up
+    if (!advisorName && advisorEmail) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseUrl && supabaseServiceKey) {
+          const supa = createClient(supabaseUrl, supabaseServiceKey);
+          const { data } = await supa
+            .from("profiles")
+            .select("name, sender_display_name")
+            .eq("email", advisorEmail)
+            .maybeSingle();
+          advisorName = (data as any)?.sender_display_name || (data as any)?.name || "";
+        }
+      } catch (lookupErr) {
+        console.warn("Failed to lookup advisor name:", lookupErr);
+      }
+    }
 
     if (!clientEmail || !portalLink) {
       return new Response(
@@ -111,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { subject, body } = getEmailContent(emailType || "reminder", clientName, caseTitle, portalLink);
+    const { subject, body } = getEmailContent(emailType || "reminder", clientName, caseTitle, portalLink, advisorName);
 
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -120,7 +157,7 @@ const handler = async (req: Request): Promise<Response> => {
         "api-key": BREVO_API_KEY!,
       },
       body: JSON.stringify({
-        sender: { name: "EasyDocs", email: "dg.smarter1@gmail.com" },
+        sender: { name: advisorName ? `${advisorName} | EasyDocs` : "EasyDocs", email: "dg.smarter1@gmail.com" },
         ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
         to: [{ email: clientEmail, name: clientName }],
         subject,

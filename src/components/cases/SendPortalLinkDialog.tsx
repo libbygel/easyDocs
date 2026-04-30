@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Dialog,
@@ -42,6 +43,17 @@ export function SendPortalLinkDialog({
   const { user } = useAuth();
 
   const portalLink = `${window.location.origin}/portal/${portalToken}`;
+  const [advisorName, setAdvisorName] = useState<string>('');
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => setAdvisorName((data as any)?.name || ''));
+  }, [user]);
 
   const handleSendEmail = async () => {
     if (!clientEmail) {
@@ -61,6 +73,7 @@ export function SendPortalLinkDialog({
         caseTitle: caseTitle || '',
         portalLink,
         advisorEmail: user?.email || '',
+        advisorName,
         emailType,
       });
 

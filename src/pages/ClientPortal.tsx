@@ -242,6 +242,38 @@ export default function ClientPortal() {
       description: `הלקוח העלה את המסמך "${docName}"`,
     });
 
+    // Notify advisor in real-time about the upload (notification + email)
+    try {
+      const clientName = caseData?.clients?.full_name || 'לקוח';
+      const caseTitle = caseData?.title || '';
+      await supabase.from('notifications').insert({
+        advisor_id: caseData.advisor_id,
+        case_id: caseData.id,
+        client_id: caseData.client_id,
+        type: 'מסמך_התקבל',
+        title: `${clientName} העלה מסמך - ${caseTitle}`,
+        message: `הלקוח ${clientName} העלה את המסמך "${docName}" לתיק "${caseTitle}"`,
+      });
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('email, name')
+        .eq('user_id', caseData.advisor_id)
+        .maybeSingle();
+
+      if (profileData?.email) {
+        invokeEdgeFunction('send-documents-to-advisor', {
+          clientName,
+          caseTitle,
+          documentNames: [docName],
+          advisorEmail: profileData.email,
+          advisorName: profileData.name || '',
+        }).catch((e) => console.warn('[ClientPortal] upload notify email failed:', e));
+      }
+    } catch (notifyErr) {
+      console.warn('[ClientPortal] upload notify failed:', notifyErr);
+    }
+
     // Update local state immediately (don't wait for realtime)
     setUploadedFiles(prev => {
       const newMap = new Map(prev);
