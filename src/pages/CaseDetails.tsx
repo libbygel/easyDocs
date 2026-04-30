@@ -197,6 +197,16 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       }));
 
       setDocuments(mergedDocs as DocumentWithUpload[]);
+
+      // Reconcile case status with current document state (idempotent — only
+      // updates the DB if the derived status differs from the stored one).
+      if (caseResult.data) {
+        await syncCaseStatus(
+          id,
+          mergedDocs as Pick<CaseDocument, 'required' | 'review_status'>[],
+          (caseResult.data as any).status,
+        );
+      }
     } catch (err) {
       console.error('Error fetching case data:', err);
     } finally {
