@@ -469,6 +469,41 @@ export default function ClientDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Upload-link case picker dialog */}
+      <Dialog open={uploadCasePickerOpen} onOpenChange={setUploadCasePickerOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">בחר תיק לשליחת קישור העלאה</DialogTitle>
+            <DialogDescription className="text-right">
+              הקישור יישלח ל-{client.email || 'הלקוח'} ויאפשר לו להעלות מסמכים לתיק שתבחר
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            {cases.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">אין תיקים</p>
+            ) : (
+              cases.map((c) => (
+                <Button
+                  key={c.id}
+                  variant="outline"
+                  className="w-full justify-between gap-2 h-auto py-3"
+                  disabled={sendingUploadLink}
+                  onClick={() => sendUploadPortalLink(c)}
+                >
+                  <div className="flex flex-col items-start text-right min-w-0">
+                    <span className="font-medium truncate w-full">{c.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(c.created_at), 'dd/MM/yyyy')} • {c.status}
+                    </span>
+                  </div>
+                  {sendingUploadLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
