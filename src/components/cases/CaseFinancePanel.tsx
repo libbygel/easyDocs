@@ -80,11 +80,13 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId, refreshKey]);
 
-  const summary = useMemo(() => summarizeCase(charges, payments, timeEntries), [charges, payments, timeEntries]);
+  const summary = useMemo(
+    () => summarizeCase(charges, payments, timeEntries, hourlyRate),
+    [charges, payments, timeEntries, hourlyRate],
+  );
   const hours = summary.totalSeconds / 3600;
-  const profitability = hourlyRate != null
-    ? summary.totalCharged - hours * hourlyRate
-    : null;
+  const timeCharged = hourlyRate && hourlyRate > 0 ? hours * hourlyRate : 0;
+  const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
 
   const handleAddCharge = async () => {
     if (!user) return;
@@ -176,7 +178,16 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     <div className="space-y-6">
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="סך חיובים" value={formatCurrency(summary.totalCharged)} icon={<Receipt className="h-5 w-5" />} />
+        <SummaryCard
+          label="סך לחיוב"
+          value={formatCurrency(summary.totalCharged)}
+          icon={<Receipt className="h-5 w-5" />}
+          subtext={
+            hourlyRate && hourlyRate > 0
+              ? `זמן: ${formatCurrency(timeCharged)} • נוספים: ${formatCurrency(extraCharged)}`
+              : `חיובים נוספים: ${formatCurrency(extraCharged)}`
+          }
+        />
         <SummaryCard label="סך תשלומים" value={formatCurrency(summary.totalPaid)} icon={<Banknote className="h-5 w-5" />} />
         <SummaryCard
           label="יתרה לתשלום"
@@ -189,19 +200,77 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           value={formatDuration(summary.totalSeconds)}
           icon={<TrendingUp className="h-5 w-5" />}
           subtext={
-            profitability != null
-              ? `כדאיות: ${formatCurrency(profitability)}`
-              : 'הגדר תעריף שעה כדי לראות כדאיות'
+            hourlyRate && hourlyRate > 0
+              ? `תעריף: ${formatCurrency(hourlyRate)} / שעה`
+              : 'הגדר תעריף שעה כדי לראות סכום לחיוב'
           }
         />
       </div>
+
+      {/* Time entries (moved up) */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            רישומי זמן
+            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {timeEntries.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-4">לא נרשמו שעות</div>
+          ) : (
+            <>
+              <div className="divide-y">
+                {timeEntries.map((t) => {
+                  const secs = t.duration_seconds || 0;
+                  const lineCharge = hourlyRate && hourlyRate > 0 ? (secs / 3600) * hourlyRate : 0;
+                  return (
+                    <div key={t.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <div className="text-muted-foreground tabular-nums shrink-0">
+                        {format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                      <div className="flex-1 truncate">{t.description || '—'}</div>
+                      <div className="font-mono tabular-nums shrink-0 w-20 text-end">
+                        {t.duration_seconds != null ? formatDuration(t.duration_seconds) : 'פועל...'}
+                      </div>
+                      <div className="font-semibold tabular-nums shrink-0 w-24 text-end">
+                        {hourlyRate && hourlyRate > 0 ? formatCurrency(lineCharge) : '—'}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTime(t.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-3 mt-2 border-t text-sm font-semibold">
+                <div className="flex-1">סה״כ זמן עבודה</div>
+                <div className="font-mono tabular-nums shrink-0 w-20 text-end">
+                  {formatDuration(summary.totalSeconds)}
+                </div>
+                <div className="tabular-nums shrink-0 w-24 text-end">
+                  {hourlyRate && hourlyRate > 0 ? formatCurrency(timeCharged) : '—'}
+                </div>
+                <div className="w-9" />
+              </div>
+              {(!hourlyRate || hourlyRate <= 0) && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  כדי לחשב סכום לחיוב לכל רישום, הגדר תעריף שעה בהגדרות התיק.
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Charges */}
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Receipt className="h-4 w-4" />
-            חיובים
+            חיובים נוספים
+            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב למעלה)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -353,36 +422,6 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
       </Card>
 
       {/* Time entries */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            רישומי זמן
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {timeEntries.length === 0 ? (
-            <div className="text-sm text-muted-foreground text-center py-4">לא נרשמו שעות</div>
-          ) : (
-            <div className="divide-y">
-              {timeEntries.map((t) => (
-                <div key={t.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <div className="text-muted-foreground tabular-nums shrink-0">
-                    {format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}
-                  </div>
-                  <div className="flex-1 truncate">{t.description || '—'}</div>
-                  <div className="font-mono tabular-nums">
-                    {t.duration_seconds != null ? formatDuration(t.duration_seconds) : 'פועל...'}
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteTime(t.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

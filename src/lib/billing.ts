@@ -283,13 +283,18 @@ export function summarizeCase(
   charges: CaseCharge[],
   payments: CasePayment[],
   timeEntries: CaseTimeEntry[],
+  hourlyRate?: number | null,
 ): CaseFinancials {
-  const totalCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
+  const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
   const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
   const totalSeconds = timeEntries.reduce(
     (s, e) => s + (e.duration_seconds || 0),
     0,
   );
+  const timeCharged = hourlyRate && hourlyRate > 0
+    ? (totalSeconds / 3600) * Number(hourlyRate)
+    : 0;
+  const totalCharged = extraCharged + timeCharged;
   return {
     totalCharged,
     totalPaid,
