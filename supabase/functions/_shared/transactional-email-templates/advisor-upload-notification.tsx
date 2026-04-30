@@ -7,7 +7,7 @@ interface Props { advisorName?: string; clientName?: string; caseTitle?: string;
 
 const AdvisorUploadEmail = ({ advisorName = 'יועץ יקר', clientName = '', caseTitle = '', documentNames = [] }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>הלקוח {clientName} העלה מסמכים</Preview>
     <Body style={main}>
       <Container style={container}>

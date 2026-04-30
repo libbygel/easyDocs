@@ -7,7 +7,7 @@ interface Props { name?: string; message?: string; advisorName?: string; portalL
 
 const GroupMessageEmail = ({ name = 'לקוח/ה יקר/ה', message = '', advisorName, portalLink }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>{message.slice(0, 80)}</Preview>
     <Body style={main}>
       <Container style={container}>

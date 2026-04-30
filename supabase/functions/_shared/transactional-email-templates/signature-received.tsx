@@ -7,7 +7,7 @@ interface Props { advisorName?: string; clientName?: string; docName?: string; c
 
 const SignatureReceivedEmail = ({ advisorName = 'יועץ יקר', clientName = '', docName = '', caseTitle = '', portalUrl = '#' }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>חתימה חדשה התקבלה מ-{clientName}</Preview>
     <Body style={main}>
       <Container style={container}>

@@ -8,7 +8,7 @@ interface Props { clientName?: string; portalUrl?: string; urgentDocs?: UrgentDo
 
 const UrgentDocumentsEmail = ({ clientName = 'לקוח/ה יקר/ה', portalUrl = '#', urgentDocs = [] }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>⚠️ מסמכים דחופים — תאריך יעד מתקרב</Preview>
     <Body style={main}>
       <Container style={container}>

@@ -8,7 +8,7 @@ interface Props { clientName?: string; advisorName?: string; portalUrl?: string;
 
 const DailyRejectionEmail = ({ clientName = 'לקוח/ה יקר/ה', advisorName, portalUrl = '#', rejectedDocs = [] }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>מסמכים שנדחו דורשים תיקון</Preview>
     <Body style={main}>
       <Container style={container}>

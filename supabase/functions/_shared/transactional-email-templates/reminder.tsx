@@ -15,7 +15,7 @@ interface Props {
 
 const ReminderEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', portalUrl = '#', personalMessage, advisorName, missingDocs = [] }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>תזכורת על מסמכים חסרים בתיק {caseTitle}</Preview>
     <Body style={main}>
       <Container style={container}>
