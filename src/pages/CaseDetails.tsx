@@ -35,6 +35,7 @@ import { logCaseActivity } from '@/lib/activityLog';
 import { syncCaseStatus } from '@/lib/caseStatusSync';
 import { CaseTimerWidget } from '@/components/cases/CaseTimerWidget';
 import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
+import { RecurringChargesPanel } from '@/components/cases/RecurringChargesPanel';
 import { 
   ArrowRight, 
   Copy, 
