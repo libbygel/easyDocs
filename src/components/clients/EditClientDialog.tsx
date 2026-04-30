@@ -31,6 +31,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
   const [spouseIdNumber, setSpouseIdNumber] = useState('');
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -47,6 +48,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       setSpouseIdNumber((client as any).spouse_id_number || '');
       setSpousePhone((client as any).spouse_phone || '');
       setSpouseEmail((client as any).spouse_email || '');
+      setHourlyRate((client as any).hourly_rate != null ? String((client as any).hourly_rate) : '');
     }
   }, [client]);
 
@@ -76,6 +78,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       spouse_id_number: spouseIdNumber || null,
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
+      hourly_rate: hourlyRate.trim() === '' ? null : parseFloat(hourlyRate),
     };
 
     let { error } = await supabase.from('clients').update(fullPayload).eq('id', client.id);
@@ -153,6 +156,19 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
               onChange={(e) => setNotes(e.target.value)} 
               placeholder="הערות על הלקוח..."
               rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hourlyRate">תעריף לשעה (₪)</Label>
+            <Input
+              id="hourlyRate"
+              type="number"
+              min={0}
+              step="any"
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              placeholder="גובר על תעריף ברירת המחדל"
+              dir="ltr"
             />
           </div>
           <Separator />
