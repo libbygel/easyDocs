@@ -497,6 +497,8 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
 
       {/* Time entries */}
     </div>
+      {/* Edit Payment Dialog */}
+      {/* placeholder removed */}
   );
 }
 
