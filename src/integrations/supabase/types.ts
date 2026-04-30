@@ -744,6 +744,51 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_charges: {
+        Row: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          client_id: string
+          created_at: string
+          day_of_month: number
+          description: string | null
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          next_run_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          client_id: string
+          created_at?: string
+          day_of_month?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advisor_id?: string
+          amount?: number
+          case_id?: string
+          client_id?: string
+          created_at?: string
+          day_of_month?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_on?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
