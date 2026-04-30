@@ -631,6 +631,22 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   </Button>
                   <Button
                     variant="outline"
+                    className="gap-2"
+                    onClick={copyMasterPortalLink}
+                  >
+                    <Copy className="h-4 w-4" />
+                    העתק קישור פורטל לקוח (צפייה)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => caseData.client_id && window.open(`/client-portal/${caseData.client_id}`, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    פתח פורטל לקוח (צפייה)
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => setReminderDialogOpen(true)}
                     disabled={!caseData.clients?.email}
                     className="gap-2"
