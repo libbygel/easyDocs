@@ -138,6 +138,23 @@ export async function updatePaymentChargeLink(paymentId: string, chargeId: strin
   if (error) throw error;
 }
 
+export async function updatePayment(
+  paymentId: string,
+  updates: {
+    amount?: number;
+    description?: string | null;
+    payment_method?: string | null;
+    paid_at?: string;
+    charge_id?: string | null;
+  },
+) {
+  const { error } = await supabase
+    .from('case_payments' as any)
+    .update(updates as any)
+    .eq('id', paymentId);
+  if (error) throw error;
+}
+
 /* ----------------------- Charge settlement helpers --------------------- */
 export interface ChargeSettlement {
   paid: number;

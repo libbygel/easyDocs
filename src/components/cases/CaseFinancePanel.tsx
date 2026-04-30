@@ -4,11 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2, CheckCircle2, Circle } from 'lucide-react';
+import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2, CheckCircle2, Circle, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -30,6 +37,7 @@ import {
   summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
+  updatePayment,
   setChargePaidManually,
   type CaseCharge,
   type CasePayment,
@@ -57,6 +65,45 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentDesc, setPaymentDesc] = useState('');
   const [paymentChargeId, setPaymentChargeId] = useState<string>('none');
+
+  const [editPayment, setEditPayment] = useState<CasePayment | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editMethod, setEditMethod] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editChargeId, setEditChargeId] = useState<string>('none');
+
+  const openEditPayment = (p: CasePayment) => {
+    setEditPayment(p);
+    setEditAmount(String(p.amount));
+    setEditMethod(p.payment_method || '');
+    setEditDesc(p.description || '');
+    setEditDate(format(new Date(p.paid_at), 'yyyy-MM-dd'));
+    setEditChargeId(p.charge_id ?? 'none');
+  };
+
+  const handleSaveEditPayment = async () => {
+    if (!editPayment) return;
+    const amt = parseFloat(editAmount);
+    if (!amt || amt <= 0) {
+      toast({ title: 'נא להזין סכום תקין', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updatePayment(editPayment.id, {
+        amount: amt,
+        payment_method: editMethod || null,
+        description: editDesc || null,
+        paid_at: editDate ? new Date(editDate).toISOString() : undefined,
+        charge_id: editChargeId === 'none' ? null : editChargeId,
+      });
+      setEditPayment(null);
+      toast({ title: 'התשלום עודכן' });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון תשלום', description: err?.message, variant: 'destructive' });
+    }
+  };
 
   const fetchAll = async () => {
     try {
@@ -270,7 +317,6 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           <CardTitle className="text-base flex items-center gap-2">
             <Receipt className="h-4 w-4" />
             חיובים נוספים
-            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב למעלה)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -328,6 +374,31 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               })}
             </div>
           )}
+          {/* Grand total summary row */}
+          <div className="mt-4 pt-3 border-t-2 space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">חיוב על זמן עבודה</span>
+              <span className="tabular-nums">{formatCurrency(timeCharged)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">חיובים נוספים</span>
+              <span className="tabular-nums">{formatCurrency(extraCharged)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">שולם עד כה</span>
+              <span className="tabular-nums">−{formatCurrency(summary.totalPaid)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 mt-1 border-t">
+              <span className="font-semibold">סך הכל חוב הלקוח</span>
+              <span
+                className={`text-lg font-bold tabular-nums ${
+                  summary.balance > 0 ? 'text-warning' : 'text-success'
+                }`}
+              >
+                {formatCurrency(summary.balance)}
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -410,6 +481,9 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
                       </Select>
                     </div>
                     <div className="font-semibold tabular-nums shrink-0">{formatCurrency(p.amount)}</div>
+                    <Button variant="ghost" size="sm" onClick={() => openEditPayment(p)} title="ערוך תשלום">
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDeletePayment(p.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -422,6 +496,51 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
       </Card>
 
       {/* Time entries */}
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={!!editPayment} onOpenChange={(o) => !o && setEditPayment(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת תשלום</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">סכום (₪)</Label>
+              <Input type="number" min={0} value={editAmount} onChange={(e) => setEditAmount(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תאריך</Label>
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">אמצעי תשלום</Label>
+              <Input value={editMethod} onChange={(e) => setEditMethod(e.target.value)} placeholder="העברה / מזומן..." />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תיאור</Label>
+              <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">סוגר חיוב</Label>
+              <Select value={editChargeId} onValueChange={setEditChargeId}>
+                <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">ללא קישור</SelectItem>
+                  {charges.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {(c.description || 'חיוב').slice(0, 28)} • {formatCurrency(c.amount)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditPayment(null)}>ביטול</Button>
+            <Button onClick={handleSaveEditPayment}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
