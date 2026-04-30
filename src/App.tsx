@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
 import CaseDetails from "./pages/CaseDetails";
 import Clients from "./pages/Clients";
+import ClientDetail from "./pages/ClientDetail";
 import Contacts from "./pages/Contacts";
 import Templates from "./pages/Templates";
 import TemplateDocuments from "./pages/TemplateDocuments";
@@ -121,6 +122,7 @@ const AppRoutes = () => (
     <Route path="/cases" element={<ProtectedRoute><Cases /></ProtectedRoute>} />
     <Route path="/cases/:id" element={<ProtectedRoute><CaseDetails /></ProtectedRoute>} />
     <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+    <Route path="/clients/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
     <Route path="/contacts" element={<ProtectedRoute><Contacts /></ProtectedRoute>} />
     <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
     <Route path="/templates/:typeId" element={<ProtectedRoute><TemplateDocuments /></ProtectedRoute>} />
