@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { fetchAdvisorProfileByUserId } from '@/lib/advisorProfile';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -255,19 +256,15 @@ export default function ClientPortal() {
         message: `הלקוח ${clientName} העלה את המסמך "${docName}" לתיק "${caseTitle}"`,
       });
 
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('email, name')
-        .eq('user_id', caseData.advisor_id)
-        .maybeSingle();
+      const advisorProfile = await fetchAdvisorProfileByUserId(caseData.advisor_id);
 
-      if (profileData?.email) {
+      if (advisorProfile.email) {
         invokeEdgeFunction('send-documents-to-advisor', {
           clientName,
           caseTitle,
           documentNames: [docName],
-          advisorEmail: profileData.email,
-          advisorName: profileData.name || '',
+          advisorEmail: advisorProfile.email,
+          advisorName: advisorProfile.displayName,
         }).catch((e) => console.warn('[ClientPortal] upload notify email failed:', e));
       }
     } catch (notifyErr) {
@@ -393,12 +390,7 @@ export default function ClientPortal() {
       const clientName = caseData?.clients?.full_name || 'לקוח';
       const caseTitle = caseData?.title || '';
 
-      // Get advisor info from the external DB (aegw)
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('email, name')
-        .eq('user_id', caseData.advisor_id)
-        .maybeSingle();
+      const advisorProfile = await fetchAdvisorProfileByUserId(caseData.advisor_id);
 
       // Insert individual notifications per document
       let notificationErrors = 0;
@@ -424,8 +416,8 @@ export default function ClientPortal() {
           clientName,
           caseTitle,
           documentNames,
-          advisorEmail: profileData?.email || '',
-          advisorName: profileData?.name || '',
+          advisorEmail: advisorProfile.email,
+          advisorName: advisorProfile.displayName,
         });
       } catch (emailErr) {
         console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
