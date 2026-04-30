@@ -1,3 +1,66 @@
+/* ----------------------- Recurring charges ----------------------------- */
+export interface RecurringCharge {
+  id: string;
+  advisor_id: string;
+  client_id: string;
+  case_id: string;
+  amount: number;
+  description: string | null;
+  day_of_month: number;
+  is_active: boolean;
+  last_run_at: string | null;
+  next_run_on: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function listRecurringChargesForClient(clientId: string) {
+  const { data, error } = await supabase
+    .from('recurring_charges' as any)
+    .select('*')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as unknown as RecurringCharge[];
+}
+
+export async function listRecurringChargesForCase(caseId: string) {
+  const { data, error } = await supabase
+    .from('recurring_charges' as any)
+    .select('*')
+    .eq('case_id', caseId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as unknown as RecurringCharge[];
+}
+
+export async function createRecurringCharge(input: {
+  advisor_id: string;
+  client_id: string;
+  case_id: string;
+  amount: number;
+  description?: string | null;
+  day_of_month?: number;
+}) {
+  const { error } = await supabase
+    .from('recurring_charges' as any)
+    .insert({ ...input, day_of_month: input.day_of_month ?? 1 } as any);
+  if (error) throw error;
+}
+
+export async function updateRecurringCharge(
+  id: string,
+  updates: Partial<Pick<RecurringCharge, 'amount' | 'description' | 'day_of_month' | 'is_active' | 'case_id'>>,
+) {
+  const payload: any = { ...updates, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from('recurring_charges' as any).update(payload).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteRecurringCharge(id: string) {
+  const { error } = await supabase.from('recurring_charges' as any).delete().eq('id', id);
+  if (error) throw error;
+}
 import { supabase } from '@/lib/supabase';
 
 export interface CaseCharge {
