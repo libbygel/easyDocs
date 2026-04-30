@@ -8,7 +8,7 @@ interface Props { recipientName?: string; caseTitle?: string; senderName?: strin
 
 const DocumentsToAdvisorEmail = ({ recipientName = 'נמען', caseTitle = '', senderName = 'EasyDocs', note, documents = [] }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>מסמכים לתיק {caseTitle}</Preview>
     <Body style={main}>
       <Container style={container}>

@@ -41,7 +41,7 @@ function getBody(emailType?: string, advisorName?: string, caseTitle?: string) {
 
 const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', portalLink = '#', advisorName, emailType = 'reminder' }: Props) => (
   <Html lang="he" dir="rtl">
-    <Head />
+    <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>{getTitle(emailType, advisorName, caseTitle)}</Preview>
     <Body style={main}>
       <Container style={container}>
