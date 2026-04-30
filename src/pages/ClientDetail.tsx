@@ -6,7 +6,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
   listClientCharges,
@@ -49,6 +50,7 @@ export default function ClientDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [client, setClient] = useState<ClientRow | null>(null);
   const [cases, setCases] = useState<CaseRow[]>([]);
@@ -162,6 +164,30 @@ export default function ClientDetail() {
                 <span className="flex items-center gap-1" dir="ltr"><Mail className="h-4 w-4" />{client.email}</span>
               )}
             </div>
+          </div>
+          <div className="flex flex-col gap-2 items-stretch">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                const link = `${window.location.origin}/client-portal/${client.id}`;
+                navigator.clipboard.writeText(link);
+                toast({ title: 'הקישור הועתק', description: 'הלקוח יזדהה עם מספר תעודת הזהות שלו' });
+              }}
+            >
+              <Link2 className="h-4 w-4" />
+              העתק קישור לפורטל הלקוח (כל התיקים)
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => window.open(`/client-portal/${client.id}`, '_blank')}
+            >
+              <Copy className="h-4 w-4" />
+              פתח את פורטל הלקוח
+            </Button>
           </div>
         </div>
 

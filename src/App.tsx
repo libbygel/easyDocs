@@ -21,6 +21,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
+import ClientMasterPortal from "./pages/ClientMasterPortal";
 import LandingPage from "./pages/LandingPage";
 import GetOffer from "./pages/GetOffer";
 import NotFound from "./pages/NotFound";
@@ -131,6 +132,7 @@ const AppRoutes = () => (
     <Route path="/how-it-works" element={<ProtectedRoute><HowItWorks /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/portal/:token" element={<ClientPortal />} />
+    <Route path="/client-portal/:token" element={<ClientMasterPortal />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
