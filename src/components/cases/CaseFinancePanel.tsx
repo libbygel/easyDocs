@@ -496,9 +496,52 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
       </Card>
 
       {/* Time entries */}
-    </div>
+
       {/* Edit Payment Dialog */}
-      {/* placeholder removed */}
+      <Dialog open={!!editPayment} onOpenChange={(o) => !o && setEditPayment(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת תשלום</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">סכום (₪)</Label>
+              <Input type="number" min={0} value={editAmount} onChange={(e) => setEditAmount(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תאריך</Label>
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">אמצעי תשלום</Label>
+              <Input value={editMethod} onChange={(e) => setEditMethod(e.target.value)} placeholder="העברה / מזומן..." />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תיאור</Label>
+              <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">סוגר חיוב</Label>
+              <Select value={editChargeId} onValueChange={setEditChargeId}>
+                <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">ללא קישור</SelectItem>
+                  {charges.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {(c.description || 'חיוב').slice(0, 28)} • {formatCurrency(c.amount)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditPayment(null)}>ביטול</Button>
+            <Button onClick={handleSaveEditPayment}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
