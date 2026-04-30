@@ -1,64 +1,73 @@
 /**
- * jsPDF does not support RTL layout. This helper prepares strings for
- * rendering by reversing the entire string so that when jsPDF draws
- * glyphs left-to-right, the visual result reads correctly right-to-left.
+ * Hebrew text handling for jsPDF using the Assistant.ttf font.
  *
- * Mixed content (Hebrew + numbers/English) is handled by:
- * 1. Splitting into runs of Hebrew vs non-Hebrew characters
- * 2. Reversing the order of runs (so RTL overall order is correct)
- * 3. Non-Hebrew runs (numbers, dates, English) keep their internal LTR order
- * 4. Hebrew character runs get their characters reversed individually
+ * The Assistant TTF font handles Hebrew glyph rendering correctly when the
+ * characters arrive in logical (typed) order. jsPDF still draws strings
+ * left-to-right, so for RIGHT-aligned Hebrew text we need to:
+ *  1. Keep Hebrew character order intact (do NOT reverse characters).
+ *  2. Reverse only the order of "runs" so that mixed Hebrew + Latin/digits
+ *     content appears correctly when read right-to-left.
  *
- * Example: "לקוח: לוי" → runs are ["לקוח", ": ", "לוי"]
- *   → reversed run order: ["לוי", ": ", "לקוח"]
- *   → each Hebrew run reversed: ["יול", ": ", "חוקל"] — wait, that's wrong.
+ * Example: "לקוח: דניאל 123"
+ *   Runs (logical): ["לקוח", ": ", "דניאל ", "123"]
+ *   Visual RTL order needs runs printed left-to-right as:
+ *     "123" + " דניאל" + " :" + "לקוח"  →  but Hebrew runs stay intact.
  *
- * Actually for jsPDF right-aligned text, we need:
- *   The full string reversed so jsPDF draws it RTL.
- *   But numbers/English within must stay LTR.
- *
- * Correct approach: reverse the entire string, then un-reverse non-Hebrew runs.
+ * Reversing characters (the previous behavior) caused double-reversal because
+ * the Assistant font already shapes Hebrew correctly — the result was words
+ * like "שלום" appearing as "םולש".
  */
 
 const HEBREW_CHAR = /[\u0590-\u05FF]/;
+const DIGIT_OR_LATIN = /[A-Za-z0-9]/;
 
 export function reverseHebrewRunsForPdf(input: string): string {
   if (!input) return input;
   if (!HEBREW_CHAR.test(input)) return input;
 
-  // Split into runs of Hebrew vs non-Hebrew
-  const runs: { text: string; isHebrew: boolean }[] = [];
-  let currentRun = '';
-  let currentIsHebrew = false;
+  // Classify each char: 'heb' | 'ltr' | 'neutral'
+  type Kind = 'heb' | 'ltr' | 'neutral';
+  const classify = (ch: string): Kind => {
+    if (HEBREW_CHAR.test(ch)) return 'heb';
+    if (DIGIT_OR_LATIN.test(ch)) return 'ltr';
+    return 'neutral';
+  };
 
+  // Build runs of consecutive same-kind characters.
+  const runs: { text: string; kind: Kind }[] = [];
   for (const ch of input) {
-    const isHeb = HEBREW_CHAR.test(ch);
-    if (currentRun.length === 0) {
-      currentIsHebrew = isHeb;
-      currentRun = ch;
+    const k = classify(ch);
+    const last = runs[runs.length - 1];
+    if (last && last.kind === k) last.text += ch;
+    else runs.push({ text: ch, kind: k });
+  }
+
+  // Attach neutral runs to the surrounding strong-direction run so that
+  // punctuation/spaces flow with their context.
+  const merged: { text: string; kind: Kind }[] = [];
+  for (let i = 0; i < runs.length; i++) {
+    const r = runs[i];
+    if (r.kind !== 'neutral') {
+      merged.push({ ...r });
       continue;
     }
-    // Treat spaces adjacent to Hebrew as part of the flow
-    if (ch === ' ' || isHeb === currentIsHebrew) {
-      currentRun += ch;
+    const prev = merged[merged.length - 1];
+    const next = runs[i + 1];
+    if (prev && prev.kind === 'heb' && (!next || next.kind !== 'ltr')) {
+      prev.text += r.text;
+    } else if (next && next.kind === 'heb' && (!prev || prev.kind !== 'ltr')) {
+      // Prepend to next Hebrew run by buffering — handle by pushing a neutral
+      // run that will merge with the next Hebrew run on next iteration.
+      runs[i + 1] = { text: r.text + next.text, kind: 'heb' };
+    } else if (prev) {
+      prev.text += r.text;
     } else {
-      runs.push({ text: currentRun, isHebrew: currentIsHebrew });
-      currentIsHebrew = isHeb;
-      currentRun = ch;
+      merged.push({ ...r });
     }
   }
-  if (currentRun) {
-    runs.push({ text: currentRun, isHebrew: currentIsHebrew });
-  }
 
-  // Reverse the order of all runs (RTL visual order)
-  runs.reverse();
-
-  // Build the output: Hebrew runs need character reversal, non-Hebrew stay as-is
-  return runs.map(r => {
-    if (r.isHebrew) {
-      return r.text.split('').reverse().join('');
-    }
-    return r.text;
-  }).join('');
+  // Reverse run order for RTL visual output, but keep characters within
+  // each run in their original logical order (the font handles shaping).
+  merged.reverse();
+  return merged.map((r) => r.text).join('');
 }

@@ -32,6 +32,7 @@ import { BulkDownloadButton } from '@/components/cases/BulkDownloadButton';
 import { CaseCompletionBanner } from '@/components/cases/CaseCompletionBanner';
 import { DraggableDocumentRow } from '@/components/cases/DraggableDocumentRow';
 import { logCaseActivity } from '@/lib/activityLog';
+import { syncCaseStatus } from '@/lib/caseStatusSync';
 import { 
   ArrowRight, 
   Copy, 
@@ -196,6 +197,16 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       }));
 
       setDocuments(mergedDocs as DocumentWithUpload[]);
+
+      // Reconcile case status with current document state (idempotent — only
+      // updates the DB if the derived status differs from the stored one).
+      if (caseResult.data) {
+        await syncCaseStatus(
+          id,
+          mergedDocs as Pick<CaseDocument, 'required' | 'review_status'>[],
+          (caseResult.data as any).status,
+        );
+      }
     } catch (err) {
       console.error('Error fetching case data:', err);
     } finally {
@@ -255,6 +266,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       await logCaseActivity(id, 'אישור מסמך', `המסמך "${docName}" אושר`);
     }
     
+    await syncCaseStatus(id, documents.map(d => d.id === docId ? { ...d, review_status: 'תקין' as const } : d), caseData?.status);
     fetchData();
     toast({ title: 'המסמך אושר בהצלחה' });
   };
@@ -271,6 +283,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       await logCaseActivity(id, 'דחיית מסמך', `המסמך "${docName}" נדחה: ${note}`);
     }
     
+    await syncCaseStatus(id, documents.map(d => d.id === docId ? { ...d, review_status: 'לא תקין' as const } : d), caseData?.status);
     fetchData();
     setReviewDoc(null);
 
