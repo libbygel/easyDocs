@@ -16,13 +16,16 @@ serve(async (req: Request): Promise<Response> => {
       clientName,
       clientEmail,
       caseTitle,
-      portalLink,
+      portalLink: portalLinkRaw,
+      portalToken,
       missingDocs = [],
       rejectedDocs = [],
       advisorEmail,
       advisorName: advisorNameRaw,
       personalMessage,
     } = body;
+
+    const portalLink = portalLinkRaw || (portalToken ? `https://easydocs.tech/portal/${portalToken}` : null);
 
     if (!clientEmail || !portalLink) {
       return new Response(JSON.stringify({ success: false, error: "חסרים פרטים נדרשים" }), {
