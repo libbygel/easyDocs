@@ -100,24 +100,39 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY!,
-      },
-      body: JSON.stringify({
-        sender: { name: advisorName ? `${advisorName} | EasyDocs` : "EasyDocs", email: "dg.smarter1@gmail.com" },
-        ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
-        to: [{ email: clientEmail, name: clientName }],
-        subject,
-        htmlContent,
-      }),
-    });
+    const res = RESEND_API_KEY
+      ? await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: `${fromName} <${RESEND_FROM_EMAIL}>`,
+            to: [clientEmail],
+            subject,
+            html: htmlContent,
+            ...(advisorEmail ? { reply_to: advisorEmail } : {}),
+          }),
+        })
+      : await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": BREVO_API_KEY!,
+          },
+          body: JSON.stringify({
+            sender: { name: fromName, email: "dg.smarter1@gmail.com" },
+            ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
+            to: [{ email: clientEmail, name: clientName }],
+            subject,
+            htmlContent,
+          }),
+        });
 
     if (!res.ok) {
       const errorData = await res.text();
-      console.error("Brevo API error:", errorData);
+      console.error("Email API error:", errorData);
       return new Response(
         JSON.stringify({ error: "שגיאה בשליחת המייל" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -125,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResult = await res.json();
-    console.log("Reminder email sent successfully via Brevo:", emailResult);
+    console.log("Reminder email sent successfully:", emailResult);
 
     return new Response(
       JSON.stringify({ success: true, documentCount: missingDocs.length, sentTo: clientEmail }),
