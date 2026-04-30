@@ -23,6 +23,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, FolderPlus, Search } from 'lucide-react';
 import { addDays, format } from 'date-fns';
+import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { useAdvisorName } from '@/hooks/useAdvisorName';
 
 interface BulkCreateCasesDialogProps {
   open: boolean;
@@ -35,11 +37,13 @@ interface ClientRow {
   full_name: string;
   id_number: string | null;
   category_id: string | null;
+  email: string | null;
 }
 
 export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCreateCasesDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const advisorName = useAdvisorName();
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [caseTypes, setCaseTypes] = useState<{ id: string; name: string }[]>([]);
@@ -49,16 +53,18 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
+  const [autoSendPortal, setAutoSendPortal] = useState(true);
 
   useEffect(() => {
     if (!open || !user) return;
     setSelected(new Set());
     setSearch('');
     setFilterCategory('all');
-    setTitleTemplate('');
+    setTitleTemplate('{סוג} - {שם}');
     setCaseTypeId('');
+    setAutoSendPortal(true);
     Promise.all([
-      supabase.from('clients').select('id, full_name, id_number, category_id').eq('advisor_id', user.id).order('full_name'),
+      supabase.from('clients').select('id, full_name, id_number, category_id, email').eq('advisor_id', user.id).order('full_name'),
       supabase.from('client_categories' as any).select('id, name').eq('advisor_id', user.id).order('name'),
       supabase.from('case_types').select('id, name').eq('advisor_id', user.id).order('name'),
     ]).then(([cRes, catRes, ctRes]) => {
@@ -106,12 +112,18 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
         .select('*')
         .eq('case_type_id', caseTypeId);
 
+      const selectedCaseType = caseTypes.find((t) => t.id === caseTypeId);
+      const caseTypeName = selectedCaseType?.name || '';
+
       const selectedClients = clients.filter((c) => selected.has(c.id));
       let createdCount = 0;
       let failedCount = 0;
+      const createdCases: { id: string; title: string; client: ClientRow }[] = [];
 
       for (const cli of selectedClients) {
-        const finalTitle = titleTemplate.replace(/\{client\}|\{שם\}/g, cli.full_name);
+        const finalTitle = titleTemplate
+          .replace(/\{client\}|\{שם\}/g, cli.full_name)
+          .replace(/\{type\}|\{סוג\}/g, caseTypeName);
         const { data: newCase, error: caseErr } = await supabase
           .from('cases')
           .insert({
@@ -144,13 +156,61 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
         }
 
         createdCount++;
+        createdCases.push({ id: newCase.id, title: finalTitle, client: cli });
+      }
+
+      // Auto-send portal links if requested
+      let sentCount = 0;
+      let skippedNoEmail = 0;
+      let sendFailed = 0;
+      if (autoSendPortal && createdCases.length > 0) {
+        const portalBase = `${window.location.origin}/portal`;
+        for (const cc of createdCases) {
+          if (!cc.client.email) {
+            skippedNoEmail++;
+            continue;
+          }
+          try {
+            // Get portal token
+            const { data: caseRow } = await supabase
+              .from('cases')
+              .select('portal_token')
+              .eq('id', cc.id)
+              .maybeSingle();
+            const portalLink = `${portalBase}/${(caseRow as any)?.portal_token}`;
+            const response = await invokeEdgeFunction('send-portal-link', {
+              clientName: cc.client.full_name,
+              clientEmail: cc.client.email,
+              caseTitle: cc.title,
+              portalLink,
+              advisorEmail: user.email || '',
+              advisorName: advisorName || user.user_metadata?.name || user.email?.split('@')[0] || '',
+              emailType: 'new_case',
+            });
+            if (response?.error) throw new Error(response.error);
+            const now = new Date().toISOString();
+            await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', cc.id);
+            await supabase.from('case_documents').update({ sent_to_client_at: now } as any).eq('case_id', cc.id);
+            sentCount++;
+          } catch (err) {
+            console.error('[BulkCreate] failed to send portal link to', cc.client.full_name, err);
+            sendFailed++;
+          }
+        }
+      }
+
+      const parts: string[] = [];
+      parts.push(`${createdCount} תיקים נוצרו`);
+      if (failedCount > 0) parts.push(`${failedCount} נכשלו`);
+      if (autoSendPortal) {
+        if (sentCount > 0) parts.push(`${sentCount} מיילים נשלחו`);
+        if (skippedNoEmail > 0) parts.push(`${skippedNoEmail} ללא מייל`);
+        if (sendFailed > 0) parts.push(`${sendFailed} שליחות נכשלו`);
       }
 
       toast({
         title: 'התיקים נוצרו',
-        description: failedCount > 0
-          ? `${createdCount} נוצרו בהצלחה, ${failedCount} נכשלו`
-          : `${createdCount} תיקים נוצרו בהצלחה`,
+        description: parts.join(' • '),
       });
       onOpenChange(false);
       onSuccess?.();
@@ -192,9 +252,11 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
               <Input
                 value={titleTemplate}
                 onChange={(e) => setTitleTemplate(e.target.value)}
-                placeholder="לדוגמה: דוח שנתי 2026 - {שם}"
+                placeholder="לדוגמה: {סוג} - {שם}"
               />
-              <p className="text-[11px] text-muted-foreground">השתמשי ב-<code>{'{שם}'}</code> כדי להחליף בשם הלקוח.</p>
+              <p className="text-[11px] text-muted-foreground">
+                <code>{'{שם}'}</code> = שם הלקוח, <code>{'{סוג}'}</code> = שם סוג התיק.
+              </p>
             </div>
           </div>
 
@@ -239,6 +301,22 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
                   </div>
                 )}
               </ScrollArea>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 border-t pt-3">
+            <Checkbox
+              id="auto-send-portal"
+              checked={autoSendPortal}
+              onCheckedChange={(v) => setAutoSendPortal(!!v)}
+            />
+            <div className="space-y-0.5">
+              <label htmlFor="auto-send-portal" className="text-sm font-medium cursor-pointer">
+                שלחי קישור פורטל במייל לכל לקוח שיש לו אימייל
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                לקוחות ללא אימייל יידלגו - תוכלי לשלוח להם ידנית מתוך התיק.
+              </p>
             </div>
           </div>
 
