@@ -333,11 +333,22 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
       {/* Time entries (moved up) */}
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            רישומי זמן
-            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב)</span>
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              רישומי זמן
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={openEditClientRate}
+              title="ערוך תעריף שעה ללקוח"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              תעריף לקוח: {hourlyRate && hourlyRate > 0 ? formatCurrency(hourlyRate) + ' / שעה' : 'לא הוגדר'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {timeEntries.length === 0 ? (
@@ -347,19 +358,31 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
               <div className="divide-y">
                 {timeEntries.map((t) => {
                   const secs = t.duration_seconds || 0;
-                  const lineCharge = hourlyRate && hourlyRate > 0 ? (secs / 3600) * hourlyRate : 0;
+                  const rate = effectiveHourlyRate(t, hourlyRate);
+                  const lineCharge = (secs / 3600) * rate;
+                  const hasOverride = t.hourly_rate != null && t.hourly_rate > 0;
                   return (
                     <div key={t.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                       <div className="text-muted-foreground tabular-nums shrink-0">
                         {format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}
                       </div>
-                      <div className="flex-1 truncate">{t.description || '—'}</div>
+                      <div className="flex-1 truncate">
+                        {t.description || '—'}
+                        {hasOverride && (
+                          <span className="ms-2 text-xs text-accent">
+                            (תעריף: {formatCurrency(t.hourly_rate as number)})
+                          </span>
+                        )}
+                      </div>
                       <div className="font-mono tabular-nums shrink-0 w-20 text-end">
                         {t.duration_seconds != null ? formatDuration(t.duration_seconds) : 'פועל...'}
                       </div>
                       <div className="font-semibold tabular-nums shrink-0 w-24 text-end">
-                        {hourlyRate && hourlyRate > 0 ? formatCurrency(lineCharge) : '—'}
+                        {rate > 0 ? formatCurrency(lineCharge) : '—'}
                       </div>
+                      <Button variant="ghost" size="sm" onClick={() => openEditTime(t)} title="ערוך רישום">
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteTime(t.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -373,13 +396,13 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
                   {formatDuration(summary.totalSeconds)}
                 </div>
                 <div className="tabular-nums shrink-0 w-24 text-end">
-                  {hourlyRate && hourlyRate > 0 ? formatCurrency(timeCharged) : '—'}
+                  {timeCharged > 0 ? formatCurrency(timeCharged) : '—'}
                 </div>
-                <div className="w-9" />
+                <div className="w-[72px]" />
               </div>
-              {(!hourlyRate || hourlyRate <= 0) && (
+              {timeCharged === 0 && (
                 <div className="text-xs text-muted-foreground mt-2">
-                  כדי לחשב סכום לחיוב לכל רישום, הגדר תעריף שעה בהגדרות התיק.
+                  הגדר תעריף לקוח (למעלה) או תעריף ספציפי לשורה כדי לחשב סכום לחיוב.
                 </div>
               )}
             </>
