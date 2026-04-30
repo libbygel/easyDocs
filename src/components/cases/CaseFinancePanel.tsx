@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
+import { MonthlyTimeReport } from '@/components/cases/MonthlyTimeReport';
 import {
   Dialog,
   DialogContent,
@@ -409,6 +410,9 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
           )}
         </CardContent>
       </Card>
+
+      {/* Monthly breakdown of time entries */}
+      <MonthlyTimeReport entries={timeEntries} hourlyRate={hourlyRate} />
 
       {/* Charges */}
       <Card className="shadow-sm">

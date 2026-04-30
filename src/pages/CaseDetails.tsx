@@ -35,6 +35,7 @@ import { logCaseActivity } from '@/lib/activityLog';
 import { syncCaseStatus } from '@/lib/caseStatusSync';
 import { CaseTimerWidget } from '@/components/cases/CaseTimerWidget';
 import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
+import { RecurringChargesPanel } from '@/components/cases/RecurringChargesPanel';
 import { 
   ArrowRight, 
   Copy, 
@@ -908,6 +909,11 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                           : prev,
                       );
                     }}
+                  />
+                  <RecurringChargesPanel
+                    clientId={caseData.client_id}
+                    defaultCaseId={id!}
+                    onChargesGenerated={() => setFinanceRefresh((n) => n + 1)}
                   />
                 </div>
               </TabsContent>
