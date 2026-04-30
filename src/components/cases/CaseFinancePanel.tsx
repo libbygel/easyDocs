@@ -317,7 +317,6 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           <CardTitle className="text-base flex items-center gap-2">
             <Receipt className="h-4 w-4" />
             חיובים נוספים
-            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב למעלה)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -375,6 +374,31 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               })}
             </div>
           )}
+          {/* Grand total summary row */}
+          <div className="mt-4 pt-3 border-t-2 space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">חיוב על זמן עבודה</span>
+              <span className="tabular-nums">{formatCurrency(timeCharged)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">חיובים נוספים</span>
+              <span className="tabular-nums">{formatCurrency(extraCharged)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">שולם עד כה</span>
+              <span className="tabular-nums">−{formatCurrency(summary.totalPaid)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 mt-1 border-t">
+              <span className="font-semibold">סך הכל חוב הלקוח</span>
+              <span
+                className={`text-lg font-bold tabular-nums ${
+                  summary.balance > 0 ? 'text-warning' : 'text-success'
+                }`}
+              >
+                {formatCurrency(summary.balance)}
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
