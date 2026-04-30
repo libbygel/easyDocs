@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import {
   Dialog,
   DialogContent,
@@ -62,11 +63,11 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
     Promise.all([
       supabase.from('clients').select('id, full_name, email, category_id').eq('advisor_id', user.id).order('full_name'),
       supabase.from('client_categories' as any).select('id, name').eq('advisor_id', user.id).order('name'),
-      supabase.from('profiles').select('name, sender_display_name').eq('user_id', user.id).maybeSingle(),
-    ]).then(([cRes, catRes, pRes]) => {
+      fetchCurrentAdvisorProfile(user),
+    ]).then(([cRes, catRes, profile]) => {
       setClients(((cRes.data as any) || []) as ClientRow[]);
       setCategories(((catRes.data as any) || []) as any);
-      setAdvisorName(((pRes.data as any)?.sender_display_name || (pRes.data as any)?.name || '') as string);
+      setAdvisorName(profile.displayName || '');
     });
   }, [open, user, initialCategoryId]);
 
