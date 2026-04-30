@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
@@ -233,29 +234,72 @@ export default function ClientDetail() {
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 items-stretch">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                const link = `${window.location.origin}/client-portal/${client.id}`;
-                navigator.clipboard.writeText(link);
-                toast({ title: 'הקישור הועתק', description: 'הלקוח יזדהה עם מספר תעודת הזהות שלו' });
-              }}
-            >
-              <Link2 className="h-4 w-4" />
-              העתק קישור לפורטל הלקוח (כל התיקים)
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => window.open(`/client-portal/${client.id}`, '_blank')}
-            >
-              <Copy className="h-4 w-4" />
-              פתח את פורטל הלקוח
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto md:min-w-[520px]">
+            {/* Upload portal link (per case) */}
+            <Card className="shadow-sm border-primary/30">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Upload className="h-4 w-4 text-primary" />
+                  קישור להעלאת מסמכים
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  שולח ללקוח קישור לפורטל של תיק ספציפי שבו הוא יכול להעלות מסמכים
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={() => setUploadCasePickerOpen(true)}
+                  disabled={cases.length === 0}
+                >
+                  <Send className="h-4 w-4" />
+                  שלח קישור העלאה
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* View-only master portal */}
+            <Card className="shadow-sm border-info/30">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Eye className="h-4 w-4 text-info" />
+                  קישור לצפייה בלבד
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  שולח ללקוח קישור לאזור אישי שבו הוא רואה את כל התיקים שלו — ללא אפשרות לערוך
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={sendViewOnlyPortalLink}
+                    disabled={sendingViewLink || !client.email}
+                  >
+                    {sendingViewLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    שלח במייל
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="העתק קישור"
+                    onClick={() => {
+                      navigator.clipboard.writeText(masterPortalLink);
+                      toast({ title: 'הקישור הועתק' });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="פתח"
+                    onClick={() => window.open(masterPortalLink, '_blank')}
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
