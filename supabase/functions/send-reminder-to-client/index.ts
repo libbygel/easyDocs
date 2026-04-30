@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +59,8 @@ const handler = async (req: Request): Promise<Response> => {
     const subject = advisorName
       ? `תזכורת מ${advisorName}: מסמכים חסרים לתיק ${caseTitle}`
       : `תזכורת: מסמכים חסרים לתיק ${caseTitle}`;
-    console.log("Sending email via Brevo:", { to: clientEmail, subject, docsCount: missingDocs.length });
+    const fromName = advisorName ? `${advisorName} דרך EasyDocs` : "EasyDocs";
+    console.log("Sending reminder email:", { to: clientEmail, subject, docsCount: missingDocs.length, provider: RESEND_API_KEY ? "Resend" : "Brevo" });
 
     const htmlContent = `
       <div dir="rtl" style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
