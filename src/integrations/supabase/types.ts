@@ -206,9 +206,31 @@ export type Database = {
           },
         ]
       }
+      client_categories: {
+        Row: {
+          advisor_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          advisor_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           advisor_id: string
+          category_id: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -216,9 +238,14 @@ export type Database = {
           id_number: string | null
           notes: string | null
           phone: string | null
+          spouse_email: string | null
+          spouse_full_name: string | null
+          spouse_id_number: string | null
+          spouse_phone: string | null
         }
         Insert: {
           advisor_id: string
+          category_id?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -226,9 +253,14 @@ export type Database = {
           id_number?: string | null
           notes?: string | null
           phone?: string | null
+          spouse_email?: string | null
+          spouse_full_name?: string | null
+          spouse_id_number?: string | null
+          spouse_phone?: string | null
         }
         Update: {
           advisor_id?: string
+          category_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -236,6 +268,10 @@ export type Database = {
           id_number?: string | null
           notes?: string | null
           phone?: string | null
+          spouse_email?: string | null
+          spouse_full_name?: string | null
+          spouse_id_number?: string | null
+          spouse_phone?: string | null
         }
         Relationships: [
           {
