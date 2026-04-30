@@ -199,6 +199,7 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           ended_at: string | null
+          hourly_rate: number | null
           id: string
           source: string
           started_at: string
@@ -211,6 +212,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
+          hourly_rate?: number | null
           id?: string
           source?: string
           started_at: string
@@ -223,6 +225,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
+          hourly_rate?: number | null
           id?: string
           source?: string
           started_at?: string
@@ -348,6 +351,7 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string
+          hourly_rate: number | null
           id: string
           id_number: string | null
           notes: string | null
@@ -363,6 +367,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name: string
+          hourly_rate?: number | null
           id?: string
           id_number?: string | null
           notes?: string | null
@@ -378,6 +383,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string
+          hourly_rate?: number | null
           id?: string
           id_number?: string | null
           notes?: string | null

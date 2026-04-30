@@ -896,8 +896,18 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   <CaseFinancePanel
                     caseId={id!}
                     clientId={caseData.client_id}
-                    hourlyRate={hourlyRate}
+                    hourlyRate={(caseData as any).clients?.hourly_rate ?? hourlyRate}
                     refreshKey={financeRefresh}
+                    onClientRateChanged={(newRate) => {
+                      setCaseData((prev) =>
+                        prev
+                          ? ({
+                              ...prev,
+                              clients: { ...(prev as any).clients, hourly_rate: newRate },
+                            } as any)
+                          : prev,
+                      );
+                    }}
                   />
                 </div>
               </TabsContent>

@@ -34,6 +34,8 @@ import {
   listCasePayments,
   listCaseTimeEntries,
   deleteTimeEntry,
+  updateTimeEntry,
+  effectiveHourlyRate,
   summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
@@ -43,15 +45,17 @@ import {
   type CasePayment,
   type CaseTimeEntry,
 } from '@/lib/billing';
+import { supabase } from '@/lib/supabase';
 
 interface Props {
   caseId: string;
   clientId: string;
   hourlyRate: number | null;
   refreshKey?: number;
+  onClientRateChanged?: (newRate: number | null) => void;
 }
 
-export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: Props) {
+export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onClientRateChanged }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [charges, setCharges] = useState<CaseCharge[]>([]);
@@ -72,6 +76,17 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   const [editDesc, setEditDesc] = useState('');
   const [editDate, setEditDate] = useState('');
   const [editChargeId, setEditChargeId] = useState<string>('none');
+
+  // Edit time entry
+  const [editTime, setEditTime] = useState<CaseTimeEntry | null>(null);
+  const [editTimeHours, setEditTimeHours] = useState('');
+  const [editTimeMinutes, setEditTimeMinutes] = useState('');
+  const [editTimeDesc, setEditTimeDesc] = useState('');
+  const [editTimeRate, setEditTimeRate] = useState('');
+
+  // Edit client hourly rate (quick edit)
+  const [editClientRateOpen, setEditClientRateOpen] = useState(false);
+  const [editClientRateValue, setEditClientRateValue] = useState('');
 
   const openEditPayment = (p: CasePayment) => {
     setEditPayment(p);
@@ -105,6 +120,59 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     }
   };
 
+  const openEditTime = (t: CaseTimeEntry) => {
+    setEditTime(t);
+    const total = t.duration_seconds || 0;
+    setEditTimeHours(String(Math.floor(total / 3600)));
+    setEditTimeMinutes(String(Math.floor((total % 3600) / 60)));
+    setEditTimeDesc(t.description || '');
+    setEditTimeRate(t.hourly_rate != null ? String(t.hourly_rate) : '');
+  };
+
+  const handleSaveEditTime = async () => {
+    if (!editTime) return;
+    const h = parseInt(editTimeHours || '0', 10) || 0;
+    const m = parseInt(editTimeMinutes || '0', 10) || 0;
+    const seconds = h * 3600 + m * 60;
+    if (seconds <= 0) {
+      toast({ title: 'נא להזין משך זמן תקין', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateTimeEntry(editTime.id, {
+        duration_seconds: seconds,
+        description: editTimeDesc || null,
+        hourly_rate: editTimeRate.trim() === '' ? null : parseFloat(editTimeRate),
+      });
+      setEditTime(null);
+      toast({ title: 'הרישום עודכן' });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון רישום', description: err?.message, variant: 'destructive' });
+    }
+  };
+
+  const openEditClientRate = () => {
+    setEditClientRateValue(hourlyRate != null ? String(hourlyRate) : '');
+    setEditClientRateOpen(true);
+  };
+
+  const handleSaveClientRate = async () => {
+    const newRate = editClientRateValue.trim() === '' ? null : parseFloat(editClientRateValue);
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ hourly_rate: newRate } as any)
+        .eq('id', clientId);
+      if (error) throw error;
+      setEditClientRateOpen(false);
+      toast({ title: 'תעריף הלקוח עודכן' });
+      onClientRateChanged?.(newRate);
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון תעריף', description: err?.message, variant: 'destructive' });
+    }
+  };
+
   const fetchAll = async () => {
     try {
       const [c, p, t] = await Promise.all([
@@ -132,7 +200,15 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     [charges, payments, timeEntries, hourlyRate],
   );
   const hours = summary.totalSeconds / 3600;
-  const timeCharged = hourlyRate && hourlyRate > 0 ? hours * hourlyRate : 0;
+  // Accurate per-row computation (uses each entry's override when set).
+  const timeCharged = useMemo(
+    () =>
+      timeEntries.reduce((sum, e) => {
+        const rate = effectiveHourlyRate(e, hourlyRate);
+        return sum + ((e.duration_seconds || 0) / 3600) * rate;
+      }, 0),
+    [timeEntries, hourlyRate],
+  );
   const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
 
   const handleAddCharge = async () => {
@@ -257,11 +333,22 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
       {/* Time entries (moved up) */}
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            רישומי זמן
-            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב)</span>
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              רישומי זמן
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={openEditClientRate}
+              title="ערוך תעריף שעה ללקוח"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              תעריף לקוח: {hourlyRate && hourlyRate > 0 ? formatCurrency(hourlyRate) + ' / שעה' : 'לא הוגדר'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {timeEntries.length === 0 ? (
@@ -271,19 +358,31 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               <div className="divide-y">
                 {timeEntries.map((t) => {
                   const secs = t.duration_seconds || 0;
-                  const lineCharge = hourlyRate && hourlyRate > 0 ? (secs / 3600) * hourlyRate : 0;
+                  const rate = effectiveHourlyRate(t, hourlyRate);
+                  const lineCharge = (secs / 3600) * rate;
+                  const hasOverride = t.hourly_rate != null && t.hourly_rate > 0;
                   return (
                     <div key={t.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                       <div className="text-muted-foreground tabular-nums shrink-0">
                         {format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}
                       </div>
-                      <div className="flex-1 truncate">{t.description || '—'}</div>
+                      <div className="flex-1 truncate">
+                        {t.description || '—'}
+                        {hasOverride && (
+                          <span className="ms-2 text-xs text-accent">
+                            (תעריף: {formatCurrency(t.hourly_rate as number)})
+                          </span>
+                        )}
+                      </div>
                       <div className="font-mono tabular-nums shrink-0 w-20 text-end">
                         {t.duration_seconds != null ? formatDuration(t.duration_seconds) : 'פועל...'}
                       </div>
                       <div className="font-semibold tabular-nums shrink-0 w-24 text-end">
-                        {hourlyRate && hourlyRate > 0 ? formatCurrency(lineCharge) : '—'}
+                        {rate > 0 ? formatCurrency(lineCharge) : '—'}
                       </div>
+                      <Button variant="ghost" size="sm" onClick={() => openEditTime(t)} title="ערוך רישום">
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteTime(t.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -297,13 +396,13 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
                   {formatDuration(summary.totalSeconds)}
                 </div>
                 <div className="tabular-nums shrink-0 w-24 text-end">
-                  {hourlyRate && hourlyRate > 0 ? formatCurrency(timeCharged) : '—'}
+                  {timeCharged > 0 ? formatCurrency(timeCharged) : '—'}
                 </div>
-                <div className="w-9" />
+                <div className="w-[72px]" />
               </div>
-              {(!hourlyRate || hourlyRate <= 0) && (
+              {timeCharged === 0 && (
                 <div className="text-xs text-muted-foreground mt-2">
-                  כדי לחשב סכום לחיוב לכל רישום, הגדר תעריף שעה בהגדרות התיק.
+                  הגדר תעריף לקוח (למעלה) או תעריף ספציפי לשורה כדי לחשב סכום לחיוב.
                 </div>
               )}
             </>
@@ -538,6 +637,100 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEditPayment(null)}>ביטול</Button>
             <Button onClick={handleSaveEditPayment}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Time Entry Dialog */}
+      <Dialog open={!!editTime} onOpenChange={(o) => !o && setEditTime(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת רישום זמן</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">שעות</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={editTimeHours}
+                  onChange={(e) => setEditTimeHours(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">דקות</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={editTimeMinutes}
+                  onChange={(e) => setEditTimeMinutes(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תיאור</Label>
+              <Textarea
+                value={editTimeDesc}
+                onChange={(e) => setEditTimeDesc(e.target.value)}
+                rows={2}
+                placeholder="על מה עבדת..."
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תעריף לשעה לרישום זה (₪)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                value={editTimeRate}
+                onChange={(e) => setEditTimeRate(e.target.value)}
+                placeholder={
+                  hourlyRate && hourlyRate > 0
+                    ? `ברירת מחדל: ${hourlyRate} ₪`
+                    : 'השאר ריק כדי להשתמש בתעריף הלקוח'
+                }
+                dir="ltr"
+              />
+              <div className="text-xs text-muted-foreground">
+                גובר על תעריף הלקוח עבור שורה זו בלבד.
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditTime(null)}>ביטול</Button>
+            <Button onClick={handleSaveEditTime}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Hourly Rate Dialog */}
+      <Dialog open={editClientRateOpen} onOpenChange={setEditClientRateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת תעריף שעה ללקוח</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">תעריף לשעה (₪)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                value={editClientRateValue}
+                onChange={(e) => setEditClientRateValue(e.target.value)}
+                placeholder="השאר ריק כדי להשתמש בתעריף ברירת המחדל"
+                dir="ltr"
+              />
+              <div className="text-xs text-muted-foreground">
+                התעריף יחול על כל התיקים של הלקוח. ניתן עדיין לדרוס לכל רישום זמן בנפרד.
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditClientRateOpen(false)}>ביטול</Button>
+            <Button onClick={handleSaveClientRate}>שמור</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

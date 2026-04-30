@@ -36,6 +36,7 @@ export interface CaseTimeEntry {
   description: string | null;
   source: 'timer' | 'manual' | 'auto';
   created_at: string;
+  hourly_rate?: number | null;
 }
 
 export interface CaseFinancials {
@@ -295,6 +296,41 @@ export async function deleteTimeEntry(id: string) {
   if (error) throw error;
 }
 
+export async function updateTimeEntry(
+  id: string,
+  updates: {
+    duration_seconds?: number;
+    description?: string | null;
+    started_at?: string;
+    hourly_rate?: number | null;
+  },
+) {
+  const payload: any = { ...updates };
+  // If duration changes and we have a started_at, recompute ended_at to keep invariants.
+  if (updates.duration_seconds != null) {
+    const { data: row } = await supabase
+      .from('case_time_entries' as any)
+      .select('started_at')
+      .eq('id', id)
+      .maybeSingle();
+    const startedAt = updates.started_at
+      ? new Date(updates.started_at)
+      : row
+        ? new Date((row as any).started_at)
+        : new Date();
+    payload.ended_at = new Date(startedAt.getTime() + updates.duration_seconds * 1000).toISOString();
+  }
+  const { error } = await supabase.from('case_time_entries' as any).update(payload).eq('id', id);
+  if (error) throw error;
+}
+
+/** Returns the effective hourly rate for a given time entry. */
+export function effectiveHourlyRate(entry: CaseTimeEntry, defaultRate: number | null | undefined): number {
+  const r = entry.hourly_rate;
+  if (r != null && r > 0) return Number(r);
+  return defaultRate && defaultRate > 0 ? Number(defaultRate) : 0;
+}
+
 /* --------------------------- Aggregations ------------------------------ */
 export function summarizeCase(
   charges: CaseCharge[],
@@ -308,9 +344,11 @@ export function summarizeCase(
     (s, e) => s + (e.duration_seconds || 0),
     0,
   );
-  const timeCharged = hourlyRate && hourlyRate > 0
-    ? (totalSeconds / 3600) * Number(hourlyRate)
-    : 0;
+  // Compute per-row using row override when present.
+  const timeCharged = timeEntries.reduce((sum, e) => {
+    const rate = effectiveHourlyRate(e, hourlyRate);
+    return sum + ((e.duration_seconds || 0) / 3600) * rate;
+  }, 0);
   const totalCharged = extraCharged + timeCharged;
   return {
     totalCharged,
