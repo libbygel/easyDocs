@@ -207,6 +207,63 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
         />
       </div>
 
+      {/* Time entries (moved up) */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            רישומי זמן
+            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {timeEntries.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-4">לא נרשמו שעות</div>
+          ) : (
+            <>
+              <div className="divide-y">
+                {timeEntries.map((t) => {
+                  const secs = t.duration_seconds || 0;
+                  const lineCharge = hourlyRate && hourlyRate > 0 ? (secs / 3600) * hourlyRate : 0;
+                  return (
+                    <div key={t.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <div className="text-muted-foreground tabular-nums shrink-0">
+                        {format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                      <div className="flex-1 truncate">{t.description || '—'}</div>
+                      <div className="font-mono tabular-nums shrink-0 w-20 text-end">
+                        {t.duration_seconds != null ? formatDuration(t.duration_seconds) : 'פועל...'}
+                      </div>
+                      <div className="font-semibold tabular-nums shrink-0 w-24 text-end">
+                        {hourlyRate && hourlyRate > 0 ? formatCurrency(lineCharge) : '—'}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTime(t.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-3 mt-2 border-t text-sm font-semibold">
+                <div className="flex-1">סה״כ זמן עבודה</div>
+                <div className="font-mono tabular-nums shrink-0 w-20 text-end">
+                  {formatDuration(summary.totalSeconds)}
+                </div>
+                <div className="tabular-nums shrink-0 w-24 text-end">
+                  {hourlyRate && hourlyRate > 0 ? formatCurrency(timeCharged) : '—'}
+                </div>
+                <div className="w-9" />
+              </div>
+              {(!hourlyRate || hourlyRate <= 0) && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  כדי לחשב סכום לחיוב לכל רישום, הגדר תעריף שעה בהגדרות התיק.
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Charges */}
       <Card className="shadow-sm">
         <CardHeader>
