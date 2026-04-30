@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
@@ -118,7 +119,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { clientName, clientEmail, caseTitle, portalLink, advisorEmail, advisorName, emailType }: SendPortalLinkRequest = await req.json();
+    const { clientName, clientEmail, caseTitle, portalLink, advisorEmail, advisorName: advisorNameRaw, emailType }: SendPortalLinkRequest = await req.json();
+    let advisorName = advisorNameRaw;
+
+    // If we don't have a name but do have an email, try to look it up
+    if (!advisorName && advisorEmail) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseUrl && supabaseServiceKey) {
+          const supa = createClient(supabaseUrl, supabaseServiceKey);
+          const { data } = await supa
+            .from("profiles")
+            .select("name, sender_display_name")
+            .eq("email", advisorEmail)
+            .maybeSingle();
+          advisorName = (data as any)?.sender_display_name || (data as any)?.name || "";
+        }
+      } catch (lookupErr) {
+        console.warn("Failed to lookup advisor name:", lookupErr);
+      }
+    }
 
     if (!clientEmail || !portalLink) {
       return new Response(
