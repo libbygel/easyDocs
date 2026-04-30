@@ -33,6 +33,8 @@ import { CaseCompletionBanner } from '@/components/cases/CaseCompletionBanner';
 import { DraggableDocumentRow } from '@/components/cases/DraggableDocumentRow';
 import { logCaseActivity } from '@/lib/activityLog';
 import { syncCaseStatus } from '@/lib/caseStatusSync';
+import { CaseTimerWidget } from '@/components/cases/CaseTimerWidget';
+import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
 import { 
   ArrowRight, 
   Copy, 
@@ -112,6 +114,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
   const [advisorUploadDoc, setAdvisorUploadDoc] = useState<DocumentWithUpload | null>(null);
   const [previewMode, setPreviewMode] = useState<'new_tab' | 'modal'>('new_tab');
   const [advisorName, setAdvisorName] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
+  const [financeRefresh, setFinanceRefresh] = useState(0);
   
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -231,6 +236,8 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
       fetchCurrentAdvisorProfile(user).then((profile) => {
         setAdvisorName(profile.displayName || user.email?.split('@')[0] || '');
+        setHourlyRate(profile.hourlyRate);
+        setTimerMode(profile.timerMode);
       });
     }
 
@@ -689,7 +696,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="requests" dir="rtl">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-5 mb-4">
                 <TabsTrigger value="requests" className="gap-2">
                   <UploadIcon className="h-4 w-4" />
                   מסמכים נדרשים ({requestDocs.length})
@@ -705,6 +712,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                 <TabsTrigger value="banker" className="gap-2">
                   <Landmark className="h-4 w-4" />
                   שליחה לבנקאי
+                </TabsTrigger>
+                <TabsTrigger value="finance" className="gap-2">
+                  💰 חיובים וזמן
                 </TabsTrigger>
               </TabsList>
 
@@ -847,6 +857,23 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   documents={documents}
                   advisorName={advisorName || user?.email || ''}
                 />
+              </TabsContent>
+
+              <TabsContent value="finance">
+                <div className="space-y-4">
+                  <CaseTimerWidget
+                    caseId={id!}
+                    clientId={caseData.client_id}
+                    timerMode={timerMode}
+                    onChange={() => setFinanceRefresh((n) => n + 1)}
+                  />
+                  <CaseFinancePanel
+                    caseId={id!}
+                    clientId={caseData.client_id}
+                    hourlyRate={hourlyRate}
+                    refreshKey={financeRefresh}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

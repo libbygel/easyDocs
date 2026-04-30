@@ -46,6 +46,39 @@ export type Database = {
           },
         ]
       }
+      case_charges: {
+        Row: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          charged_at: string
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+        }
+        Insert: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          charged_at?: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+        }
+        Update: {
+          advisor_id?: string
+          amount?: number
+          case_id?: string
+          charged_at?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       case_documents: {
         Row: {
           advisor_note: string | null
@@ -114,6 +147,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      case_payments: {
+        Row: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          paid_at: string
+          payment_method: string | null
+        }
+        Insert: {
+          advisor_id: string
+          amount: number
+          case_id: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          paid_at?: string
+          payment_method?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          amount?: number
+          case_id?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          paid_at?: string
+          payment_method?: string | null
+        }
+        Relationships: []
+      }
+      case_time_entries: {
+        Row: {
+          advisor_id: string
+          case_id: string
+          client_id: string
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          source: string
+          started_at: string
+        }
+        Insert: {
+          advisor_id: string
+          case_id: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          source?: string
+          started_at: string
+        }
+        Update: {
+          advisor_id?: string
+          case_id?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          source?: string
+          started_at?: string
+        }
+        Relationships: []
       }
       case_types: {
         Row: {
@@ -580,12 +688,14 @@ export type Database = {
           email: string
           enable_daily_reminders: boolean
           enable_urgent_alerts: boolean
+          hourly_rate: number | null
           id: string
           inactivity_days: number
           is_paid: boolean
           name: string
           reminder_hour: number
           sender_display_name: string
+          timer_mode: string
           user_id: string
         }
         Insert: {
@@ -594,12 +704,14 @@ export type Database = {
           email: string
           enable_daily_reminders?: boolean
           enable_urgent_alerts?: boolean
+          hourly_rate?: number | null
           id?: string
           inactivity_days?: number
           is_paid?: boolean
           name: string
           reminder_hour?: number
           sender_display_name?: string
+          timer_mode?: string
           user_id: string
         }
         Update: {
@@ -608,12 +720,14 @@ export type Database = {
           email?: string
           enable_daily_reminders?: boolean
           enable_urgent_alerts?: boolean
+          hourly_rate?: number | null
           id?: string
           inactivity_days?: number
           is_paid?: boolean
           name?: string
           reminder_hour?: number
           sender_display_name?: string
+          timer_mode?: string
           user_id?: string
         }
         Relationships: []
