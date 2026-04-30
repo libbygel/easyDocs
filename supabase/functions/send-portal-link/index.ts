@@ -33,6 +33,8 @@ serve(async (req: Request): Promise<Response> => {
         templateName: "portal-link",
         recipientEmail: clientEmail,
         idempotencyKey: `portal-${portalLink}-${emailType || "reminder"}-${Date.now()}`,
+        senderName: advisorName || undefined,
+        replyTo: advisorEmail || undefined,
         templateData: { clientName, caseTitle, portalLink, advisorName, emailType: emailType || "reminder" },
       },
     });
