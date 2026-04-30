@@ -411,6 +411,9 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
         </CardContent>
       </Card>
 
+      {/* Monthly breakdown of time entries */}
+      <MonthlyTimeReport entries={timeEntries} hourlyRate={hourlyRate} />
+
       {/* Charges */}
       <Card className="shadow-sm">
         <CardHeader>
