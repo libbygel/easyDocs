@@ -327,12 +327,18 @@ Deno.serve(async (req) => {
     status: 'pending',
   })
 
+  // Sanitize sender display name — strip characters that break RFC 5322 From headers
+  const safeSenderName = (senderName || SITE_NAME)
+    .replace(/[\r\n"<>]/g, '')
+    .trim() || SITE_NAME
+
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'transactional_emails',
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: `${safeSenderName} <noreply@${FROM_DOMAIN}>`,
+      ...(replyTo ? { reply_to: replyTo } : {}),
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
