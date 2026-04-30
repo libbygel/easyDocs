@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2 } from 'lucide-react';
+import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2, CheckCircle2, Circle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,6 +30,7 @@ import {
   summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
+  setChargePaidManually,
   type CaseCharge,
   type CasePayment,
   type CaseTimeEntry,
@@ -141,6 +142,14 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     await deleteCharge(id);
     fetchAll();
   };
+  const handleToggleChargePaid = async (charge: CaseCharge) => {
+    try {
+      await setChargePaidManually(charge.id, !charge.paid_manually);
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון סטטוס', description: err?.message, variant: 'destructive' });
+    }
+  };
   const handleDeletePayment = async (id: string) => {
     await deletePayment(id);
     fetchAll();
@@ -230,6 +239,18 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
                     <div className="flex-1 truncate">{c.description || '—'}</div>
                     <Badge variant={variant as any} className="shrink-0">{label}</Badge>
                     <div className="font-semibold tabular-nums shrink-0">{formatCurrency(c.amount)}</div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleChargePaid(c)}
+                      title={c.paid_manually ? 'בטל סימון שולם' : 'סמן כשולם'}
+                    >
+                      {c.paid_manually ? (
+                        <CheckCircle2 className="h-4 w-4 text-success" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDeleteCharge(c.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
