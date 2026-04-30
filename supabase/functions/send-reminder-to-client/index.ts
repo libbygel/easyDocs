@@ -54,19 +54,21 @@ const handler = async (req: Request): Promise<Response> => {
     const origin = req.headers.get('origin') || 'https://siman-sheer-shlem.lovable.app';
     const portalUrl = `${origin}/portal/${portalToken}`;
 
-    const subject = `תזכורת: מסמכים חסרים לתיק ${caseTitle}`;
+    const subject = advisorName
+      ? `תזכורת מ${advisorName}: מסמכים חסרים לתיק ${caseTitle}`
+      : `תזכורת: מסמכים חסרים לתיק ${caseTitle}`;
     console.log("Sending email via Brevo:", { to: clientEmail, subject, docsCount: missingDocs.length });
 
     const htmlContent = `
       <div dir="rtl" style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
         <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 32px 30px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600;">📋 סימן שיר</h1>
-          <p style="color: #a0aec0; margin: 8px 0 0; font-size: 14px;">מערכת ניהול מסמכים</p>
+          <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600;">📋 EasyDocs</h1>
+          <p style="color: #a0aec0; margin: 8px 0 0; font-size: 14px;">${advisorName ? `מאת ${advisorName}` : 'מערכת ניהול מסמכים'}</p>
         </div>
         <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none;">
           <h2 style="color: #1a1a2e; margin: 0 0 8px; font-size: 20px;">שלום ${clientName},</h2>
           <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0 0 24px;">
-            זוהי תזכורת בנוגע למסמכים שטרם הועלו לתיק: <strong style="color: #1a1a2e;">${caseTitle}</strong>
+            זוהי תזכורת${advisorName ? ` מ-<strong style="color: #1a1a2e;">${advisorName}</strong>` : ''} בנוגע למסמכים שטרם הועלו לתיק: <strong style="color: #1a1a2e;">${caseTitle}</strong>
           </p>
           ${personalMessage ? `
             <div style="background: #eff6ff; border-right: 4px solid #3b82f6; padding: 16px 20px; margin: 0 0 24px; border-radius: 0 8px 8px 0;">
@@ -102,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
         "api-key": BREVO_API_KEY!,
       },
       body: JSON.stringify({
-        sender: { name: "EasyDocs", email: "dg.smarter1@gmail.com" },
+        sender: { name: advisorName ? `${advisorName} | EasyDocs` : "EasyDocs", email: "dg.smarter1@gmail.com" },
         ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
         to: [{ email: clientEmail, name: clientName }],
         subject,
