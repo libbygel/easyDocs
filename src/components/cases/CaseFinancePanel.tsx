@@ -178,7 +178,16 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
     <div className="space-y-6">
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="סך חיובים" value={formatCurrency(summary.totalCharged)} icon={<Receipt className="h-5 w-5" />} />
+        <SummaryCard
+          label="סך לחיוב"
+          value={formatCurrency(summary.totalCharged)}
+          icon={<Receipt className="h-5 w-5" />}
+          subtext={
+            hourlyRate && hourlyRate > 0
+              ? `זמן: ${formatCurrency(timeCharged)} • נוספים: ${formatCurrency(extraCharged)}`
+              : `חיובים נוספים: ${formatCurrency(extraCharged)}`
+          }
+        />
         <SummaryCard label="סך תשלומים" value={formatCurrency(summary.totalPaid)} icon={<Banknote className="h-5 w-5" />} />
         <SummaryCard
           label="יתרה לתשלום"
@@ -191,9 +200,9 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           value={formatDuration(summary.totalSeconds)}
           icon={<TrendingUp className="h-5 w-5" />}
           subtext={
-            profitability != null
-              ? `כדאיות: ${formatCurrency(profitability)}`
-              : 'הגדר תעריף שעה כדי לראות כדאיות'
+            hourlyRate && hourlyRate > 0
+              ? `תעריף: ${formatCurrency(hourlyRate)} / שעה`
+              : 'הגדר תעריף שעה כדי לראות סכום לחיוב'
           }
         />
       </div>
@@ -203,7 +212,8 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Receipt className="h-4 w-4" />
-            חיובים
+            חיובים נוספים
+            <span className="text-xs text-muted-foreground font-normal me-2">(נכלל בסך לחיוב למעלה)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
