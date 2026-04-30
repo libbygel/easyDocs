@@ -858,6 +858,23 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   advisorName={advisorName || user?.email || ''}
                 />
               </TabsContent>
+
+              <TabsContent value="finance">
+                <div className="space-y-4">
+                  <CaseTimerWidget
+                    caseId={id!}
+                    clientId={caseData.client_id}
+                    timerMode={timerMode}
+                    onChange={() => setFinanceRefresh((n) => n + 1)}
+                  />
+                  <CaseFinancePanel
+                    caseId={id!}
+                    clientId={caseData.client_id}
+                    hourlyRate={hourlyRate}
+                    refreshKey={financeRefresh}
+                  />
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
