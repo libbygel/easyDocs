@@ -61,6 +61,8 @@ serve(async (req: Request): Promise<Response> => {
         templateName: "reminder",
         recipientEmail: clientEmail,
         idempotencyKey: `reminder-${portalLink}-${Date.now()}`,
+        senderName: advisorName || undefined,
+        replyTo: advisorEmail || undefined,
         templateData: {
           clientName,
           caseTitle,
