@@ -6,7 +6,9 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload } from 'lucide-react';
+import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
@@ -36,6 +38,7 @@ interface CaseRow {
   title: string;
   status: string;
   created_at: string;
+  portal_token?: string;
 }
 
 interface ActivityRow {
@@ -51,6 +54,10 @@ export default function ClientDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [advisorName, setAdvisorName] = useState('');
+  const [sendingViewLink, setSendingViewLink] = useState(false);
+  const [sendingUploadLink, setSendingUploadLink] = useState(false);
+  const [uploadCasePickerOpen, setUploadCasePickerOpen] = useState(false);
 
   const [client, setClient] = useState<ClientRow | null>(null);
   const [cases, setCases] = useState<CaseRow[]>([]);
@@ -67,7 +74,7 @@ export default function ClientDetail() {
       try {
         const [clientRes, casesRes, ch, pa, te, profile] = await Promise.all([
           supabase.from('clients').select('*').eq('id', id).eq('advisor_id', user.id).maybeSingle(),
-          supabase.from('cases').select('id,title,status,created_at').eq('client_id', id).eq('advisor_id', user.id).order('created_at', { ascending: false }),
+          supabase.from('cases').select('id,title,status,created_at,portal_token').eq('client_id', id).eq('advisor_id', user.id).order('created_at', { ascending: false }),
           listClientCharges(id),
           listClientPayments(id),
           listClientTimeEntries(id),
@@ -81,6 +88,7 @@ export default function ClientDetail() {
         setPayments(pa);
         setTimeEntries(te);
         setHourlyRate(profile.hourlyRate);
+        setAdvisorName(profile.displayName || '');
 
         if (caseList.length > 0) {
           const ids = caseList.map((c) => c.id);
@@ -120,6 +128,67 @@ export default function ClientDetail() {
   const profitability = hourlyRate != null
     ? totals.totalCharged - (totals.totalSeconds / 3600) * hourlyRate
     : null;
+
+  const masterPortalLink = client ? `${window.location.origin}/client-portal/${client.id}` : '';
+
+  const sendViewOnlyPortalLink = async () => {
+    if (!client) return;
+    if (!client.email) {
+      toast({ title: 'אין כתובת מייל ללקוח', variant: 'destructive' });
+      return;
+    }
+    setSendingViewLink(true);
+    try {
+      const response = await invokeEdgeFunction('send-portal-link', {
+        clientName: client.full_name,
+        clientEmail: client.email,
+        caseTitle: 'אזור אישי - צפייה בכל התיקים',
+        portalLink: masterPortalLink,
+        advisorEmail: user?.email || '',
+        advisorName: advisorName || user?.email?.split('@')[0] || '',
+        emailType: 'reminder',
+      });
+      if ((response as any)?.error) throw new Error((response as any).error);
+      toast({ title: 'הקישור נשלח', description: `קישור צפייה נשלח ל-${client.email}` });
+    } catch (err: any) {
+      toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSendingViewLink(false);
+    }
+  };
+
+  const sendUploadPortalLink = async (caseRow: CaseRow) => {
+    if (!client?.email) {
+      toast({ title: 'אין כתובת מייל ללקוח', variant: 'destructive' });
+      return;
+    }
+    if (!caseRow.portal_token) {
+      toast({ title: 'לתיק זה אין קישור פורטל', variant: 'destructive' });
+      return;
+    }
+    setSendingUploadLink(true);
+    try {
+      const portalLink = `${window.location.origin}/portal/${caseRow.portal_token}`;
+      const response = await invokeEdgeFunction('send-portal-link', {
+        clientName: client.full_name,
+        clientEmail: client.email,
+        caseTitle: caseRow.title,
+        portalLink,
+        advisorEmail: user?.email || '',
+        advisorName: advisorName || user?.email?.split('@')[0] || '',
+        emailType: 'reminder',
+      });
+      if ((response as any)?.error) throw new Error((response as any).error);
+      const now = new Date().toISOString();
+      await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', caseRow.id);
+      toast({ title: 'הקישור נשלח', description: `קישור להעלאת מסמכים נשלח ל-${client.email}` });
+      setUploadCasePickerOpen(false);
+    } catch (err: any) {
+      toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSendingUploadLink(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -165,29 +234,72 @@ export default function ClientDetail() {
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 items-stretch">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                const link = `${window.location.origin}/client-portal/${client.id}`;
-                navigator.clipboard.writeText(link);
-                toast({ title: 'הקישור הועתק', description: 'הלקוח יזדהה עם מספר תעודת הזהות שלו' });
-              }}
-            >
-              <Link2 className="h-4 w-4" />
-              העתק קישור לפורטל הלקוח (כל התיקים)
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => window.open(`/client-portal/${client.id}`, '_blank')}
-            >
-              <Copy className="h-4 w-4" />
-              פתח את פורטל הלקוח
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto md:min-w-[520px]">
+            {/* Upload portal link (per case) */}
+            <Card className="shadow-sm border-primary/30">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Upload className="h-4 w-4 text-primary" />
+                  קישור להעלאת מסמכים
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  שולח ללקוח קישור לפורטל של תיק ספציפי שבו הוא יכול להעלות מסמכים
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={() => setUploadCasePickerOpen(true)}
+                  disabled={cases.length === 0}
+                >
+                  <Send className="h-4 w-4" />
+                  שלח קישור העלאה
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* View-only master portal */}
+            <Card className="shadow-sm border-info/30">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Eye className="h-4 w-4 text-info" />
+                  קישור לצפייה בלבד
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  שולח ללקוח קישור לאזור אישי שבו הוא רואה את כל התיקים שלו — ללא אפשרות לערוך
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={sendViewOnlyPortalLink}
+                    disabled={sendingViewLink || !client.email}
+                  >
+                    {sendingViewLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    שלח במייל
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="העתק קישור"
+                    onClick={() => {
+                      navigator.clipboard.writeText(masterPortalLink);
+                      toast({ title: 'הקישור הועתק' });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="פתח"
+                    onClick={() => window.open(masterPortalLink, '_blank')}
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -357,6 +469,41 @@ export default function ClientDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Upload-link case picker dialog */}
+      <Dialog open={uploadCasePickerOpen} onOpenChange={setUploadCasePickerOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">בחר תיק לשליחת קישור העלאה</DialogTitle>
+            <DialogDescription className="text-right">
+              הקישור יישלח ל-{client.email || 'הלקוח'} ויאפשר לו להעלות מסמכים לתיק שתבחר
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            {cases.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">אין תיקים</p>
+            ) : (
+              cases.map((c) => (
+                <Button
+                  key={c.id}
+                  variant="outline"
+                  className="w-full justify-between gap-2 h-auto py-3"
+                  disabled={sendingUploadLink}
+                  onClick={() => sendUploadPortalLink(c)}
+                >
+                  <div className="flex flex-col items-start text-right min-w-0">
+                    <span className="font-medium truncate w-full">{c.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(c.created_at), 'dd/MM/yyyy')} • {c.status}
+                    </span>
+                  </div>
+                  {sendingUploadLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
