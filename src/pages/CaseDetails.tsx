@@ -296,6 +296,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
         portalToken: caseData.portal_token,
         personalMessage,
         advisorEmail: user?.email || '',
+        advisorName: advisorName || '',
         missingDocs: missingDocs.map(d => ({
           doc_name: d.doc_name,
           review_status: d.review_status,
