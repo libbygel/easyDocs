@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +59,8 @@ const handler = async (req: Request): Promise<Response> => {
     const subject = advisorName
       ? `תזכורת מ${advisorName}: מסמכים חסרים לתיק ${caseTitle}`
       : `תזכורת: מסמכים חסרים לתיק ${caseTitle}`;
-    console.log("Sending email via Brevo:", { to: clientEmail, subject, docsCount: missingDocs.length });
+    const fromName = advisorName ? `${advisorName} דרך EasyDocs` : "EasyDocs";
+    console.log("Sending reminder email:", { to: clientEmail, subject, docsCount: missingDocs.length, provider: RESEND_API_KEY ? "Resend" : "Brevo" });
 
     const htmlContent = `
       <div dir="rtl" style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
@@ -97,24 +100,39 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY!,
-      },
-      body: JSON.stringify({
-        sender: { name: advisorName ? `${advisorName} | EasyDocs` : "EasyDocs", email: "dg.smarter1@gmail.com" },
-        ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
-        to: [{ email: clientEmail, name: clientName }],
-        subject,
-        htmlContent,
-      }),
-    });
+    const res = RESEND_API_KEY
+      ? await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: `${fromName} <${RESEND_FROM_EMAIL}>`,
+            to: [clientEmail],
+            subject,
+            html: htmlContent,
+            ...(advisorEmail ? { reply_to: advisorEmail } : {}),
+          }),
+        })
+      : await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": BREVO_API_KEY!,
+          },
+          body: JSON.stringify({
+            sender: { name: fromName, email: "dg.smarter1@gmail.com" },
+            ...(advisorEmail ? { replyTo: { email: advisorEmail, name: advisorName || "יועץ" } } : {}),
+            to: [{ email: clientEmail, name: clientName }],
+            subject,
+            htmlContent,
+          }),
+        });
 
     if (!res.ok) {
       const errorData = await res.text();
-      console.error("Brevo API error:", errorData);
+      console.error("Email API error:", errorData);
       return new Response(
         JSON.stringify({ error: "שגיאה בשליחת המייל" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -122,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResult = await res.json();
-    console.log("Reminder email sent successfully via Brevo:", emailResult);
+    console.log("Reminder email sent successfully:", emailResult);
 
     return new Response(
       JSON.stringify({ success: true, documentCount: missingDocs.length, sentTo: clientEmail }),
