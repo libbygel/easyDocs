@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, FolderOpen, ChevronLeft, ExternalLink, AlertCircle } from 'lucide-react';
+import { Loader2, FileText, FolderOpen, ExternalLink, AlertCircle, Wallet, Clock, History, Upload } from 'lucide-react';
 import { format } from 'date-fns';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { formatCurrency, formatDuration, type CaseCharge, type CasePayment, type CaseTimeEntry } from '@/lib/billing';
 
 interface ClientRow {
   id: string;
@@ -29,6 +31,14 @@ interface DocRow {
   document_type: string;
 }
 
+interface ActivityRow {
+  id: string;
+  case_id: string;
+  action_type: string;
+  description: string;
+  created_at: string;
+}
+
 const STATUS_STYLES: Record<string, string> = {
   'תקין': 'bg-success/10 text-success border-success/30',
   'הועלה': 'bg-info/10 text-info border-info/30',
@@ -48,6 +58,10 @@ export default function ClientMasterPortal() {
   const [client, setClient] = useState<ClientRow | null>(null);
   const [cases, setCases] = useState<CaseRow[]>([]);
   const [docsByCase, setDocsByCase] = useState<Map<string, DocRow[]>>(new Map());
+  const [chargesByCase, setChargesByCase] = useState<Map<string, CaseCharge[]>>(new Map());
+  const [paymentsByCase, setPaymentsByCase] = useState<Map<string, CasePayment[]>>(new Map());
+  const [timeByCase, setTimeByCase] = useState<Map<string, CaseTimeEntry[]>>(new Map());
+  const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [pwInput, setPwInput] = useState('');
@@ -95,26 +109,45 @@ export default function ClientMasterPortal() {
     })();
   }, [token]);
 
-  const loadDocs = async () => {
+  const loadAll = async () => {
     if (cases.length === 0) return;
     const ids = cases.map((c) => c.id);
-    const { data } = await supabase
-      .from('case_documents')
-      .select('id, doc_name, review_status, required, document_type, case_id, display_order')
-      .in('case_id', ids)
-      .order('display_order');
-    const map = new Map<string, DocRow[]>();
-    (data || []).forEach((d: any) => {
-      const arr = map.get(d.case_id) || [];
+    const [docsRes, chargesRes, paymentsRes, timeRes, activityRes] = await Promise.all([
+      supabase
+        .from('case_documents')
+        .select('id, doc_name, review_status, required, document_type, case_id, display_order')
+        .in('case_id', ids)
+        .order('display_order'),
+      supabase.from('case_charges' as any).select('*').in('case_id', ids).order('charged_at', { ascending: false }),
+      supabase.from('case_payments' as any).select('*').in('case_id', ids).order('paid_at', { ascending: false }),
+      supabase.from('case_time_entries' as any).select('*').in('case_id', ids).not('ended_at', 'is', null).order('started_at', { ascending: false }),
+      supabase.from('case_activity_log').select('*').in('case_id', ids).order('created_at', { ascending: false }).limit(100),
+    ]);
+    const docsMap = new Map<string, DocRow[]>();
+    (docsRes.data || []).forEach((d: any) => {
+      const arr = docsMap.get(d.case_id) || [];
       arr.push(d);
-      map.set(d.case_id, arr);
+      docsMap.set(d.case_id, arr);
     });
-    setDocsByCase(map);
+    setDocsByCase(docsMap);
+    const groupBy = <T extends { case_id: string }>(rows: T[]) => {
+      const m = new Map<string, T[]>();
+      rows.forEach((r) => {
+        const arr = m.get(r.case_id) || [];
+        arr.push(r);
+        m.set(r.case_id, arr);
+      });
+      return m;
+    };
+    setChargesByCase(groupBy((chargesRes.data || []) as any));
+    setPaymentsByCase(groupBy((paymentsRes.data || []) as any));
+    setTimeByCase(groupBy((timeRes.data || []) as any));
+    setActivity((activityRes.data || []) as any);
   };
 
   useEffect(() => {
     if (authenticated && cases.length > 0 && docsByCase.size === 0) {
-      loadDocs();
+      loadAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated, cases]);
@@ -132,6 +165,26 @@ export default function ClientMasterPortal() {
     });
     return { total, ok, pending, missing, rejected };
   }, [docsByCase]);
+
+  const finance = useMemo(() => {
+    let totalCharged = 0;
+    let totalPaid = 0;
+    chargesByCase.forEach((arr) => arr.forEach((c) => { totalCharged += Number(c.amount || 0); }));
+    paymentsByCase.forEach((arr) => arr.forEach((p) => { totalPaid += Number(p.amount || 0); }));
+    return { totalCharged, totalPaid, balance: totalCharged - totalPaid };
+  }, [chargesByCase, paymentsByCase]);
+
+  const totalSeconds = useMemo(() => {
+    let s = 0;
+    timeByCase.forEach((arr) => arr.forEach((e) => { s += e.duration_seconds || 0; }));
+    return s;
+  }, [timeByCase]);
+
+  const caseTitleById = useMemo(() => {
+    const m = new Map<string, string>();
+    cases.forEach((c) => m.set(c.id, c.title));
+    return m;
+  }, [cases]);
 
   if (loading) {
     return (
@@ -235,8 +288,15 @@ export default function ClientMasterPortal() {
           <StatCard label="ממתינים / נדחו" value={stats.missing + stats.rejected} accent={stats.rejected > 0 ? 'destructive' : 'muted'} />
         </div>
 
-        {/* Cases list */}
-        <div className="space-y-4">
+        <Tabs defaultValue="cases" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="cases" className="gap-1.5"><FolderOpen className="h-4 w-4" /> תיקים</TabsTrigger>
+            <TabsTrigger value="finance" className="gap-1.5"><Wallet className="h-4 w-4" /> סיכום פיננסי</TabsTrigger>
+            <TabsTrigger value="time" className="gap-1.5"><Clock className="h-4 w-4" /> זמן עבודה</TabsTrigger>
+            <TabsTrigger value="activity" className="gap-1.5"><History className="h-4 w-4" /> פעילות</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="cases" className="mt-4 space-y-4">
           {cases.map((c) => {
             const docs = docsByCase.get(c.id) || [];
             const total = docs.length;
@@ -262,8 +322,8 @@ export default function ClientMasterPortal() {
                         className="gap-1"
                         onClick={() => window.open(`/portal/${c.portal_token}?view=1`, '_blank')}
                       >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        פתח תיק
+                        <Upload className="h-3.5 w-3.5" />
+                        פתח תיק להעלאת מסמכים
                       </Button>
                     </div>
                   </div>
@@ -307,12 +367,132 @@ export default function ClientMasterPortal() {
               </Card>
             );
           })}
-        </div>
+          </TabsContent>
 
-        <p className="text-center text-xs text-muted-foreground pt-2">
-          לפעולה על מסמכים — היכנס/י לתיק הספציפי דרך הקישור שנשלח אליך במייל.
-          <ChevronLeft className="inline h-3 w-3" />
-        </p>
+          <TabsContent value="finance" className="mt-4 space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard label="סה״כ חיובים" value={formatCurrency(finance.totalCharged) as any} accent="info" />
+              <StatCard label="סה״כ תשלומים" value={formatCurrency(finance.totalPaid) as any} accent="success" />
+              <StatCard label="יתרה לתשלום" value={formatCurrency(finance.balance) as any} accent={finance.balance > 0 ? 'destructive' : 'muted'} />
+            </div>
+            {cases.map((c) => {
+              const charges = chargesByCase.get(c.id) || [];
+              const payments = paymentsByCase.get(c.id) || [];
+              const charged = charges.reduce((s, x) => s + Number(x.amount || 0), 0);
+              const paid = payments.reduce((s, x) => s + Number(x.amount || 0), 0);
+              if (charges.length === 0 && payments.length === 0) return null;
+              return (
+                <Card key={c.id} className="shadow-sm">
+                  <CardContent className="pt-4 pb-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{c.title}</h3>
+                      <span className="text-sm tabular-nums">
+                        יתרה: <span className={charged - paid > 0 ? 'text-destructive font-semibold' : 'text-success font-semibold'}>{formatCurrency(charged - paid)}</span>
+                      </span>
+                    </div>
+                    {charges.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-muted-foreground mb-1">חיובים</div>
+                        <div className="space-y-1">
+                          {charges.map((c2) => (
+                            <div key={c2.id} className="flex items-center justify-between text-sm border-b border-border/50 py-1">
+                              <div>
+                                <span>{c2.description || 'חיוב'}</span>
+                                <span className="text-xs text-muted-foreground mr-2">{format(new Date(c2.charged_at), 'dd/MM/yyyy')}</span>
+                              </div>
+                              <span className="tabular-nums">{formatCurrency(Number(c2.amount))}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {payments.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-muted-foreground mb-1">תשלומים</div>
+                        <div className="space-y-1">
+                          {payments.map((p) => (
+                            <div key={p.id} className="flex items-center justify-between text-sm border-b border-border/50 py-1">
+                              <div>
+                                <span>{p.description || p.payment_method || 'תשלום'}</span>
+                                <span className="text-xs text-muted-foreground mr-2">{format(new Date(p.paid_at), 'dd/MM/yyyy')}</span>
+                              </div>
+                              <span className="tabular-nums text-success">{formatCurrency(Number(p.amount))}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {finance.totalCharged === 0 && finance.totalPaid === 0 && (
+              <Card className="shadow-sm"><CardContent className="py-6 text-center text-sm text-muted-foreground">אין נתוני חיובים או תשלומים</CardContent></Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="time" className="mt-4 space-y-4">
+            <Card className="shadow-sm">
+              <CardContent className="pt-4 pb-4 text-center">
+                <div className="text-xs text-muted-foreground">סה״כ זמן עבודה</div>
+                <div className="text-3xl font-semibold tabular-nums text-primary">{formatDuration(totalSeconds)}</div>
+              </CardContent>
+            </Card>
+            {cases.map((c) => {
+              const entries = timeByCase.get(c.id) || [];
+              if (entries.length === 0) return null;
+              const caseTotal = entries.reduce((s, e) => s + (e.duration_seconds || 0), 0);
+              return (
+                <Card key={c.id} className="shadow-sm">
+                  <CardContent className="pt-4 pb-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{c.title}</h3>
+                      <span className="text-sm tabular-nums text-primary font-medium">{formatDuration(caseTotal)}</span>
+                    </div>
+                    <div className="space-y-1">
+                      {entries.slice(0, 10).map((e) => (
+                        <div key={e.id} className="flex items-center justify-between text-sm border-b border-border/50 py-1">
+                          <div className="min-w-0">
+                            <span className="text-xs text-muted-foreground">{format(new Date(e.started_at), 'dd/MM/yyyy')}</span>
+                            {e.description && <span className="mr-2">{e.description}</span>}
+                          </div>
+                          <span className="tabular-nums">{formatDuration(e.duration_seconds || 0)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {totalSeconds === 0 && (
+              <Card className="shadow-sm"><CardContent className="py-6 text-center text-sm text-muted-foreground">אין רישומי זמן עבודה</CardContent></Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-4">
+            <Card className="shadow-sm">
+              <CardContent className="pt-4 pb-4">
+                {activity.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-4">אין פעילות להצגה</p>
+                ) : (
+                  <div className="space-y-2">
+                    {activity.map((a) => (
+                      <div key={a.id} className="flex items-start gap-3 border-b border-border/50 pb-2 last:border-0">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm">{a.description}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {caseTitleById.get(a.case_id) || ''} • {format(new Date(a.created_at), 'dd/MM/yyyy HH:mm')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
@@ -324,7 +504,7 @@ function StatCard({
   accent,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   accent?: 'success' | 'info' | 'destructive' | 'muted';
 }) {
   const accentClass =
@@ -339,7 +519,7 @@ function StatCard({
     <Card className="shadow-sm">
       <CardContent className="p-3 text-center space-y-0.5">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className={`text-2xl font-semibold tabular-nums ${accentClass}`}>{value}</div>
+        <div className={`text-xl sm:text-2xl font-semibold tabular-nums ${accentClass}`}>{value}</div>
       </CardContent>
     </Card>
   );
