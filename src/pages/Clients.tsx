@@ -24,6 +24,7 @@ export default function Clients() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [groupEmailOpen, setGroupEmailOpen] = useState(false);
+  const [groupEmailInitialCategory, setGroupEmailInitialCategory] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -103,7 +104,7 @@ export default function Clients() {
             <Plus className="h-4 w-4" />
             לקוח חדש
           </Button>
-          <Button variant="outline" onClick={() => setGroupEmailOpen(true)} className="gap-2">
+          <Button variant="outline" onClick={() => { setGroupEmailInitialCategory(undefined); setGroupEmailOpen(true); }} className="gap-2">
             <Mail className="h-4 w-4" />
             מייל קבוצתי
           </Button>
@@ -126,6 +127,16 @@ export default function Clients() {
                   ))}
                 </SelectContent>
               </Select>
+              {filterCategory !== 'all' && (
+                <Button
+                  variant="default"
+                  onClick={() => { setGroupEmailInitialCategory(filterCategory); setGroupEmailOpen(true); }}
+                  className="gap-2 whitespace-nowrap"
+                >
+                  <Mail className="h-4 w-4" />
+                  שלח מייל לסיווג ({filteredClients.filter((c) => c.email).length})
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -216,7 +227,7 @@ export default function Clients() {
         client={editingClient}
         onSuccess={fetchClients} 
       />
-      <SendGroupEmailDialog open={groupEmailOpen} onOpenChange={setGroupEmailOpen} />
+      <SendGroupEmailDialog open={groupEmailOpen} onOpenChange={setGroupEmailOpen} initialCategoryId={groupEmailInitialCategory} />
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
