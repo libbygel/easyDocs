@@ -177,6 +177,7 @@ export function AddUploadDocumentDialog({
         caseTitle: caseTitle || '',
         portalLink,
         advisorEmail: user?.email || '',
+        advisorName,
         emailType: 'new_document',
       });
       if (response?.error) throw new Error(response.error.message);
