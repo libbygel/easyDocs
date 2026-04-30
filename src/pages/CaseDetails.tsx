@@ -272,7 +272,40 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
     
     fetchData();
     setReviewDoc(null);
-    toast({ title: 'המסמך נדחה', description: 'הערה נשלחה ללקוח' });
+
+    // Send rejection email to client immediately
+    if (caseData?.clients?.email) {
+      try {
+        await invokeEdgeFunction('send-reminder-to-client', {
+          clientName: caseData.clients.full_name,
+          clientEmail: caseData.clients.email,
+          caseTitle: caseData.title,
+          portalToken: caseData.portal_token,
+          personalMessage: `המסמך "${docName}" נדחה ויש להעלות אותו מחדש.`,
+          advisorEmail: user?.email || '',
+          advisorName: advisorName || '',
+          missingDocs: [{
+            doc_name: docName,
+            review_status: 'לא תקין',
+            due_date: null,
+            advisor_note: note,
+          }],
+        });
+        toast({ title: 'המסמך נדחה', description: 'נשלח מייל ללקוח עם ההערה' });
+      } catch (err: any) {
+        console.error('Failed to send rejection email:', err);
+        toast({
+          title: 'המסמך נדחה',
+          description: 'אך שליחת המייל ללקוח נכשלה',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      toast({
+        title: 'המסמך נדחה',
+        description: 'ללקוח אין כתובת מייל - לא נשלחה הודעה',
+      });
+    }
   };
 
   const handleSendReminder = async (personalMessage: string) => {
