@@ -263,6 +263,16 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
     });
   };
 
+  const copyMasterPortalLink = () => {
+    if (!caseData?.client_id) return;
+    const link = `${window.location.origin}/client-portal/${caseData.client_id}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: 'קישור פורטל הלקוח הועתק',
+      description: 'קישור צפייה בלבד לכל התיקים של הלקוח',
+    });
+  };
+
   const handleApprove = async (docId: string, docName: string) => {
     await supabase
       .from('case_documents')
