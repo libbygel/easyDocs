@@ -33,6 +33,8 @@ import { CaseCompletionBanner } from '@/components/cases/CaseCompletionBanner';
 import { DraggableDocumentRow } from '@/components/cases/DraggableDocumentRow';
 import { logCaseActivity } from '@/lib/activityLog';
 import { syncCaseStatus } from '@/lib/caseStatusSync';
+import { CaseTimerWidget } from '@/components/cases/CaseTimerWidget';
+import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
 import { 
   ArrowRight, 
   Copy, 
@@ -112,6 +114,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
   const [advisorUploadDoc, setAdvisorUploadDoc] = useState<DocumentWithUpload | null>(null);
   const [previewMode, setPreviewMode] = useState<'new_tab' | 'modal'>('new_tab');
   const [advisorName, setAdvisorName] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
+  const [financeRefresh, setFinanceRefresh] = useState(0);
   
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
