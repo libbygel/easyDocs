@@ -909,6 +909,11 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                       );
                     }}
                   />
+                  <RecurringChargesPanel
+                    clientId={caseData.client_id}
+                    defaultCaseId={id!}
+                    onChargesGenerated={() => setFinanceRefresh((n) => n + 1)}
+                  />
                 </div>
               </TabsContent>
             </Tabs>
