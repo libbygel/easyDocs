@@ -153,6 +153,7 @@ export type Database = {
           advisor_id: string
           amount: number
           case_id: string
+          charge_id: string | null
           client_id: string
           created_at: string
           description: string | null
@@ -164,6 +165,7 @@ export type Database = {
           advisor_id: string
           amount: number
           case_id: string
+          charge_id?: string | null
           client_id: string
           created_at?: string
           description?: string | null
@@ -175,6 +177,7 @@ export type Database = {
           advisor_id?: string
           amount?: number
           case_id?: string
+          charge_id?: string | null
           client_id?: string
           created_at?: string
           description?: string | null
