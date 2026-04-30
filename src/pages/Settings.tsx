@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchCurrentAdvisorProfile, updateCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,17 +28,11 @@ export default function Settings() {
 
   useEffect(() => {
     if (user) {
-      supabase
-        .from('profiles')
-        .select('name, email, sender_display_name')
-        .eq('user_id', user.id)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            setProfileName((data as any).name || '');
-            setProfileEmail((data as any).email || '');
-            setSenderDisplayName((data as any).sender_display_name || '');
-          }
+      fetchCurrentAdvisorProfile(user)
+        .then((profile) => {
+          setProfileName(profile.name || '');
+          setProfileEmail(profile.email || user.email || '');
+          setSenderDisplayName(profile.senderDisplayName || '');
         });
 
       // Load settings from localStorage
@@ -69,11 +63,7 @@ export default function Settings() {
         inactivityDays: parseInt(inactivityDays) || 2,
       }));
 
-      // Save profile fields to DB
-      await supabase
-        .from('profiles')
-        .update({ sender_display_name: senderDisplayName, name: profileName, email: profileEmail } as any)
-        .eq('user_id', user.id);
+      await updateCurrentAdvisorProfile(user, { senderDisplayName, name: profileName, email: profileEmail });
 
       toast({ title: 'ההגדרות נשמרו בהצלחה' });
     } catch {

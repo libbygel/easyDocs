@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import type { Case, Client, CaseType, CaseDocument, Upload } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -217,9 +218,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
         }
       } catch {}
 
-      // Fetch advisor name from profile
-      supabase.from('profiles').select('name').eq('user_id', user.id).single()
-        .then(({ data }) => { if (data) setAdvisorName((data as any).name || ''); });
+      fetchCurrentAdvisorProfile(user).then((profile) => {
+        setAdvisorName(profile.displayName || user.email?.split('@')[0] || '');
+      });
     }
 
     // Realtime subscription for instant updates

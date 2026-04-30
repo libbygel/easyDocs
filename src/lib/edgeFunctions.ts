@@ -1,9 +1,9 @@
-// Helper to call Edge Functions on Lovable Cloud (nihvmpljagypqjtvwlim)
+// Helper to call Edge Functions on Lovable Cloud
 // The main supabase client points to aegw (external project for data),
 // but edge functions are deployed on Lovable Cloud.
 
-const LOVABLE_CLOUD_URL = 'https://nihvmpljagypqjtvwlim.supabase.co';
-const LOVABLE_CLOUD_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5paHZtcGxqYWd5cHFqdHZ3bGltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3ODU5NDQsImV4cCI6MjA4NDM2MTk0NH0.Dh_f7ygtK-3plnapKPHWpHtwmLDqUTWZuifGOulChxk';
+const LOVABLE_CLOUD_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vpzbspnqwyonyffsgfas.supabase.co';
+const LOVABLE_CLOUD_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwemJzcG5xd3lvbnlmZnNnZmFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MDgxMDksImV4cCI6MjA5MjM4NDEwOX0.L51EzejaLsuP0LCYonHU7RJJQ4epUCSuzWm4LS_JNOY';
 
 function safeParseJson(rawText: string) {
   if (!rawText) return null;
