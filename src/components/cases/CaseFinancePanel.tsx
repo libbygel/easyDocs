@@ -640,6 +640,100 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Time Entry Dialog */}
+      <Dialog open={!!editTime} onOpenChange={(o) => !o && setEditTime(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת רישום זמן</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">שעות</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={editTimeHours}
+                  onChange={(e) => setEditTimeHours(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">דקות</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={editTimeMinutes}
+                  onChange={(e) => setEditTimeMinutes(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תיאור</Label>
+              <Textarea
+                value={editTimeDesc}
+                onChange={(e) => setEditTimeDesc(e.target.value)}
+                rows={2}
+                placeholder="על מה עבדת..."
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">תעריף לשעה לרישום זה (₪)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                value={editTimeRate}
+                onChange={(e) => setEditTimeRate(e.target.value)}
+                placeholder={
+                  hourlyRate && hourlyRate > 0
+                    ? `ברירת מחדל: ${hourlyRate} ₪`
+                    : 'השאר ריק כדי להשתמש בתעריף הלקוח'
+                }
+                dir="ltr"
+              />
+              <div className="text-xs text-muted-foreground">
+                גובר על תעריף הלקוח עבור שורה זו בלבד.
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditTime(null)}>ביטול</Button>
+            <Button onClick={handleSaveEditTime}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Hourly Rate Dialog */}
+      <Dialog open={editClientRateOpen} onOpenChange={setEditClientRateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-right">עריכת תעריף שעה ללקוח</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">תעריף לשעה (₪)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                value={editClientRateValue}
+                onChange={(e) => setEditClientRateValue(e.target.value)}
+                placeholder="השאר ריק כדי להשתמש בתעריף ברירת המחדל"
+                dir="ltr"
+              />
+              <div className="text-xs text-muted-foreground">
+                התעריף יחול על כל התיקים של הלקוח. ניתן עדיין לדרוס לכל רישום זמן בנפרד.
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditClientRateOpen(false)}>ביטול</Button>
+            <Button onClick={handleSaveClientRate}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
