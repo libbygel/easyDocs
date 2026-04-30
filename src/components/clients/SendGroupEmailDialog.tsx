@@ -28,6 +28,7 @@ import { Loader2, Send, Search } from 'lucide-react';
 interface SendGroupEmailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialCategoryId?: string;
 }
 
 interface ClientRow {
@@ -37,7 +38,7 @@ interface ClientRow {
   category_id: string | null;
 }
 
-export function SendGroupEmailDialog({ open, onOpenChange }: SendGroupEmailDialogProps) {
+export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: SendGroupEmailDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [clients, setClients] = useState<ClientRow[]>([]);
@@ -55,7 +56,7 @@ export function SendGroupEmailDialog({ open, onOpenChange }: SendGroupEmailDialo
     if (!open || !user) return;
     setSelected(new Set());
     setSearch('');
-    setFilterCategory('all');
+    setFilterCategory(initialCategoryId || 'all');
     setSubject('');
     setMessage('');
     Promise.all([
@@ -67,7 +68,18 @@ export function SendGroupEmailDialog({ open, onOpenChange }: SendGroupEmailDialo
       setCategories(((catRes.data as any) || []) as any);
       setAdvisorName(((pRes.data as any)?.sender_display_name || (pRes.data as any)?.name || '') as string);
     });
-  }, [open, user]);
+  }, [open, user, initialCategoryId]);
+
+  // Auto-select all clients in category when category changes (other than 'all')
+  useEffect(() => {
+    if (!open) return;
+    if (filterCategory === 'all') return;
+    const matching = clients.filter((c) => {
+      if (!c.email) return false;
+      return filterCategory === 'none' ? !c.category_id : c.category_id === filterCategory;
+    });
+    setSelected(new Set(matching.map((c) => c.id)));
+  }, [filterCategory, clients, open]);
 
   const filteredClients = useMemo(() => {
     return clients.filter((c) => {
