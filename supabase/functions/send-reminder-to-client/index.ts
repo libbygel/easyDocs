@@ -36,6 +36,14 @@ serve(async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey =
+      Deno.env.get("SUPABASE_ANON_KEY") ||
+      Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ||
+      Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY");
+
+    if (!supabaseAnonKey) {
+      throw new Error("Missing public API key for internal email call");
+    }
     const supa = createClient(supabaseUrl, supabaseServiceKey);
 
     let advisorName = advisorNameRaw;
@@ -54,8 +62,8 @@ serve(async (req: Request): Promise<Response> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${supabaseServiceKey}`,
-        apikey: supabaseServiceKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        apikey: supabaseAnonKey,
       },
       body: JSON.stringify({
         templateName: "reminder",
