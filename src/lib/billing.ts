@@ -9,6 +9,7 @@ export interface CaseCharge {
   description: string | null;
   charged_at: string;
   created_at: string;
+  paid_manually?: boolean;
 }
 
 export interface CasePayment {
@@ -86,6 +87,14 @@ export async function deleteCharge(id: string) {
   if (error) throw error;
 }
 
+export async function setChargePaidManually(id: string, paid: boolean) {
+  const { error } = await supabase
+    .from('case_charges' as any)
+    .update({ paid_manually: paid } as any)
+    .eq('id', id);
+  if (error) throw error;
+}
+
 /* ---------------------------- Payments --------------------------------- */
 export async function listCasePayments(caseId: string) {
   const { data, error } = await supabase
@@ -146,7 +155,8 @@ export function summarizeChargeSettlement(
   const amount = Number(charge.amount || 0);
   const remaining = Math.max(0, amount - paid);
   let status: 'open' | 'partial' | 'paid' = 'open';
-  if (paid >= amount && amount > 0) status = 'paid';
+  if (charge.paid_manually) status = 'paid';
+  else if (paid >= amount && amount > 0) status = 'paid';
   else if (paid > 0) status = 'partial';
   return { paid, remaining, status };
 }

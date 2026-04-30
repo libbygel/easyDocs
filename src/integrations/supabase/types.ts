@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          paid_manually: boolean
         }
         Insert: {
           advisor_id: string
@@ -66,6 +67,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          paid_manually?: boolean
         }
         Update: {
           advisor_id?: string
@@ -76,6 +78,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          paid_manually?: boolean
         }
         Relationships: []
       }
