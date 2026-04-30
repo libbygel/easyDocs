@@ -4,10 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Banknote, Receipt, TrendingUp } from 'lucide-react';
+import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   createCharge,
   createPayment,
@@ -20,6 +28,8 @@ import {
   listCaseTimeEntries,
   deleteTimeEntry,
   summarizeCase,
+  summarizeChargeSettlement,
+  updatePaymentChargeLink,
   type CaseCharge,
   type CasePayment,
   type CaseTimeEntry,
@@ -45,6 +55,7 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentDesc, setPaymentDesc] = useState('');
+  const [paymentChargeId, setPaymentChargeId] = useState<string>('none');
 
   const fetchAll = async () => {
     try {
@@ -113,10 +124,12 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
         amount: amt,
         description: paymentDesc || null,
         payment_method: paymentMethod || null,
+        charge_id: paymentChargeId === 'none' ? null : paymentChargeId,
       });
       setPaymentAmount('');
       setPaymentDesc('');
       setPaymentMethod('');
+      setPaymentChargeId('none');
       toast({ title: 'התשלום נוסף' });
       fetchAll();
     } catch (err: any) {
@@ -135,6 +148,15 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   const handleDeleteTime = async (id: string) => {
     await deleteTimeEntry(id);
     fetchAll();
+  };
+
+  const handleChangePaymentLink = async (paymentId: string, chargeId: string) => {
+    try {
+      await updatePaymentChargeLink(paymentId, chargeId === 'none' ? null : chargeId);
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון קישור', description: err?.message, variant: 'destructive' });
+    }
   };
 
   if (loading) {
@@ -190,16 +212,32 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               </Button>
             </div>
           </div>
-          <ItemList
-            items={charges.map((c) => ({
-              id: c.id,
-              date: c.charged_at,
-              amount: c.amount,
-              description: c.description,
-            }))}
-            onDelete={handleDeleteCharge}
-            emptyText="לא נרשמו חיובים"
-          />
+          {charges.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-4">לא נרשמו חיובים</div>
+          ) : (
+            <div className="divide-y">
+              {charges.map((c) => {
+                const s = summarizeChargeSettlement(c, payments);
+                const variant =
+                  s.status === 'paid' ? 'default' : s.status === 'partial' ? 'secondary' : 'outline';
+                const label =
+                  s.status === 'paid' ? 'שולם' : s.status === 'partial' ? `חלקי (${formatCurrency(s.paid)})` : 'פתוח';
+                return (
+                  <div key={c.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <div className="text-muted-foreground tabular-nums shrink-0">
+                      {format(new Date(c.charged_at), 'dd/MM/yyyy')}
+                    </div>
+                    <div className="flex-1 truncate">{c.description || '—'}</div>
+                    <Badge variant={variant as any} className="shrink-0">{label}</Badge>
+                    <div className="font-semibold tabular-nums shrink-0">{formatCurrency(c.amount)}</div>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteCharge(c.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -212,7 +250,7 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-[140px_140px_1fr_auto] gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-[120px_120px_1fr_180px_auto] gap-2">
             <div className="space-y-1">
               <Label className="text-xs">סכום (₪)</Label>
               <Input type="number" min={0} value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} />
@@ -225,6 +263,24 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               <Label className="text-xs">תיאור</Label>
               <Input value={paymentDesc} onChange={(e) => setPaymentDesc(e.target.value)} />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs">סוגר חיוב</Label>
+              <Select value={paymentChargeId} onValueChange={setPaymentChargeId}>
+                <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">ללא קישור</SelectItem>
+                  {charges.map((c) => {
+                    const s = summarizeChargeSettlement(c, payments);
+                    const desc = c.description ? c.description.slice(0, 30) : 'חיוב';
+                    return (
+                      <SelectItem key={c.id} value={c.id} disabled={s.status === 'paid'}>
+                        {desc} • {formatCurrency(c.amount)} {s.status === 'paid' ? '(שולם)' : s.status === 'partial' ? `(נותר ${formatCurrency(s.remaining)})` : ''}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="self-end">
               <Button onClick={handleAddPayment} className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -232,16 +288,46 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
               </Button>
             </div>
           </div>
-          <ItemList
-            items={payments.map((p) => ({
-              id: p.id,
-              date: p.paid_at,
-              amount: p.amount,
-              description: [p.payment_method, p.description].filter(Boolean).join(' • ') || null,
-            }))}
-            onDelete={handleDeletePayment}
-            emptyText="לא נרשמו תשלומים"
-          />
+          {payments.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-4">לא נרשמו תשלומים</div>
+          ) : (
+            <div className="divide-y">
+              {payments.map((p) => {
+                const desc = [p.payment_method, p.description].filter(Boolean).join(' • ') || '—';
+                return (
+                  <div key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <div className="text-muted-foreground tabular-nums shrink-0">
+                      {format(new Date(p.paid_at), 'dd/MM/yyyy')}
+                    </div>
+                    <div className="flex-1 truncate">{desc}</div>
+                    <div className="shrink-0 w-44">
+                      <Select
+                        value={p.charge_id ?? 'none'}
+                        onValueChange={(v) => handleChangePaymentLink(p.id, v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <Link2 className="h-3 w-3 ms-1 inline" />
+                          <SelectValue placeholder="ללא" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">ללא קישור</SelectItem>
+                          {charges.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {(c.description || 'חיוב').slice(0, 28)} • {formatCurrency(c.amount)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="font-semibold tabular-nums shrink-0">{formatCurrency(p.amount)}</div>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeletePayment(p.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
