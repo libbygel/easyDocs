@@ -12,6 +12,9 @@ import { Scene6ClientPortal } from "./scenes/Scene6ClientPortal";
 import { Scene7Signatures } from "./scenes/Scene7Signatures";
 import { Scene8Reminders } from "./scenes/Scene8Reminders";
 import { Scene9SendToBanker } from "./scenes/Scene9SendToBanker";
+import { Scene11Billing } from "./scenes/Scene11Billing";
+import { Scene12Timer } from "./scenes/Scene12Timer";
+import { Scene13ClientArea } from "./scenes/Scene13ClientArea";
 import { Scene10Outro } from "./scenes/Scene10Outro";
 
 const T = 35;
@@ -39,6 +42,12 @@ export const MainVideo = () => (
       <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
       <TransitionSeries.Sequence durationInFrames={240}><Scene9SendToBanker /></TransitionSeries.Sequence>
       <TransitionSeries.Transition presentation={fade()} timing={timing} />
+      <TransitionSeries.Sequence durationInFrames={210}><Scene11Billing /></TransitionSeries.Sequence>
+      <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
+      <TransitionSeries.Sequence durationInFrames={210}><Scene12Timer /></TransitionSeries.Sequence>
+      <TransitionSeries.Transition presentation={fade()} timing={timing} />
+      <TransitionSeries.Sequence durationInFrames={220}><Scene13ClientArea /></TransitionSeries.Sequence>
+      <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
       <TransitionSeries.Sequence durationInFrames={180}><Scene10Outro /></TransitionSeries.Sequence>
     </TransitionSeries>
   </AbsoluteFill>
