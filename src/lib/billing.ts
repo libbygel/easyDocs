@@ -21,6 +21,7 @@ export interface CasePayment {
   payment_method: string | null;
   paid_at: string;
   created_at: string;
+  charge_id: string | null;
 }
 
 export interface CaseTimeEntry {
@@ -114,9 +115,40 @@ export async function createPayment(input: {
   description?: string | null;
   payment_method?: string | null;
   paid_at?: string;
+  charge_id?: string | null;
 }) {
   const { error } = await supabase.from('case_payments' as any).insert(input as any);
   if (error) throw error;
+}
+
+export async function updatePaymentChargeLink(paymentId: string, chargeId: string | null) {
+  const { error } = await supabase
+    .from('case_payments' as any)
+    .update({ charge_id: chargeId } as any)
+    .eq('id', paymentId);
+  if (error) throw error;
+}
+
+/* ----------------------- Charge settlement helpers --------------------- */
+export interface ChargeSettlement {
+  paid: number;
+  remaining: number;
+  status: 'open' | 'partial' | 'paid';
+}
+
+export function summarizeChargeSettlement(
+  charge: CaseCharge,
+  payments: CasePayment[],
+): ChargeSettlement {
+  const paid = payments
+    .filter((p) => p.charge_id === charge.id)
+    .reduce((s, p) => s + Number(p.amount || 0), 0);
+  const amount = Number(charge.amount || 0);
+  const remaining = Math.max(0, amount - paid);
+  let status: 'open' | 'partial' | 'paid' = 'open';
+  if (paid >= amount && amount > 0) status = 'paid';
+  else if (paid > 0) status = 'partial';
+  return { paid, remaining, status };
 }
 
 export async function deletePayment(id: string) {
