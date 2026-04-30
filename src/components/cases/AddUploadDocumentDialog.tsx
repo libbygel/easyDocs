@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdvisorName } from '@/hooks/useAdvisorName';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { logCaseActivity } from '@/lib/activityLog';
