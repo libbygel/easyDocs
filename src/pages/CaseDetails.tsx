@@ -236,6 +236,8 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
       fetchCurrentAdvisorProfile(user).then((profile) => {
         setAdvisorName(profile.displayName || user.email?.split('@')[0] || '');
+        setHourlyRate(profile.hourlyRate);
+        setTimerMode(profile.timerMode);
       });
     }
 
