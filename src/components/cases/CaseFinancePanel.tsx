@@ -4,11 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2, CheckCircle2, Circle } from 'lucide-react';
+import { Trash2, Plus, Banknote, Receipt, TrendingUp, Link2, CheckCircle2, Circle, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -30,6 +37,7 @@ import {
   summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
+  updatePayment,
   setChargePaidManually,
   type CaseCharge,
   type CasePayment,
@@ -57,6 +65,45 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentDesc, setPaymentDesc] = useState('');
   const [paymentChargeId, setPaymentChargeId] = useState<string>('none');
+
+  const [editPayment, setEditPayment] = useState<CasePayment | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editMethod, setEditMethod] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editChargeId, setEditChargeId] = useState<string>('none');
+
+  const openEditPayment = (p: CasePayment) => {
+    setEditPayment(p);
+    setEditAmount(String(p.amount));
+    setEditMethod(p.payment_method || '');
+    setEditDesc(p.description || '');
+    setEditDate(format(new Date(p.paid_at), 'yyyy-MM-dd'));
+    setEditChargeId(p.charge_id ?? 'none');
+  };
+
+  const handleSaveEditPayment = async () => {
+    if (!editPayment) return;
+    const amt = parseFloat(editAmount);
+    if (!amt || amt <= 0) {
+      toast({ title: 'נא להזין סכום תקין', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updatePayment(editPayment.id, {
+        amount: amt,
+        payment_method: editMethod || null,
+        description: editDesc || null,
+        paid_at: editDate ? new Date(editDate).toISOString() : undefined,
+        charge_id: editChargeId === 'none' ? null : editChargeId,
+      });
+      setEditPayment(null);
+      toast({ title: 'התשלום עודכן' });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון תשלום', description: err?.message, variant: 'destructive' });
+    }
+  };
 
   const fetchAll = async () => {
     try {
