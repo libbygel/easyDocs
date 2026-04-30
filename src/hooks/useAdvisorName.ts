@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
+import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 
 /**
  * Returns the advisor's display name (sender_display_name || name || email prefix).
@@ -16,17 +16,9 @@ export function useAdvisorName(): string {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('name, sender_display_name')
-          .eq('user_id', user.id)
-          .maybeSingle();
         if (cancelled) return;
-        const resolved =
-          (data as any)?.sender_display_name ||
-          (data as any)?.name ||
-          (user.email ? user.email.split('@')[0] : '');
-        setName(resolved || '');
+        const profile = await fetchCurrentAdvisorProfile(user);
+        if (!cancelled) setName(profile.displayName || '');
       } catch {
         if (!cancelled && user.email) setName(user.email.split('@')[0]);
       }
