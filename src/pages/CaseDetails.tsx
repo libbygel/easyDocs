@@ -32,6 +32,7 @@ import { BulkDownloadButton } from '@/components/cases/BulkDownloadButton';
 import { CaseCompletionBanner } from '@/components/cases/CaseCompletionBanner';
 import { DraggableDocumentRow } from '@/components/cases/DraggableDocumentRow';
 import { logCaseActivity } from '@/lib/activityLog';
+import { syncCaseStatus } from '@/lib/caseStatusSync';
 import { 
   ArrowRight, 
   Copy, 
