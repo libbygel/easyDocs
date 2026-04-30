@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -280,27 +280,17 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: P
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  icon,
-  subtext,
-  accent,
-}: {
+const SummaryCard = forwardRef<HTMLDivElement, {
   label: string;
   value: string;
   icon?: React.ReactNode;
   subtext?: string;
   accent?: 'warning' | 'success';
-}) {
+}>(function SummaryCard({ label, value, icon, subtext, accent }, ref) {
   const accentClass =
-    accent === 'warning'
-      ? 'text-warning'
-      : accent === 'success'
-      ? 'text-success'
-      : 'text-foreground';
+    accent === 'warning' ? 'text-warning' : accent === 'success' ? 'text-success' : 'text-foreground';
   return (
-    <Card className="shadow-sm">
+    <Card ref={ref} className="shadow-sm">
       <CardContent className="p-4 space-y-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {icon}
@@ -311,22 +301,18 @@ function SummaryCard({
       </CardContent>
     </Card>
   );
-}
+});
 
-function ItemList({
-  items,
-  onDelete,
-  emptyText,
-}: {
+const ItemList = forwardRef<HTMLDivElement, {
   items: { id: string; date: string; amount: number; description: string | null }[];
   onDelete: (id: string) => void;
   emptyText: string;
-}) {
+}>(function ItemList({ items, onDelete, emptyText }, ref) {
   if (items.length === 0) {
-    return <div className="text-sm text-muted-foreground text-center py-4">{emptyText}</div>;
+    return <div ref={ref} className="text-sm text-muted-foreground text-center py-4">{emptyText}</div>;
   }
   return (
-    <div className="divide-y">
+    <div ref={ref} className="divide-y">
       {items.map((it) => (
         <div key={it.id} className="flex items-center justify-between gap-3 py-2 text-sm">
           <div className="text-muted-foreground tabular-nums shrink-0">
@@ -341,4 +327,4 @@ function ItemList({
       ))}
     </div>
   );
-}
+});
