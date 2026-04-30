@@ -44,13 +44,16 @@ serve(async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     for (const [, data] of clientDocs) {
       const portalUrl = `https://easydocs.tech/portal/${data.portalToken}`;
-      const { data: advisorProfile } = await supabase.from('profiles').select('name').eq('user_id', data.advisorId).single();
+      const { data: advisorProfile } = await supabase.from('profiles').select('name, sender_display_name, email').eq('user_id', data.advisorId).single();
+      const advisorDisplay = (advisorProfile as any)?.sender_display_name || advisorProfile?.name || undefined;
 
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "daily-rejection",
           recipientEmail: data.clientEmail,
           idempotencyKey: `rejection-${data.caseId}-${new Date().toISOString().slice(0, 10)}`,
+          senderName: advisorDisplay,
+          replyTo: (advisorProfile as any)?.email || undefined,
           templateData: { clientName: data.clientName, advisorName: advisorProfile?.name, portalUrl, rejectedDocs: data.documents },
         },
       });
