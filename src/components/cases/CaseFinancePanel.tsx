@@ -77,6 +77,17 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
   const [editDate, setEditDate] = useState('');
   const [editChargeId, setEditChargeId] = useState<string>('none');
 
+  // Edit time entry
+  const [editTime, setEditTime] = useState<CaseTimeEntry | null>(null);
+  const [editTimeHours, setEditTimeHours] = useState('');
+  const [editTimeMinutes, setEditTimeMinutes] = useState('');
+  const [editTimeDesc, setEditTimeDesc] = useState('');
+  const [editTimeRate, setEditTimeRate] = useState('');
+
+  // Edit client hourly rate (quick edit)
+  const [editClientRateOpen, setEditClientRateOpen] = useState(false);
+  const [editClientRateValue, setEditClientRateValue] = useState('');
+
   const openEditPayment = (p: CasePayment) => {
     setEditPayment(p);
     setEditAmount(String(p.amount));
@@ -106,6 +117,59 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
       fetchAll();
     } catch (err: any) {
       toast({ title: 'שגיאה בעדכון תשלום', description: err?.message, variant: 'destructive' });
+    }
+  };
+
+  const openEditTime = (t: CaseTimeEntry) => {
+    setEditTime(t);
+    const total = t.duration_seconds || 0;
+    setEditTimeHours(String(Math.floor(total / 3600)));
+    setEditTimeMinutes(String(Math.floor((total % 3600) / 60)));
+    setEditTimeDesc(t.description || '');
+    setEditTimeRate(t.hourly_rate != null ? String(t.hourly_rate) : '');
+  };
+
+  const handleSaveEditTime = async () => {
+    if (!editTime) return;
+    const h = parseInt(editTimeHours || '0', 10) || 0;
+    const m = parseInt(editTimeMinutes || '0', 10) || 0;
+    const seconds = h * 3600 + m * 60;
+    if (seconds <= 0) {
+      toast({ title: 'נא להזין משך זמן תקין', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateTimeEntry(editTime.id, {
+        duration_seconds: seconds,
+        description: editTimeDesc || null,
+        hourly_rate: editTimeRate.trim() === '' ? null : parseFloat(editTimeRate),
+      });
+      setEditTime(null);
+      toast({ title: 'הרישום עודכן' });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון רישום', description: err?.message, variant: 'destructive' });
+    }
+  };
+
+  const openEditClientRate = () => {
+    setEditClientRateValue(hourlyRate != null ? String(hourlyRate) : '');
+    setEditClientRateOpen(true);
+  };
+
+  const handleSaveClientRate = async () => {
+    const newRate = editClientRateValue.trim() === '' ? null : parseFloat(editClientRateValue);
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ hourly_rate: newRate } as any)
+        .eq('id', clientId);
+      if (error) throw error;
+      setEditClientRateOpen(false);
+      toast({ title: 'תעריף הלקוח עודכן' });
+      onClientRateChanged?.(newRate);
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון תעריף', description: err?.message, variant: 'destructive' });
     }
   };
 
