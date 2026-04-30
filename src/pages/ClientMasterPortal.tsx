@@ -504,7 +504,7 @@ function StatCard({
   accent,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   accent?: 'success' | 'info' | 'destructive' | 'muted';
 }) {
   const accentClass =
@@ -519,7 +519,7 @@ function StatCard({
     <Card className="shadow-sm">
       <CardContent className="p-3 text-center space-y-0.5">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className={`text-2xl font-semibold tabular-nums ${accentClass}`}>{value}</div>
+        <div className={`text-xl sm:text-2xl font-semibold tabular-nums ${accentClass}`}>{value}</div>
       </CardContent>
     </Card>
   );
