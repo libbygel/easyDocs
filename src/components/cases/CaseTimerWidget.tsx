@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Play, Square, Clock, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +20,7 @@ import {
   startTimer,
   stopTimer,
   createManualTimeEntry,
+  updateTimeEntry,
 } from '@/lib/billing';
 
 interface Props {
@@ -36,6 +45,11 @@ export function CaseTimerWidget({ caseId, clientId, timerMode, onChange }: Props
   const [showManual, setShowManual] = useState(false);
   const [manualMinutes, setManualMinutes] = useState('30');
   const [manualDescription, setManualDescription] = useState('');
+  const [startDescription, setStartDescription] = useState('');
+  const [stopDialogOpen, setStopDialogOpen] = useState(false);
+  const [stopDescription, setStopDescription] = useState('');
+  const [stopElapsed, setStopElapsed] = useState(0);
+  const stoppedEntryIdRef = useRef<string | null>(null);
   const tickRef = useRef<number | null>(null);
 
   // Initial fetch + auto-start in auto mode.
@@ -110,8 +124,10 @@ export function CaseTimerWidget({ caseId, clientId, timerMode, onChange }: Props
         client_id: clientId,
         case_id: caseId,
         source: 'timer',
+        description: startDescription.trim() || null,
       });
       setOpenEntry(started);
+      setStartDescription('');
       toast({ title: 'הטיימר הותחל' });
       onChange?.();
     } catch (err: any) {
@@ -122,13 +138,33 @@ export function CaseTimerWidget({ caseId, clientId, timerMode, onChange }: Props
   const handleStop = async () => {
     if (!openEntry) return;
     try {
+      const existingDesc = openEntry.description || '';
       const seconds = await stopTimer(openEntry.id);
+      stoppedEntryIdRef.current = openEntry.id;
+      setStopDescription(existingDesc);
+      setStopElapsed(seconds);
       setOpenEntry(null);
-      toast({ title: 'הטיימר נעצר', description: `נרשמו ${formatDuration(seconds)}` });
+      setStopDialogOpen(true);
       onChange?.();
     } catch (err: any) {
       toast({ title: 'שגיאה בעצירת טיימר', description: err?.message, variant: 'destructive' });
     }
+  };
+
+  const handleStopDialogSave = async () => {
+    const entryId = stoppedEntryIdRef.current;
+    if (entryId) {
+      try {
+        await updateTimeEntry(entryId, { description: stopDescription.trim() || null });
+      } catch (err: any) {
+        toast({ title: 'שגיאה בשמירת תיאור', description: err?.message, variant: 'destructive' });
+      }
+    }
+    toast({ title: 'הטיימר נעצר', description: `נרשמו ${formatDuration(stopElapsed)}` });
+    setStopDialogOpen(false);
+    stoppedEntryIdRef.current = null;
+    setStopDescription('');
+    onChange?.();
   };
 
   const handleManualAdd = async () => {
@@ -178,16 +214,32 @@ export function CaseTimerWidget({ caseId, clientId, timerMode, onChange }: Props
               עצור
             </Button>
           ) : (
-            <Button onClick={handleStart} className="gap-2">
-              <Play className="h-4 w-4" />
-              התחל
-            </Button>
+            <div className="flex flex-1 gap-2 min-w-0">
+              <Input
+                value={startDescription}
+                onChange={(e) => setStartDescription(e.target.value)}
+                placeholder="על מה אתה עובד? (אופציונלי)"
+                className="flex-1 min-w-0"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleStart();
+                }}
+              />
+              <Button onClick={handleStart} className="gap-2 shrink-0">
+                <Play className="h-4 w-4" />
+                התחל
+              </Button>
+            </div>
           )}
           <Button variant="outline" onClick={() => setShowManual((s) => !s)} className="gap-2">
             <Plus className="h-4 w-4" />
             הוסף זמן ידני
           </Button>
         </div>
+        {openEntry && openEntry.description && (
+          <div className="text-xs text-muted-foreground border-t pt-2">
+            <span className="font-medium">עובד על:</span> {openEntry.description}
+          </div>
+        )}
         {showManual && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t">
             <Input
@@ -207,6 +259,32 @@ export function CaseTimerWidget({ caseId, clientId, timerMode, onChange }: Props
           </div>
         )}
       </CardContent>
+
+      {/* Stop dialog — capture/edit description after stop */}
+      <Dialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-right">הטיימר נעצר</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="text-sm text-muted-foreground">
+              נרשמו <span className="font-mono font-semibold tabular-nums">{formatDuration(stopElapsed)}</span>.
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">על מה עבדת?</Label>
+              <Input
+                value={stopDescription}
+                onChange={(e) => setStopDescription(e.target.value)}
+                placeholder="תיאור קצר (אופציונלי)"
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleStopDialogSave}>שמור</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
