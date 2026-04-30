@@ -67,6 +67,21 @@ export function SendPortalLinkDialog({
 
     setSending(true);
     try {
+      // Determine if this is the first email for this case.
+      // If no portal link was sent before, treat it as a new-case email
+      // instead of a reminder, regardless of the emailType passed in.
+      let effectiveEmailType = emailType;
+      if (effectiveEmailType === 'reminder') {
+        const { data: caseRow } = await supabase
+          .from('cases')
+          .select('last_portal_link_sent_at')
+          .eq('id', caseId)
+          .maybeSingle();
+        if (!(caseRow as any)?.last_portal_link_sent_at) {
+          effectiveEmailType = 'new_case';
+        }
+      }
+
       const response = await invokeEdgeFunction('send-portal-link', {
         clientName: clientName || '',
         clientEmail,
@@ -74,7 +89,7 @@ export function SendPortalLinkDialog({
         portalLink,
         advisorEmail: user?.email || '',
         advisorName,
-        emailType,
+        emailType: effectiveEmailType,
       });
 
       if (response?.error) throw new Error(response.error);
