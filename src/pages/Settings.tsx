@@ -105,15 +105,21 @@ export default function Settings() {
             </div>
             <Separator />
             <div className="space-y-2">
-              <Label>שם השולח (מוצג במיילים)</Label>
+              <Label>שם השולח במיילים</Label>
               <Input
                 value={senderDisplayName}
                 onChange={(e) => setSenderDisplayName(e.target.value)}
                 placeholder="לדוגמה: דניאל כהן - יועץ מס"
               />
-              <p className="text-xs text-muted-foreground">
-                השם הזה יופיע כשולח המייל בשליחה לרואה חשבון ובמיילים אחרים. אם ריק, יוצג "EasyDocs".
-              </p>
+              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 space-y-1">
+                <p>📧 <strong>איך זה מוצג ללקוח?</strong></p>
+                <p>השם הזה יופיע כשולח בכל המיילים שנשלחים מהמערכת:</p>
+                <p>• תזכורות ללקוח על מסמכים חסרים</p>
+                <p>• קישורי פורטל ללקוח</p>
+                <p>• תזכורות יומיות על מסמכים שנדחו</p>
+                <p>• שליחת מסמכים לרואה חשבון/בנקאי</p>
+                <p className="pt-1">תשובות הלקוח יחזרו ישירות לכתובת המייל שלך. אם השדה ריק, יוצג "EasyDocs".</p>
+              </div>
             </div>
           </CardContent>
         </Card>
