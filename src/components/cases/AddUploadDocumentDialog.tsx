@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdvisorName } from '@/hooks/useAdvisorName';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { logCaseActivity } from '@/lib/activityLog';
@@ -54,6 +55,7 @@ export function AddUploadDocumentDialog({
   const [success, setSuccess] = useState(false);
   const [sendingLink, setSendingLink] = useState(false);
   const { user } = useAuth();
+  const advisorName = useAdvisorName();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -175,6 +177,7 @@ export function AddUploadDocumentDialog({
         caseTitle: caseTitle || '',
         portalLink,
         advisorEmail: user?.email || '',
+        advisorName,
         emailType: 'new_document',
       });
       if (response?.error) throw new Error(response.error.message);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdvisorName } from '@/hooks/useAdvisorName';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import {
@@ -45,6 +46,7 @@ export function AddSignatureDocumentDialog({
   const [sendingLink, setSendingLink] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const advisorName = useAdvisorName();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +170,7 @@ export function AddSignatureDocumentDialog({
         caseTitle: caseTitle || '',
         portalLink,
         advisorEmail: user?.email || '',
+        advisorName,
         emailType: 'new_document',
       });
       if (response?.error) throw new Error(response.error);

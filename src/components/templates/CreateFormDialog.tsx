@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import type { CaseType, DocTemplate, Client } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdvisorName } from '@/hooks/useAdvisorName';
 import {
   Dialog,
   DialogContent,
@@ -55,6 +56,7 @@ export function CreateFormDialog({
   const [selectedClientEmail, setSelectedClientEmail] = useState('');
   const [selectedClientName, setSelectedClientName] = useState('');
   const { user } = useAuth();
+  const advisorName = useAdvisorName();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -215,6 +217,7 @@ export function CreateFormDialog({
         caseTitle: createdCaseTitle,
         portalLink,
         advisorEmail: user?.email || '',
+        advisorName,
         emailType: 'new_case',
       });
       const error = response?.error;
