@@ -54,6 +54,21 @@ Deno.serve(async (req) => {
     )
   }
 
+  const bearerToken = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
+  const requestApiKey = req.headers.get('apikey')
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+  const isInternalCall =
+    bearerToken === supabaseServiceKey ||
+    requestApiKey === supabaseServiceKey ||
+    (!!lovableApiKey && bearerToken === lovableApiKey)
+
+  if (!isInternalCall) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   // Parse request body
   let templateName: string
   let recipientEmail: string
