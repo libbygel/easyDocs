@@ -60,13 +60,16 @@ export async function syncCaseStatus(
     return;
   }
 
-  try {
-    await logCaseActivity(
-      caseId,
-      'עדכון סטטוס תיק',
-      `סטטוס התיק עודכן אוטומטית ל-"${next}"`,
-    );
-  } catch (_) {
-    // Activity log failures should not break status updates.
+  // Only log when the case is fully completed — other transitions are noisy.
+  if (next === 'הושלם') {
+    try {
+      await logCaseActivity(
+        caseId,
+        'השלמת תיק',
+        `כל המסמכים הנדרשים אושרו — התיק עבר אוטומטית לסטטוס "הושלם"`,
+      );
+    } catch (_) {
+      // Activity log failures should not break status updates.
+    }
   }
 }
