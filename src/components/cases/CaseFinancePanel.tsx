@@ -34,6 +34,8 @@ import {
   listCasePayments,
   listCaseTimeEntries,
   deleteTimeEntry,
+  updateTimeEntry,
+  effectiveHourlyRate,
   summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
@@ -43,15 +45,17 @@ import {
   type CasePayment,
   type CaseTimeEntry,
 } from '@/lib/billing';
+import { supabase } from '@/lib/supabase';
 
 interface Props {
   caseId: string;
   clientId: string;
   hourlyRate: number | null;
   refreshKey?: number;
+  onClientRateChanged?: (newRate: number | null) => void;
 }
 
-export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey }: Props) {
+export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onClientRateChanged }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [charges, setCharges] = useState<CaseCharge[]>([]);
