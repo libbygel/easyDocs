@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Settings as SettingsIcon, Bell, Clock, Mail, Save, Loader2, Eye } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Clock, Mail, Save, Loader2, Eye, DollarSign, Timer } from 'lucide-react';
 import { CategoriesManager } from '@/components/settings/CategoriesManager';
 
 export default function Settings() {
@@ -137,6 +137,66 @@ export default function Settings() {
 
         {/* Client Categories */}
         <CategoriesManager />
+
+        {/* Billing & Timer */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DollarSign className="h-5 w-5" />
+              חיובים וטיימר
+            </CardTitle>
+            <CardDescription>הגדרות לחישוב כדאיות וזמני עבודה על תיקים</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                תעריף שעה (₪)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(e.target.value)}
+                placeholder="לדוגמה: 250"
+                dir="ltr"
+                className="w-40"
+              />
+              <p className="text-xs text-muted-foreground">
+                המערכת תחשב כדאיות לפי: סך חיובים − (שעות עבודה × תעריף שעה). השאר ריק כדי להציג רק נתונים יבשים ללא חישוב כדאיות.
+              </p>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Timer className="h-4 w-4" />
+                מצב טיימר ברירת מחדל
+              </Label>
+              <RadioGroup
+                value={timerMode}
+                onValueChange={(v) => setTimerMode(v === 'auto' ? 'auto' : 'manual')}
+                className="space-y-2"
+              >
+                <div className="flex items-center gap-3 p-3 border rounded-lg">
+                  <RadioGroupItem value="manual" id="timer_manual" />
+                  <Label htmlFor="timer_manual" className="cursor-pointer flex-1">
+                    <div className="font-medium">ידני (Start/Stop)</div>
+                    <p className="text-sm text-muted-foreground">תפעיל ותעצור את הטיימר באופן ידני בתוך התיק</p>
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3 p-3 border rounded-lg">
+                  <RadioGroupItem value="auto" id="timer_auto" />
+                  <Label htmlFor="timer_auto" className="cursor-pointer flex-1">
+                    <div className="font-medium">אוטומטי (לפי נוכחות בתיק)</div>
+                    <p className="text-sm text-muted-foreground">הטיימר יתחיל אוטומטית בכניסה לתיק ויעצור ביציאה</p>
+                  </Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground">בכל תיק תוכלי גם להזין שעות באופן ידני בדיעבד.</p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Document Preview */}
         <Card>

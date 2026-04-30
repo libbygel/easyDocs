@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Users, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Edit2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { CreateClientDialog } from '@/components/clients/CreateClientDialog';
 import { EditClientDialog } from '@/components/clients/EditClientDialog';
 import { SendGroupEmailDialog } from '@/components/clients/SendGroupEmailDialog';
@@ -36,6 +37,7 @@ export default function Clients() {
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchClients = async () => {
     if (!user) return;
@@ -191,7 +193,7 @@ export default function Clients() {
                       <TableRow
                         key={client.id}
                         className="cursor-pointer hover:bg-accent/50"
-                        onClick={() => handleEditClick(client)}
+                        onClick={() => navigate(`/clients/${client.id}`)}
                       >
                         <TableCell className="font-medium">{client.full_name}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
@@ -209,6 +211,9 @@ export default function Clients() {
                         <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${client.id}`)} title="פתח עמוד לקוח">
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
