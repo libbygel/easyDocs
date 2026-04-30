@@ -20,6 +20,8 @@ export default function Settings() {
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
   const [senderDisplayName, setSenderDisplayName] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<string>('');
+  const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
   const [previewMode, setPreviewMode] = useState<string>('new_tab');
   const [enableDailyReminders, setEnableDailyReminders] = useState(true);
   const [enableUrgentAlerts, setEnableUrgentAlerts] = useState(true);
@@ -33,6 +35,8 @@ export default function Settings() {
           setProfileName(profile.name || '');
           setProfileEmail(profile.email || user.email || '');
           setSenderDisplayName(profile.senderDisplayName || '');
+          setHourlyRate(profile.hourlyRate != null ? String(profile.hourlyRate) : '');
+          setTimerMode(profile.timerMode);
         });
 
       // Load settings from localStorage
@@ -63,7 +67,14 @@ export default function Settings() {
         inactivityDays: parseInt(inactivityDays) || 2,
       }));
 
-      await updateCurrentAdvisorProfile(user, { senderDisplayName, name: profileName, email: profileEmail });
+      const parsedRate = hourlyRate.trim() === '' ? null : parseFloat(hourlyRate);
+      await updateCurrentAdvisorProfile(user, {
+        senderDisplayName,
+        name: profileName,
+        email: profileEmail,
+        hourlyRate: parsedRate != null && !isNaN(parsedRate) ? parsedRate : null,
+        timerMode,
+      });
 
       toast({ title: 'ההגדרות נשמרו בהצלחה' });
     } catch {
