@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -335,23 +335,17 @@ export default function ClientDetail() {
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  icon,
-  subtext,
-  accent,
-}: {
+const SummaryCard = forwardRef<HTMLDivElement, {
   label: string;
   value: string;
   icon?: React.ReactNode;
   subtext?: string;
   accent?: 'warning' | 'success';
-}) {
+}>(function SummaryCard({ label, value, icon, subtext, accent }, ref) {
   const accentClass =
     accent === 'warning' ? 'text-warning' : accent === 'success' ? 'text-success' : 'text-foreground';
   return (
-    <Card className="shadow-sm">
+    <Card ref={ref} className="shadow-sm">
       <CardContent className="p-4 space-y-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {icon}
@@ -362,4 +356,4 @@ function SummaryCard({
       </CardContent>
     </Card>
   );
-}
+});
