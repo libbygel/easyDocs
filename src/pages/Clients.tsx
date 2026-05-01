@@ -246,6 +246,7 @@ export default function Clients() {
       />
       <SendGroupEmailDialog open={groupEmailOpen} onOpenChange={setGroupEmailOpen} initialCategoryId={groupEmailInitialCategory} />
       <BulkCreateCasesDialog open={bulkCasesOpen} onOpenChange={setBulkCasesOpen} />
+      <ImportClientsDialog open={importOpen} onOpenChange={setImportOpen} onSuccess={fetchClients} />
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
