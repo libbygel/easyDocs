@@ -4,7 +4,45 @@ const EXTERNAL_SUPABASE_URL = "https://aegwmpkihkeaemcdgyqq.supabase.co";
 const EXTERNAL_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlZ3dtcGtpaGtlYWVtY2RneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDg0NzUsImV4cCI6MjA4NTA4NDQ3NX0.5sfLvSwcmzUJShwPg8NpMD3t7VrEBYrfwdNBGlFjWdM";
 const ADMIN_NOTIFY_EMAIL = "dv4343@gmail.com";
 
+async function notifyAdminViaLovableEmails(email: string, name: string | undefined) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceKey) {
+      console.warn("Lovable email env missing, skipping branded admin notification");
+      return;
+    }
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+        "apikey": serviceKey,
+      },
+      body: JSON.stringify({
+        templateName: "admin-new-signup",
+        recipientEmail: ADMIN_NOTIFY_EMAIL,
+        idempotencyKey: `admin-signup-${email}-${Date.now()}`,
+        templateData: {
+          advisorName: name || "לא צוין",
+          advisorEmail: email,
+          signupTime: new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }),
+          approveUrl: "https://easydocs.tech",
+        },
+      }),
+    });
+    const txt = await res.text();
+    console.log("Lovable admin notification status:", res.status, txt.slice(0, 200));
+  } catch (err) {
+    console.error("Failed to send Lovable admin notification:", err);
+  }
+}
+
 async function notifyAdminOfSignup(email: string, name: string | undefined) {
+  // Send via Lovable Emails (branded + logged in email_send_log)
+  await notifyAdminViaLovableEmails(email, name);
+
+  // Also send via Brevo as backup
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   if (!brevoApiKey) {
     console.warn("BREVO_API_KEY not set, skipping admin notification");
