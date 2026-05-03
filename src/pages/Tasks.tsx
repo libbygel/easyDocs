@@ -350,6 +350,22 @@ export default function Tasks() {
                           {new Date(task.due_date).toLocaleDateString('he-IL')}
                         </Badge>
                       )}
+                      {task.case_id && (
+                        <Link to={`/cases/${task.case_id}`}>
+                          <Badge variant="outline" className="gap-1 hover:bg-accent">
+                            <Briefcase className="h-3 w-3" />
+                            {cases.find((c) => c.id === task.case_id)?.title || 'תיק'}
+                          </Badge>
+                        </Link>
+                      )}
+                      {!task.case_id && task.client_id && (
+                        <Link to={`/clients/${task.client_id}`}>
+                          <Badge variant="outline" className="gap-1 hover:bg-accent">
+                            <User className="h-3 w-3" />
+                            {clients.find((c) => c.id === task.client_id)?.full_name || 'לקוח'}
+                          </Badge>
+                        </Link>
+                      )}
                     </div>
                     {task.description && (
                       <p className="text-sm text-muted-foreground mt-1 break-words whitespace-pre-wrap">
