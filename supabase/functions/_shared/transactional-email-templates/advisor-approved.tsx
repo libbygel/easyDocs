@@ -22,7 +22,7 @@ const AdvisorApprovedEmail = ({ advisorName, loginUrl = 'https://easydocs.tech/a
           <Text style={{ ...heroSub, textAlign: 'right' }}>החשבון שלך אושר ומוכן לשימוש</Text>
         </Section>
         <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }}>
-          <Heading style={{ ...h1, textAlign: 'right' }}>שלום {advisorName ? advisorName : 'יועץ יקר'},</Heading>
+          <Heading style={{ ...h1, textAlign: 'right' }}>{advisorName ? `שלום ${advisorName},` : 'שלום,'}</Heading>
           <Text style={{ ...text, textAlign: 'right' }}>
             שמחים לבשר לך שהחשבון שלך במערכת <strong>EasyDocs</strong> אושר בהצלחה.
           </Text>
