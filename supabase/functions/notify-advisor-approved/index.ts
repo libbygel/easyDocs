@@ -114,7 +114,12 @@ Deno.serve(async (req) => {
       })
     }
 
-    const sentViaBrevo = await sendApprovalWithBrevo(recipientEmail, advisorName, loginUrl)
+    let sentViaBrevo = false
+    try {
+      sentViaBrevo = await sendApprovalWithBrevo(recipientEmail, advisorName, loginUrl)
+    } catch (brevoError) {
+      console.error('Brevo approval email failed, falling back to Lovable email:', brevoError)
+    }
     if (sentViaBrevo) {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -142,7 +147,7 @@ Deno.serve(async (req) => {
       body: {
         templateName: 'advisor-approved',
         recipientEmail,
-        idempotencyKey: `advisor-approved-${record.user_id || record.id || recipientEmail}`,
+        idempotencyKey: `advisor-approved-${record.user_id || record.id || recipientEmail}-${Date.now()}`,
         templateData: {
           advisorName: advisorName || undefined,
           loginUrl,
