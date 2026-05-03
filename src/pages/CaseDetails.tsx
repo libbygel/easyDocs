@@ -706,7 +706,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                       setCaseData((prev: any) => prev ? { ...prev, portal_password: val } : prev);
                       await supabase.from('cases').update({ portal_password: val } as any).eq('id', caseData.id);
                     }}
-                    className="max-w-[180px] h-8 text-sm"
+                    className="max-w-[120px] h-8 text-sm"
                     dir="ltr"
                   />
                   <span className="text-xs text-muted-foreground">
