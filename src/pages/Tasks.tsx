@@ -34,7 +34,7 @@ export default function Tasks() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'open' | 'completed' | 'all'>('open');
+  const [filter, setFilter] = useState<'open' | 'completed' | 'all'>('all');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -115,6 +115,24 @@ export default function Tasks() {
     }
   };
 
+  const deleteCompleted = async () => {
+    if (!user) return;
+    const completedIds = tasks.filter((t) => t.is_completed).map((t) => t.id);
+    if (completedIds.length === 0) return;
+    if (!confirm(`למחוק ${completedIds.length} משימות שהושלמו?`)) return;
+    const { error } = await supabase
+      .from('personal_tasks' as any)
+      .delete()
+      .eq('advisor_id', user.id)
+      .eq('is_completed', true);
+    if (error) {
+      toast.error('שגיאה במחיקה');
+    } else {
+      setTasks((prev) => prev.filter((t) => !t.is_completed));
+      toast.success('המשימות שהושלמו נמחקו');
+    }
+  };
+
   const filtered = tasks.filter((t) => {
     if (filter === 'open') return !t.is_completed;
     if (filter === 'completed') return t.is_completed;
@@ -191,7 +209,7 @@ export default function Tasks() {
           </CardContent>
         </Card>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
           {(['open', 'completed', 'all'] as const).map((f) => (
             <Button
               key={f}
@@ -202,6 +220,17 @@ export default function Tasks() {
               {f === 'open' ? `פתוחות (${openCount})` : f === 'completed' ? `הושלמו (${doneCount})` : `הכל (${tasks.length})`}
             </Button>
           ))}
+          {doneCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={deleteCompleted}
+              className="mr-auto text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 ml-1" />
+              מחק משימות שהושלמו ({doneCount})
+            </Button>
+          )}
         </div>
 
         <div className="space-y-2">
