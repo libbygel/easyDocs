@@ -88,6 +88,32 @@ async function sendApprovalWithBrevo(recipientEmail: string, advisorName: string
   return true
 }
 
+async function sendApprovalWithResend(recipientEmail: string, advisorName: string, loginUrl: string) {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendApiKey) return false
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Authorization: `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: 'EasyDocs <onboarding@resend.dev>',
+      to: [recipientEmail],
+      subject: 'החשבון שלך ב-EasyDocs אושר',
+      html: approvalEmailHtml(advisorName, loginUrl),
+      text: approvalEmailText(advisorName, loginUrl),
+    }),
+  })
+
+  const body = await response.text()
+  if (!response.ok) {
+    throw new Error(`Resend approval email failed: ${response.status} ${body.slice(0, 300)}`)
+  }
+  return true
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -135,6 +161,31 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ success: true, provider: 'brevo', advisorName: advisorName || null }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    let sentViaResend = false
+    try {
+      sentViaResend = await sendApprovalWithResend(recipientEmail, advisorName, loginUrl)
+    } catch (resendError) {
+      console.error('Resend approval email failed, falling back to Lovable email:', resendError)
+    }
+    if (sentViaResend) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        await supabase.from('email_send_log').insert({
+          message_id: crypto.randomUUID(),
+          template_name: 'advisor-approved',
+          recipient_email: recipientEmail,
+          status: 'sent',
+          metadata: { provider: 'resend', advisorName: advisorName || null },
+        })
+      }
+
+      return new Response(JSON.stringify({ success: true, provider: 'resend', advisorName: advisorName || null }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
