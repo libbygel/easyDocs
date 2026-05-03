@@ -152,7 +152,7 @@ export default function Dashboard() {
           );
 
           const newNotifications = urgentDocs
-            .filter(d => !existingKeys.has(`${d.case_id}_מסמך דחוף: ${d.doc_name}`))
+            .filter(d => !existingKeys.has(`${d.case_id}_מסמך דחוף: ${d.doc_name} - ${d.client_name}`))
             .map(d => ({
               advisor_id: user.id,
               case_id: d.case_id,
