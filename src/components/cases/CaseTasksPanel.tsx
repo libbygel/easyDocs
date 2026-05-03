@@ -28,6 +28,12 @@ const priorityConfig: Record<string, { label: string; className: string }> = {
   low: { label: 'נמוכה', className: 'bg-muted text-muted-foreground border-muted' },
 };
 
+const isMissingLinkColumnsError = (error: unknown) => {
+  const message = String((error as { message?: string; code?: string } | null)?.message || '');
+  const code = String((error as { code?: string } | null)?.code || '');
+  return code === 'PGRST204' || message.includes("'case_id'") || message.includes("'client_id'");
+};
+
 interface Props {
   caseId: string;
   clientId: string | null;
@@ -45,13 +51,19 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
   const fetchTasks = async () => {
     if (!user) return;
     setLoading(true);
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('personal_tasks' as any)
       .select('*')
       .eq('advisor_id', user.id)
       .eq('case_id', caseId)
       .order('is_completed', { ascending: true })
       .order('created_at', { ascending: false });
+
+    if (error && isMissingLinkColumnsError(error)) {
+      data = [];
+      error = null;
+    }
+
     if (error) toast.error('שגיאה בטעינת המשימות');
     else setTasks((data as any) || []);
     setLoading(false);
@@ -73,7 +85,8 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
       case_id: caseId,
       client_id: clientId,
     });
-    if (error) toast.error('שגיאה בהוספת המשימה');
+    if (error && isMissingLinkColumnsError(error)) toast.error('קישור משימות לתיק עדיין לא הופעל בבסיס הנתונים');
+    else if (error) toast.error('שגיאה בהוספת המשימה');
     else {
       toast.success('המשימה נוספה');
       setTitle('');
