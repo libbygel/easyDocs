@@ -106,22 +106,24 @@ export default function Clients() {
             <h1 className="text-2xl font-bold">לקוחות</h1>
             <p className="text-muted-foreground mt-1">ניהול רשימת הלקוחות שלך</p>
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            לקוח חדש
-          </Button>
-          <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2">
-            <FileSpreadsheet className="h-4 w-4" />
-            ייבוא מאקסל
-          </Button>
-          <Button variant="outline" onClick={() => setBulkCasesOpen(true)} className="gap-2">
-            <FolderPlus className="h-4 w-4" />
-            פתחי תיקים מרובים
-          </Button>
-          <Button variant="outline" onClick={() => { setGroupEmailInitialCategory(undefined); setGroupEmailOpen(true); }} className="gap-2">
-            <Mail className="h-4 w-4" />
-            מייל קבוצתי
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              לקוח חדש
+            </Button>
+            <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              ייבוא מאקסל
+            </Button>
+            <Button variant="outline" onClick={() => setBulkCasesOpen(true)} className="gap-2">
+              <FolderPlus className="h-4 w-4" />
+              פתחי תיקים מרובים
+            </Button>
+            <Button variant="outline" onClick={() => { setGroupEmailInitialCategory(undefined); setGroupEmailOpen(true); }} className="gap-2">
+              <Mail className="h-4 w-4" />
+              מייל קבוצתי
+            </Button>
+          </div>
         </div>
 
         <Card className="shadow-sm">
