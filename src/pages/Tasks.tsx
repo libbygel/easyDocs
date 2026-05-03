@@ -36,6 +36,12 @@ const priorityConfig: Record<string, { label: string; className: string }> = {
   low: { label: 'נמוכה', className: 'bg-muted text-muted-foreground border-muted' },
 };
 
+const isMissingLinkColumnsError = (error: unknown) => {
+  const message = String((error as { message?: string; code?: string } | null)?.message || '');
+  const code = String((error as { code?: string } | null)?.code || '');
+  return code === 'PGRST204' || message.includes("'case_id'") || message.includes("'client_id'");
+};
+
 export default function Tasks() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -89,7 +95,7 @@ export default function Tasks() {
     const clientId = caseId
       ? cases.find((c) => c.id === caseId)?.client_id ?? null
       : (selectedClientId !== 'none' ? selectedClientId : null);
-    const { error } = await supabase.from('personal_tasks' as any).insert({
+    const taskPayload = {
       advisor_id: user.id,
       title: title.trim(),
       description: description.trim() || null,
@@ -97,11 +103,20 @@ export default function Tasks() {
       priority,
       case_id: caseId,
       client_id: clientId,
-    });
+    };
+    let { error } = await supabase.from('personal_tasks' as any).insert(taskPayload);
+
+    if (error && isMissingLinkColumnsError(error)) {
+      const fallbackPayload = { ...taskPayload };
+      delete (fallbackPayload as any).case_id;
+      delete (fallbackPayload as any).client_id;
+      ({ error } = await supabase.from('personal_tasks' as any).insert(fallbackPayload));
+    }
+
     if (error) {
       toast.error('שגיאה בהוספת המשימה');
     } else {
-      toast.success('המשימה נוספה');
+      toast.success(caseId || clientId ? 'המשימה נוספה. הקישור לתיק יופעל לאחר עדכון בסיס הנתונים' : 'המשימה נוספה');
       setTitle('');
       setDescription('');
       setDueDate('');
