@@ -11,6 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Table,
   TableBody,
   TableHead,
@@ -52,6 +60,9 @@ import {
   Upload as UploadIcon,
   Inbox,
   Landmark,
+  MoreHorizontal,
+  Eye,
+  Bell,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -538,29 +549,43 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
               documents={documents}
               onSuccess={fetchData}
             />
-            <Button 
-              variant="outline" 
-              onClick={async () => {
-                if (caseData) {
-                  toast({ title: 'הדוח יורד...' });
-                  await generateCaseReport({
-                    caseTitle: caseData.title,
-                    caseType: caseData.case_types?.name || '',
-                    clientName: caseData.clients?.full_name || '',
-                    clientEmail: caseData.clients?.email || undefined,
-                    clientPhone: caseData.clients?.phone || undefined,
-                    createdAt: caseData.created_at,
-                    status: caseData.status,
-                    documents: documents,
-                  });
-                }
-              }}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              ייצוא דוח PDF
-            </Button>
-            <BulkDownloadButton documents={documents} caseTitle={caseData.title} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  ייצוא והורדה
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-popover w-56">
+                <DropdownMenuLabel>פעולות ייצוא</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={async () => {
+                    if (caseData) {
+                      toast({ title: 'הדוח יורד...' });
+                      await generateCaseReport({
+                        caseTitle: caseData.title,
+                        caseType: caseData.case_types?.name || '',
+                        clientName: caseData.clients?.full_name || '',
+                        clientEmail: caseData.clients?.email || undefined,
+                        clientPhone: caseData.clients?.phone || undefined,
+                        createdAt: caseData.created_at,
+                        status: caseData.status,
+                        documents: documents,
+                      });
+                    }
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileText className="h-4 w-4" />
+                  ייצוא דוח PDF
+                </DropdownMenuItem>
+                <div className="px-1 py-0.5">
+                  <BulkDownloadButton documents={documents} caseTitle={caseData.title} />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -609,8 +634,9 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
               {/* Portal Link */}
               <div className="space-y-3">
                 <h3 className="font-semibold">פורטל לקוח</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Button 
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Primary action */}
+                  <Button
                     onClick={() => setSendPortalLinkOpen(true)}
                     size="lg"
                     className="gap-2 bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all text-primary-foreground"
@@ -618,43 +644,54 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                     <Send className="h-5 w-5" />
                     שלח טופס מסמכים ללקוח
                   </Button>
-                  <Button onClick={copyPortalLink} variant="outline" className="gap-2">
-                    <Copy className="h-4 w-4" />
-                    העתק קישור
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => window.open(`/portal/${caseData.portal_token}`, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    צפה בטופס הלקוח
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={copyMasterPortalLink}
-                  >
-                    <Copy className="h-4 w-4" />
-                    העתק קישור פורטל לקוח (צפייה)
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => caseData.client_id && window.open(`/client-portal/${caseData.client_id}`, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    פתח פורטל לקוח (צפייה)
-                  </Button>
+
+                  {/* Reminder — secondary primary */}
                   <Button
                     variant="outline"
                     onClick={() => setReminderDialogOpen(true)}
                     disabled={!caseData.clients?.email}
                     className="gap-2"
                   >
-                    <Send className="h-4 w-4" />
+                    <Bell className="h-4 w-4" />
                     שלח תזכורת
                   </Button>
+
+                  {/* Grouped: links & previews */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <MoreHorizontal className="h-4 w-4" />
+                        קישורים וצפייה
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-popover w-64">
+                      <DropdownMenuLabel>טופס מסמכים</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={copyPortalLink} className="gap-2 cursor-pointer">
+                        <Copy className="h-4 w-4" />
+                        העתק קישור לטופס
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => window.open(`/portal/${caseData.portal_token}`, '_blank')}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <Eye className="h-4 w-4" />
+                        צפה בטופס הלקוח
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>פורטל לקוח (צפייה)</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={copyMasterPortalLink} className="gap-2 cursor-pointer">
+                        <Copy className="h-4 w-4" />
+                        העתק קישור פורטל
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => caseData.client_id && window.open(`/client-portal/${caseData.client_id}`, '_blank')}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        פתח פורטל לקוח
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 {/* Portal Password (auto = client ID) */}
