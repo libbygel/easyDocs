@@ -9,9 +9,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ListChecks, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, ListChecks, CheckCircle2, Briefcase, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface Task {
   id: string;
@@ -22,7 +23,12 @@ interface Task {
   priority: string;
   completed_at: string | null;
   created_at: string;
+  case_id: string | null;
+  client_id: string | null;
 }
+
+interface CaseOption { id: string; title: string; client_id: string; clients?: { full_name: string } | null; }
+interface ClientOption { id: string; full_name: string; }
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
   high: { label: 'גבוהה', className: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -40,6 +46,11 @@ export default function Tasks() {
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('normal');
   const [submitting, setSubmitting] = useState(false);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('none');
+  const [selectedClientId, setSelectedClientId] = useState<string>('none');
+  const [filterCaseId, setFilterCaseId] = useState<string>('all');
 
   const fetchTasks = async () => {
     if (!user) return;
@@ -60,18 +71,32 @@ export default function Tasks() {
 
   useEffect(() => {
     fetchTasks();
+    if (user) {
+      supabase.from('cases').select('id, title, client_id, clients!cases_client_id_fkey(full_name)')
+        .eq('advisor_id', user.id).order('created_at', { ascending: false })
+        .then(({ data }) => setCases((data as any) || []));
+      supabase.from('clients').select('id, full_name')
+        .eq('advisor_id', user.id).order('full_name')
+        .then(({ data }) => setClients((data as any) || []));
+    }
   }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !title.trim()) return;
     setSubmitting(true);
+    const caseId = selectedCaseId !== 'none' ? selectedCaseId : null;
+    const clientId = caseId
+      ? cases.find((c) => c.id === caseId)?.client_id ?? null
+      : (selectedClientId !== 'none' ? selectedClientId : null);
     const { error } = await supabase.from('personal_tasks' as any).insert({
       advisor_id: user.id,
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate || null,
       priority,
+      case_id: caseId,
+      client_id: clientId,
     });
     if (error) {
       toast.error('שגיאה בהוספת המשימה');
@@ -81,6 +106,8 @@ export default function Tasks() {
       setDescription('');
       setDueDate('');
       setPriority('normal');
+      setSelectedCaseId('none');
+      setSelectedClientId('none');
       fetchTasks();
     }
     setSubmitting(false);
