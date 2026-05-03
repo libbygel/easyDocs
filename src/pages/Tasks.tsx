@@ -231,6 +231,32 @@ export default function Tasks() {
                     <SelectItem value="low">עדיפות נמוכה</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={selectedCaseId} onValueChange={setSelectedCaseId}>
+                  <SelectTrigger className="max-w-[200px]">
+                    <SelectValue placeholder="קשר לתיק..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">ללא תיק</SelectItem>
+                    {cases.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title} {c.clients?.full_name ? `· ${c.clients.full_name}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedCaseId === 'none' && (
+                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                    <SelectTrigger className="max-w-[200px]">
+                      <SelectValue placeholder="קשר ללקוח..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">ללא לקוח</SelectItem>
+                      {clients.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Button type="submit" disabled={submitting || !title.trim()} className="mr-auto">
                   <Plus className="h-4 w-4 ml-1" />
                   הוסף משימה
@@ -251,6 +277,18 @@ export default function Tasks() {
               {f === 'open' ? `פתוחות (${openCount})` : f === 'completed' ? `הושלמו (${doneCount})` : `הכל (${tasks.length})`}
             </Button>
           ))}
+          <Select value={filterCaseId} onValueChange={setFilterCaseId}>
+            <SelectTrigger className="max-w-[220px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">כל המשימות</SelectItem>
+              <SelectItem value="general">כלליות (ללא תיק)</SelectItem>
+              {cases.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {doneCount > 0 && (
             <Button
               variant="outline"
