@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Contact,
   HelpCircle,
+  ListChecks,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,7 @@ const navItems = [
   { href: '/cases', label: 'תיקים', icon: FolderOpen },
   { href: '/clients', label: 'לקוחות', icon: Users },
   { href: '/contacts', label: 'אנשי קשר', icon: Contact },
+  { href: '/tasks', label: 'משימות', icon: ListChecks },
   { href: '/templates', label: 'תבניות', icon: FileText },
   { href: '/how-it-works', label: 'מדריך', icon: HelpCircle },
   { href: '/notifications', label: 'התראות', icon: Bell },

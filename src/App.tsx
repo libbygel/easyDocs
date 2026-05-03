@@ -17,6 +17,7 @@ import Contacts from "./pages/Contacts";
 import Templates from "./pages/Templates";
 import TemplateDocuments from "./pages/TemplateDocuments";
 import HowItWorks from "./pages/HowItWorks";
+import Tasks from "./pages/Tasks";
 
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
@@ -129,6 +130,7 @@ const AppRoutes = () => (
     <Route path="/templates/:typeId" element={<ProtectedRoute><TemplateDocuments /></ProtectedRoute>} />
     
     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+    <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
     <Route path="/how-it-works" element={<ProtectedRoute><HowItWorks /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/portal/:token" element={<ClientPortal />} />

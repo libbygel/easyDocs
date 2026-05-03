@@ -693,6 +693,45 @@ export type Database = {
           },
         ]
       }
+      personal_tasks: {
+        Row: {
+          advisor_id: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          is_completed: boolean
+          priority: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advisor_id: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advisor_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
