@@ -960,6 +960,10 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                   />
                 </div>
               </TabsContent>
+
+              <TabsContent value="tasks">
+                <CaseTasksPanel caseId={id!} clientId={caseData.client_id} />
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
