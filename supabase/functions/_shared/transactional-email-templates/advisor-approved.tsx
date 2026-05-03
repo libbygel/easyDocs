@@ -15,29 +15,24 @@ const AdvisorApprovedEmail = ({ advisorName, loginUrl = 'https://easydocs.tech/a
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
     </Head>
     <Preview>החשבון שלך ב-EasyDocs אושר</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={heroBox}>
-          <Heading style={heroTitle}>ברוך הבא ל-EasyDocs</Heading>
-          <Text style={heroSub}>החשבון שלך אושר ומוכן לשימוש</Text>
+    <Body style={{ ...main, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+      <Container style={{ ...container, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+        <Section style={{ ...heroBox, direction: 'rtl', textAlign: 'right' }}>
+          <Heading style={{ ...heroTitle, textAlign: 'right' }}>ברוך הבא ל-EasyDocs</Heading>
+          <Text style={{ ...heroSub, textAlign: 'right' }}>החשבון שלך אושר ומוכן לשימוש</Text>
         </Section>
-        <Section style={card}>
-          <Heading style={h1}>שלום {advisorName ? advisorName : 'יועץ יקר'},</Heading>
-          <Text style={text}>
+        <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }}>
+          <Heading style={{ ...h1, textAlign: 'right' }}>שלום {advisorName ? advisorName : 'יועץ יקר'},</Heading>
+          <Text style={{ ...text, textAlign: 'right' }}>
             שמחים לבשר לך שהחשבון שלך במערכת <strong>EasyDocs</strong> אושר בהצלחה.
           </Text>
-          <Text style={text}>
+          <Text style={{ ...text, textAlign: 'right' }}>
             מעכשיו תוכל להיכנס למערכת, לפתוח תיקים ללקוחות, לנהל מסמכים, חתימות דיגיטליות, תזכורות אוטומטיות ועוד כלים שיחסכו לך זמן יקר.
           </Text>
-          <Section style={noteBox}>
-            <Text style={{ ...text, margin: 0 }}>
-              <strong>טיפ למתחילים:</strong> מומלץ להתחיל בהגדרת תבניות מסמכים בהגדרות, כדי שכל תיק חדש ייפתח אוטומטית עם רשימת המסמכים הנדרשים.
-            </Text>
-          </Section>
           <Section style={buttonWrap}>
             <Button href={loginUrl} style={button}>כניסה למערכת</Button>
           </Section>
-          <Text style={{ ...text, fontSize: '13px', color: '#64748b' }}>
+          <Text style={{ ...text, fontSize: '13px', color: '#64748b', textAlign: 'right' }}>
             יש שאלות? אנחנו כאן לעזור - פשוט השב למייל הזה.
           </Text>
         </Section>
