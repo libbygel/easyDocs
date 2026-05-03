@@ -137,6 +137,10 @@ export default function Tasks() {
     if (filter === 'open') return !t.is_completed;
     if (filter === 'completed') return t.is_completed;
     return true;
+  }).filter((t) => {
+    if (filterCaseId === 'general') return !t.case_id;
+    if (filterCaseId !== 'all') return t.case_id === filterCaseId;
+    return true;
   });
 
   const openCount = tasks.filter((t) => !t.is_completed).length;
