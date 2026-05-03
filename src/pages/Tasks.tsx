@@ -9,9 +9,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ListChecks, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, ListChecks, CheckCircle2, Briefcase, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface Task {
   id: string;
@@ -22,7 +23,12 @@ interface Task {
   priority: string;
   completed_at: string | null;
   created_at: string;
+  case_id: string | null;
+  client_id: string | null;
 }
+
+interface CaseOption { id: string; title: string; client_id: string; clients?: { full_name: string } | null; }
+interface ClientOption { id: string; full_name: string; }
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
   high: { label: 'גבוהה', className: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -40,6 +46,11 @@ export default function Tasks() {
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('normal');
   const [submitting, setSubmitting] = useState(false);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('none');
+  const [selectedClientId, setSelectedClientId] = useState<string>('none');
+  const [filterCaseId, setFilterCaseId] = useState<string>('all');
 
   const fetchTasks = async () => {
     if (!user) return;
@@ -60,18 +71,32 @@ export default function Tasks() {
 
   useEffect(() => {
     fetchTasks();
+    if (user) {
+      supabase.from('cases').select('id, title, client_id, clients!cases_client_id_fkey(full_name)')
+        .eq('advisor_id', user.id).order('created_at', { ascending: false })
+        .then(({ data }) => setCases((data as any) || []));
+      supabase.from('clients').select('id, full_name')
+        .eq('advisor_id', user.id).order('full_name')
+        .then(({ data }) => setClients((data as any) || []));
+    }
   }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !title.trim()) return;
     setSubmitting(true);
+    const caseId = selectedCaseId !== 'none' ? selectedCaseId : null;
+    const clientId = caseId
+      ? cases.find((c) => c.id === caseId)?.client_id ?? null
+      : (selectedClientId !== 'none' ? selectedClientId : null);
     const { error } = await supabase.from('personal_tasks' as any).insert({
       advisor_id: user.id,
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate || null,
       priority,
+      case_id: caseId,
+      client_id: clientId,
     });
     if (error) {
       toast.error('שגיאה בהוספת המשימה');
@@ -81,6 +106,8 @@ export default function Tasks() {
       setDescription('');
       setDueDate('');
       setPriority('normal');
+      setSelectedCaseId('none');
+      setSelectedClientId('none');
       fetchTasks();
     }
     setSubmitting(false);
@@ -136,6 +163,10 @@ export default function Tasks() {
   const filtered = tasks.filter((t) => {
     if (filter === 'open') return !t.is_completed;
     if (filter === 'completed') return t.is_completed;
+    return true;
+  }).filter((t) => {
+    if (filterCaseId === 'general') return !t.case_id;
+    if (filterCaseId !== 'all') return t.case_id === filterCaseId;
     return true;
   });
 
@@ -200,6 +231,32 @@ export default function Tasks() {
                     <SelectItem value="low">עדיפות נמוכה</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={selectedCaseId} onValueChange={setSelectedCaseId}>
+                  <SelectTrigger className="max-w-[200px]">
+                    <SelectValue placeholder="קשר לתיק..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">ללא תיק</SelectItem>
+                    {cases.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title} {c.clients?.full_name ? `· ${c.clients.full_name}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedCaseId === 'none' && (
+                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                    <SelectTrigger className="max-w-[200px]">
+                      <SelectValue placeholder="קשר ללקוח..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">ללא לקוח</SelectItem>
+                      {clients.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Button type="submit" disabled={submitting || !title.trim()} className="mr-auto">
                   <Plus className="h-4 w-4 ml-1" />
                   הוסף משימה
@@ -220,6 +277,18 @@ export default function Tasks() {
               {f === 'open' ? `פתוחות (${openCount})` : f === 'completed' ? `הושלמו (${doneCount})` : `הכל (${tasks.length})`}
             </Button>
           ))}
+          <Select value={filterCaseId} onValueChange={setFilterCaseId}>
+            <SelectTrigger className="max-w-[220px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">כל המשימות</SelectItem>
+              <SelectItem value="general">כלליות (ללא תיק)</SelectItem>
+              {cases.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {doneCount > 0 && (
             <Button
               variant="outline"
@@ -280,6 +349,22 @@ export default function Tasks() {
                         >
                           {new Date(task.due_date).toLocaleDateString('he-IL')}
                         </Badge>
+                      )}
+                      {task.case_id && (
+                        <Link to={`/cases/${task.case_id}`}>
+                          <Badge variant="outline" className="gap-1 hover:bg-accent">
+                            <Briefcase className="h-3 w-3" />
+                            {cases.find((c) => c.id === task.case_id)?.title || 'תיק'}
+                          </Badge>
+                        </Link>
+                      )}
+                      {!task.case_id && task.client_id && (
+                        <Link to={`/clients/${task.client_id}`}>
+                          <Badge variant="outline" className="gap-1 hover:bg-accent">
+                            <User className="h-3 w-3" />
+                            {clients.find((c) => c.id === task.client_id)?.full_name || 'לקוח'}
+                          </Badge>
+                        </Link>
                       )}
                     </div>
                     {task.description && (

@@ -696,6 +696,8 @@ export type Database = {
       personal_tasks: {
         Row: {
           advisor_id: string
+          case_id: string | null
+          client_id: string | null
           completed_at: string | null
           created_at: string
           description: string | null
@@ -708,6 +710,8 @@ export type Database = {
         }
         Insert: {
           advisor_id: string
+          case_id?: string | null
+          client_id?: string | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
@@ -720,6 +724,8 @@ export type Database = {
         }
         Update: {
           advisor_id?: string
+          case_id?: string | null
+          client_id?: string | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
