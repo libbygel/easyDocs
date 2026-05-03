@@ -64,6 +64,8 @@ import {
   Eye,
   Bell,
 } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
+import { CaseTasksPanel } from '@/components/cases/CaseTasksPanel';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { DocumentReviewDialog } from '@/components/cases/DocumentReviewDialog';
@@ -760,7 +762,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="requests" dir="rtl">
-              <TabsList className="grid w-full grid-cols-5 mb-4">
+              <TabsList className="grid w-full grid-cols-6 mb-4">
                 <TabsTrigger value="requests" className="gap-2">
                   <UploadIcon className="h-4 w-4" />
                   מסמכים נדרשים ({requestDocs.length})
@@ -779,6 +781,10 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                 </TabsTrigger>
                 <TabsTrigger value="finance" className="gap-2">
                   💰 חיובים וזמן
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="gap-2">
+                  <ListChecks className="h-4 w-4" />
+                  משימות
                 </TabsTrigger>
               </TabsList>
 
