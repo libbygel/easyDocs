@@ -21,6 +21,7 @@ function escapeHtml(value: string): string {
 function getAdvisorName(record: Record<string, unknown>): string {
   return (
     cleanText(record.full_name) ||
+    cleanText(record.advisor_name) ||
     cleanText(record.name) ||
     cleanText(record.sender_display_name) ||
     cleanText(record.display_name)
@@ -120,7 +121,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { record, old_record } = await req.json()
+    const body = await req.json()
+    const { record, old_record } = body
 
     // Only fire when is_paid flips from false → true
     if (!record?.is_paid || old_record?.is_paid === true) {
@@ -130,7 +132,7 @@ Deno.serve(async (req) => {
     }
 
     const recipientEmail = record.email
-    const advisorName = getAdvisorName(record)
+    const advisorName = getAdvisorName({ ...record, advisor_name: body.advisor_name })
     const loginUrl = 'https://easydocs.tech/auth'
 
     if (!recipientEmail) {
