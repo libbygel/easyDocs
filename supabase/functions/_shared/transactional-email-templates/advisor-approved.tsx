@@ -27,7 +27,7 @@ const AdvisorApprovedEmail = ({ advisorName, loginUrl = 'https://easydocs.tech/a
             שמחים לבשר לך שהחשבון שלך במערכת <strong>EasyDocs</strong> אושר בהצלחה.
           </Text>
           <Text style={{ ...text, textAlign: 'right' }}>
-            מעכשיו תוכל להיכנס למערכת, לפתוח תיקים ללקוחות, לנהל מסמכים, חתימות דיגיטליות, תזכורות אוטומטיות ועוד כלים שיחסכו לך זמן יקר.
+            אפשר להיכנס למערכת ולהתחיל לעבוד עם תיקי לקוחות, מסמכים, חתימות דיגיטליות ותזכורות אוטומטיות.
           </Text>
           <Section style={buttonWrap}>
             <Button href={loginUrl} style={button}>כניסה למערכת</Button>
