@@ -51,9 +51,11 @@ export default function LandingPage() {
             <span className="text-primary">הלוך ושוב אינסופי במייל?</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            שולחת מייל בעותק מוסתר לכל הלקוחות, ואז עוקבת אחרי כל אחד בנפרד —
+            שליחת מייל ללקוחות, ואז מעקב —
             <br />
-            מי שלח, מה חסר, ועד מתי צריך להגיש. <strong className="text-foreground">EasyDocs</strong> עושה את זה בשבילך.
+            מי שלח, מה חסר, ועד מתי צריך להגיש. 
+            <br />
+            <strong className="text-foreground">EasyDocs</strong> עושה את זה בשבילך.
           </p>
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
             <span>🔔 תזכורות אוטומטיות</span>
@@ -85,7 +87,7 @@ export default function LandingPage() {
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "שולחת מייל בעותק מוסתר ואז עוקבת אחרי כל לקוח בנפרד מה שלח ומה חסר",
+              "שולחת מייל ואז מעקב אחרי כל לקוח בנפרד מה שלח ומה חסר",
               "אי אפשר לזכור איפה כל לקוח אוחז וכמה תיקים נשארו להגיש ועד מתי",
               "לקוחות שוכחים לשלוח, וצריך לתזכר אותם בזמן — שוב ושוב, ידנית",
               "מסמכים מגיעים חסרים או לא ברורים, וכל פנייה דורשת מייל וטלפון נוספים",
