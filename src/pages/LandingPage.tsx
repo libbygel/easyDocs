@@ -134,43 +134,61 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
+                icon: FolderOpen,
+                title: "פורטל לקוח – לינק אחד",
+                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.",
+                color: "bg-primary",
+              },
+              {
                 icon: Cloud,
-                title: "סנכרון אוטומטי ל-Google Drive",
-                desc: "המערכת בונה אוטומטית תיקייה ב-Drive לכל תיק חדש. כל מסמך שהלקוח מעלה נשמר שם בזמן אמת – גיבוי מלא בלי לגעת.",
+                title: "סנכרון ל-Google Drive",
+                desc: "תיקייה אוטומטית לכל תיק. כל קובץ נשמר בענן בזמן אמת.",
                 color: "bg-blue-500",
               },
               {
-                icon: BellRing,
-                title: "התראות מיידיות ליועץ",
-                desc: "לקוח העלה מסמך? אתה מקבל התראה מיידית. תמיד יודע מה קורה בכל תיק – בלי להיכנס ולבדוק.",
-                color: "bg-amber-500",
-              },
-              {
-                icon: Mail,
-                title: "תזכורות מייל אוטומטיות ללקוח",
-                desc: "חסר מסמך? המערכת שולחת ללקוח תזכורת מייל אוטומטית, ומתריעה גם לך. אפס רדיפה ידנית.",
-                color: "bg-rose-500",
-              },
-              {
                 icon: PenTool,
-                title: "חתימה דיגיטלית עם דף חתימה אוטומטי",
-                desc: "מעלה מסמך לחתימה – המערכת מוסיפה אוטומטית דף חתימה מקצועי, והלקוח חותם אונליין ישר מהפורטל.",
+                title: "חתימה דיגיטלית מובנית",
+                desc: "דף חתימה מצורף אוטומטית. הלקוח חותם אונליין מהפורטל.",
                 color: "bg-purple-500",
               },
               {
-                icon: Users,
-                title: "שליחה ישירה לאנשי קשר",
-                desc: "התיק מוכן? שלח את כל המסמכים לביטוח לאומי, רואה חשבון או כל גורם מקצועי – ישירות מהמערכת בקליק אחד.",
+                icon: Mail,
+                title: "תזכורות אוטומטיות חכמות",
+                desc: "המערכת רודפת אחרי הלקוח במקומך – מייל אוטומטי על כל מה שחסר.",
+                color: "bg-rose-500",
+              },
+              {
+                icon: BellRing,
+                title: "התראות בזמן אמת",
+                desc: "התראה מיידית בכל פעם שלקוח מעלה או חותם – תמיד מעודכן.",
+                color: "bg-amber-500",
+              },
+              {
+                icon: Building2,
+                title: "שליחה לבנקאי / ביטוח לאומי",
+                desc: "כל המסמכים יוצאים מהמערכת בקליק לכל גורם מקצועי.",
                 color: "bg-emerald-500",
               },
               {
-                icon: FolderOpen,
-                title: "פורטל לקוח – לינק אחד פשוט",
-                desc: "הלקוח מקבל לינק אחד ומעלה את כל המסמכים. בלי וואטסאפ, בלי מיילים, בלי בלאגן.",
-                color: "bg-primary",
+                icon: Timer,
+                title: "מעקב שעות וחיוב לקוח",
+                desc: "טיימר לכל תיק, דוחות שעות חודשיים וחיובים חוזרים – הכל מובנה.",
+                color: "bg-indigo-500",
+              },
+              {
+                icon: ListChecks,
+                title: "ניהול משימות לכל תיק",
+                desc: "פותחים משימות, מסמנים סטטוס, ולא שוכחים שום דבר באמצע התהליך.",
+                color: "bg-teal-500",
+              },
+              {
+                icon: ClipboardList,
+                title: "תבניות מס מוכנות",
+                desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת מסמכים נטענת אוטומטית.",
+                color: "bg-orange-500",
               },
             ].map((feat) => (
               <div
@@ -230,38 +248,6 @@ export default function LandingPage() {
               />
             </div>
           )}
-        </div>
-      </section>
-
-      {/* ─── FEATURES ─── */}
-      <section id="features" className="py-20 px-4 bg-card border-y border-border">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold">EasyDocs מרכז את כל איסוף המסמכים במקום אחד</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              כל לקוח מקבל לינק אחד פשוט ומעלה את כל המסמכים ישירות למערכת שלך – מסודר וברור.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className={`rounded-2xl p-6 space-y-3 border transition-all hover:shadow-md ${
-                  f.highlight
-                    ? "bg-primary/5 border-primary/20 hover:border-primary/40"
-                    : "bg-card border-border hover:border-primary/20"
-                }`}
-              >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                  f.highlight ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}>
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-lg">{f.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -343,23 +329,6 @@ export default function LandingPage() {
           <p className="text-muted-foreground max-w-lg mx-auto">
             כל המידע נשמר בצורה מאובטחת. גישה רק ללקוח וליועץ המס.
             שליטה מלאה על כל מסמך, בכל שלב.
-          </p>
-        </div>
-      </section>
-
-      {/* ─── COMING SOON ─── */}
-      <section className="py-16 px-4 bg-primary/5 border-y border-primary/10">
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 bg-success/10 text-success rounded-full px-4 py-1.5 text-sm font-medium">
-            <CheckCircle2 className="h-4 w-4" />
-            כבר פעיל במערכת
-          </div>
-          <Cloud className="h-10 w-10 text-primary mx-auto" />
-          <h2 className="text-2xl font-bold">סנכרון אוטומטי ל-Google Drive</h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            לכל תיק חדש שאתה פותח – המערכת יוצרת אוטומטית תיקייה ב-Google Drive שלך.
-            כל מסמך שהלקוח מעלה נשמר שם מיד, בלי שתצטרך לעשות כלום.
-            גיבוי מלא ומסודר בענן, אוטומטית.
           </p>
         </div>
       </section>
