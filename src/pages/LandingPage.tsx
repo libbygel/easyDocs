@@ -117,8 +117,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── KEY HIGHLIGHTS (NEW) ─── */}
-      <section className="py-20 px-4 bg-gradient-to-b from-primary/10 via-accent/5 to-background border-y border-primary/20">
+      {/* ─── KEY HIGHLIGHTS ─── */}
+      <section id="features" className="py-20 px-4 bg-gradient-to-b from-primary/10 via-accent/5 to-background border-y border-primary/20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14 space-y-3">
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-sm font-bold shadow-lg">
