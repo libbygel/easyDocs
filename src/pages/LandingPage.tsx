@@ -56,9 +56,9 @@ export default function LandingPage() {
             מי שלח, מה חסר, ועד מתי צריך להגיש. <strong className="text-foreground">EasyDocs</strong> עושה את זה בשבילך.
           </p>
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
-            <span>🔗 לינק אחד ללקוח</span>
+            <span>🔔 תזכורות אוטומטיות</span>
             <span className="text-muted-foreground">•</span>
-            <span>📁 מקום אחד לכל המסמכים</span>
+            <span>📁 המסמכים נאספים לבד ומוכנים בזמן</span>
           </div>
           <p className="text-base text-muted-foreground max-w-xl mx-auto">
             בלי לזכור איפה כל לקוח אוחז. בלי לתזכר ידנית. בלי הפתעות לפני הגשה.
