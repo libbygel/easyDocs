@@ -78,6 +78,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── VIDEO DEMO ─── */}
+      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
+        <div className="max-w-5xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
+          </p>
+          {!showVideo ? (
+            <button
+              onClick={() => setShowVideo(true)}
+              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
+            >
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                  <Play className="h-10 w-10 mr-[-3px]" />
+                </div>
+                <span className="text-xl font-bold text-foreground">▶ צפה בהדגמה</span>
+              </div>
+            </button>
+          ) : (
+            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
+              <video
+                src="/easydocs-guide-v3.mp4"
+                controls
+                autoPlay
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
@@ -218,38 +250,6 @@ export default function LandingPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
-        </div>
-      </section>
-
-      {/* ─── VIDEO DEMO ─── */}
-      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
-          </p>
-          {!showVideo ? (
-            <button
-              onClick={() => setShowVideo(true)}
-              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
-                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                  <Play className="h-10 w-10 mr-[-3px]" />
-                </div>
-                <span className="text-xl font-bold text-foreground">▶ צפה בהדגמה</span>
-              </div>
-            </button>
-          ) : (
-            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
-              <video
-                src="/easydocs-guide-v3.mp4"
-                controls
-                autoPlay
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
         </div>
       </section>
 
