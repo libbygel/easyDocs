@@ -5,65 +5,9 @@ import {
   FileText, Send, Bell, PenTool, Users, FolderOpen,
   CheckCircle2, ArrowLeft, Shield, Zap, Clock, Star,
   ChevronDown, Smartphone, LayoutDashboard, Play, Inbox, Eye,
-  Cloud, BellRing, Mail, UserCheck
+  Cloud, BellRing, Mail, UserCheck, ListChecks, Timer, Receipt,
+  Building2, MessageSquare, ClipboardList
 } from "lucide-react";
-
-const features = [
-  {
-    icon: FolderOpen,
-    title: "פורטל לקוח פשוט",
-    desc: "הלקוח מעלה את כל המסמכים דרך לינק אחד – בלי וואטסאפ, בלי מיילים מפוזרים, בלי בלבול.",
-    highlight: true,
-  },
-  {
-    icon: Cloud,
-    title: "סנכרון אוטומטי ל-Google Drive",
-    desc: "המערכת בונה אוטומטית תיקייה ב-Drive לכל תיק חדש – וכל מסמך שהלקוח מעלה נשמר שם בזמן אמת. גיבוי מלא, בלי מאמץ.",
-    highlight: true,
-  },
-  {
-    icon: Bell,
-    title: "תזכורות אוטומטיות",
-    desc: "אם הלקוח לא העלה מסמך נדרש – המערכת שולחת לו תזכורת מייל אוטומטית, ומתריעה גם לך. אתה לא צריך לרדוף אחרי אף אחד.",
-    highlight: true,
-  },
-  {
-    icon: BellRing,
-    title: "התראות בזמן אמת ליועץ",
-    desc: "כל פעם שלקוח מעלה מסמך – אתה מקבל התראה מיידית. תמיד יודע מה קורה בכל תיק, בלי לבדוק ידנית.",
-    highlight: true,
-  },
-  {
-    icon: PenTool,
-    title: "חתימה דיגיטלית מובנית",
-    desc: "מעלה מסמך לחתימה – המערכת מוסיפה לו אוטומטית דף חתימה מקצועי, והלקוח חותם אונליין ישר מהפורטל.",
-    highlight: true,
-  },
-  {
-    icon: Users,
-    title: "שליחה ישירה לאנשי קשר",
-    desc: "כשהתיק מוכן – שלח את כל המסמכים לביטוח לאומי, רואה חשבון או כל גורם מקצועי ישירות מהמערכת בקליק אחד.",
-    highlight: true,
-  },
-  {
-    icon: Inbox,
-    title: "כל המסמכים במקום אחד",
-    desc: "אין יותר חיפוש בוואטסאפ ובמייל – כל תיק מסודר לפי לקוח, עם כל הקבצים שלו.",
-    highlight: true,
-  },
-  {
-    icon: Eye,
-    title: "שליטה במה התקבל ומה חסר",
-    desc: "תמונה ברורה בזמן אמת – מה נכנס, ממי, ומה עדיין לא נשלח. אפס ניחושים.",
-    highlight: true,
-  },
-  {
-    icon: FileText,
-    title: "תבניות מס מוכנות",
-    desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת המסמכים נטענת מוכנה לכל תיק חדש.",
-    highlight: true,
-  },
-];
 
 const steps = [
   { num: "1", title: "צור תיק ובחר תבנית", desc: "רשימת המסמכים נטענת אוטומטית לפי סוג התיק" },
