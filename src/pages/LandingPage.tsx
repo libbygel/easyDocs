@@ -46,14 +46,14 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            גם אצלכם איסוף המסמכים עדיין מתבצע
+            גם אצלך איסוף המסמכים זה
             <br />
-            <span className="text-primary">במיילים ובוואטסאפ?</span>
+            <span className="text-primary">הלוך ושוב אינסופי במייל?</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            אצל רוב המשרדים האיסוף לא באמת מנוהל — הוא פשוט קורה.
+            שולחת מייל בעותק מוסתר לכל הלקוחות, ואז עוקבת אחרי כל אחד בנפרד —
             <br />
-            <strong className="text-foreground">EasyDocs</strong> הופך אותו לתהליך קל, מסודר וברור.
+            מי שלח, מה חסר, ועד מתי צריך להגיש. <strong className="text-foreground">EasyDocs</strong> עושה את זה בשבילך.
           </p>
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
             <span>🔗 לינק אחד ללקוח</span>
@@ -61,7 +61,7 @@ export default function LandingPage() {
             <span>📁 מקום אחד לכל המסמכים</span>
           </div>
           <p className="text-base text-muted-foreground max-w-xl mx-auto">
-            בלי רדיפות, בלי ניחושים, ובלי חוסרים ברגע האחרון.
+            בלי לזכור איפה כל לקוח אוחז. בלי לתזכר ידנית. בלי הפתעות לפני הגשה.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
@@ -79,16 +79,16 @@ export default function LandingPage() {
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">אם אתה יועץ מס – זה בטוח מוכר לך</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">אם את/ה יועץ מס – זה בטוח מוכר לך</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto text-xl">
-            האיסוף לא באמת מנוהל – הוא פשוט "קורה" איפשהו בין וואטסאפ, מייל ושיחות.
+            ככה נראה היום תהליך איסוף המסמכים אצל רוב היועצים — מייל, טלפון, והרבה הלוך ושוב.
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "לקוחות שולחים מסמכים בוואטסאפ ואתה לא מוצא אותם אחר כך",
-              "חלק מהמסמכים מגיעים באיחור ואתה רודף אחריהם ידנית",
-              "אין לך תמונה ברורה מה התקבל ומה עדיין חסר",
-              "כל תיק מרגיש מפוזר בין כמה מקומות בלי סדר אמיתי",
+              "שולחת מייל בעותק מוסתר ואז עוקבת אחרי כל לקוח בנפרד מה שלח ומה חסר",
+              "אי אפשר לזכור איפה כל לקוח אוחז וכמה תיקים נשארו להגיש ועד מתי",
+              "לקוחות שוכחים לשלוח, וצריך לתזכר אותם בזמן — שוב ושוב, ידנית",
+              "מסמכים מגיעים חסרים או לא ברורים, וכל פנייה דורשת מייל וטלפון נוספים",
             ].map((pain, i) => (
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
