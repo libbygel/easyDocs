@@ -78,38 +78,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── VIDEO DEMO ─── */}
-      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
-          </p>
-          {!showVideo ? (
-            <button
-              onClick={() => setShowVideo(true)}
-              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
-                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                  <Play className="h-10 w-10 mr-[-3px]" />
-                </div>
-                <span className="text-xl font-bold text-foreground">▶ צפה בהדגמה</span>
-              </div>
-            </button>
-          ) : (
-            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
-              <video
-                src="/easydocs-guide-v3.mp4"
-                controls
-                autoPlay
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
@@ -127,24 +95,6 @@ export default function LandingPage() {
               <div key={i} className="flex items-start gap-3 bg-destructive/5 rounded-xl p-4">
                 <span className="text-destructive text-xl mt-0.5">✕</span>
                 <p className="text-foreground text-base">{pain}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד?&nbsp;</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {steps.map((step) => (
-              <div key={step.num} className="space-y-3">
-                <div className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto">
-                  {step.num}
-                </div>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-                <p className="text-muted-foreground text-sm">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -249,6 +199,56 @@ export default function LandingPage() {
               💎 קבל הצעה מותאמת למשרד שלך
               <ArrowLeft className="h-5 w-5" />
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── VIDEO DEMO ─── */}
+      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
+        <div className="max-w-5xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
+          </p>
+          {!showVideo ? (
+            <button
+              onClick={() => setShowVideo(true)}
+              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
+            >
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                  <Play className="h-10 w-10 mr-[-3px]" />
+                </div>
+                <span className="text-xl font-bold text-foreground">▶ צפה בהדגמה</span>
+              </div>
+            </button>
+          ) : (
+            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
+              <video
+                src="/easydocs-guide-v3.mp4"
+                controls
+                autoPlay
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד?&nbsp;</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            {steps.map((step) => (
+              <div key={step.num} className="space-y-3">
+                <div className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto">
+                  {step.num}
+                </div>
+                <h3 className="text-lg font-semibold">{step.title}</h3>
+                <p className="text-muted-foreground text-sm">{step.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
