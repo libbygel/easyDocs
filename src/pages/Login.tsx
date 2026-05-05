@@ -196,10 +196,15 @@ export default function Login() {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">אין לך חשבון? </span>
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              הירשם עכשיו
+          <div className="mt-6 rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center">
+            <p className="text-sm font-semibold text-foreground mb-2">
+              עדיין אין לך חשבון?
+            </p>
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center w-full rounded-lg bg-primary px-4 py-2.5 text-base font-bold text-primary-foreground shadow-md hover:bg-primary/90 transition-all hover:shadow-lg"
+            >
+              הירשם עכשיו בחינם ←
             </Link>
           </div>
           <div className="mt-4 flex justify-center">
