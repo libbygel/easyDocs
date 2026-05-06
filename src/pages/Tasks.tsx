@@ -25,6 +25,8 @@ interface Task {
   created_at: string;
   case_id: string | null;
   client_id: string | null;
+  reminder_at: string | null;
+  reminder_sent_at: string | null;
 }
 
 interface CaseOption { id: string; title: string; client_id: string; clients?: { full_name: string } | null; }
@@ -51,6 +53,7 @@ export default function Tasks() {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('normal');
+  const [reminderAt, setReminderAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cases, setCases] = useState<CaseOption[]>([]);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -103,6 +106,7 @@ export default function Tasks() {
       priority,
       case_id: caseId,
       client_id: clientId,
+      reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
     };
     let { error } = await supabase.from('personal_tasks' as any).insert(taskPayload);
 
@@ -113,6 +117,13 @@ export default function Tasks() {
       ({ error } = await supabase.from('personal_tasks' as any).insert(fallbackPayload));
     }
 
+    // If reminder_at column doesn't exist yet, retry without it
+    if (error && (String((error as any).message || '').includes("'reminder_at'") || (error as any).code === 'PGRST204')) {
+      const fallbackPayload2 = { ...taskPayload };
+      delete (fallbackPayload2 as any).reminder_at;
+      ({ error } = await supabase.from('personal_tasks' as any).insert(fallbackPayload2));
+    }
+
     if (error) {
       toast.error('שגיאה בהוספת המשימה');
     } else {
@@ -121,6 +132,7 @@ export default function Tasks() {
       setDescription('');
       setDueDate('');
       setPriority('normal');
+      setReminderAt('');
       setSelectedCaseId('none');
       setSelectedClientId('none');
       fetchTasks();
