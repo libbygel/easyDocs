@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -22,6 +22,7 @@ import {
   type CaseTimeEntry,
 } from '@/lib/billing';
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
+import { ClientDocumentsPanel } from '@/components/clients/ClientDocumentsPanel';
 
 interface ClientRow {
   id: string;
@@ -321,13 +322,22 @@ export default function ClientDetail() {
           />
         </div>
 
-        <Tabs defaultValue="cases" className="space-y-4">
+        <Tabs defaultValue="documents" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="documents" className="gap-1">
+              <FileText className="h-4 w-4" />
+              מסמכי לקוח
+            </TabsTrigger>
             <TabsTrigger value="cases">תיקים</TabsTrigger>
             <TabsTrigger value="finance">סיכום פיננסי</TabsTrigger>
             <TabsTrigger value="time">זמן עבודה</TabsTrigger>
             <TabsTrigger value="activity">היסטוריית פעילות</TabsTrigger>
           </TabsList>
+
+          {/* Client documents */}
+          <TabsContent value="documents">
+            <ClientDocumentsPanel clientId={client.id} />
+          </TabsContent>
 
           {/* Cases */}
           <TabsContent value="cases">

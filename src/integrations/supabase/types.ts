@@ -344,6 +344,48 @@ export type Database = {
         }
         Relationships: []
       }
+      client_documents: {
+        Row: {
+          advisor_id: string
+          client_id: string
+          created_at: string
+          doc_type: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          advisor_id: string
+          client_id: string
+          created_at?: string
+          doc_type: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advisor_id?: string
+          client_id?: string
+          created_at?: string
+          doc_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           advisor_id: string
@@ -705,6 +747,8 @@ export type Database = {
           id: string
           is_completed: boolean
           priority: string
+          reminder_at: string | null
+          reminder_sent_at: string | null
           title: string
           updated_at: string
         }
@@ -719,6 +763,8 @@ export type Database = {
           id?: string
           is_completed?: boolean
           priority?: string
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           title: string
           updated_at?: string
         }
@@ -733,6 +779,8 @@ export type Database = {
           id?: string
           is_completed?: boolean
           priority?: string
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           title?: string
           updated_at?: string
         }
