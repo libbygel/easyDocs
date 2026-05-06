@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ListChecks } from 'lucide-react';
+import { Plus, Trash2, ListChecks, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,8 @@ interface Task {
   priority: string;
   case_id: string | null;
   client_id: string | null;
+  reminder_at?: string | null;
+  reminder_sent_at?: string | null;
 }
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
@@ -46,6 +48,7 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('normal');
+  const [reminderAt, setReminderAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchTasks = async () => {
@@ -77,14 +80,20 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
     e.preventDefault();
     if (!user || !title.trim()) return;
     setSubmitting(true);
-    const { error } = await supabase.from('personal_tasks' as any).insert({
+    const payload: any = {
       advisor_id: user.id,
       title: title.trim(),
       due_date: dueDate || null,
       priority,
       case_id: caseId,
       client_id: clientId,
-    });
+      reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
+    };
+    let { error } = await supabase.from('personal_tasks' as any).insert(payload);
+    if (error && (String((error as any).message || '').includes("'reminder_at'") || (error as any).code === 'PGRST204')) {
+      delete payload.reminder_at;
+      ({ error } = await supabase.from('personal_tasks' as any).insert(payload));
+    }
     if (error && isMissingLinkColumnsError(error)) toast.error('קישור משימות לתיק עדיין לא הופעל בבסיס הנתונים');
     else if (error) toast.error('שגיאה בהוספת המשימה');
     else {
@@ -92,6 +101,7 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
       setTitle('');
       setDueDate('');
       setPriority('normal');
+      setReminderAt('');
       fetchTasks();
     }
     setSubmitting(false);
@@ -143,6 +153,13 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
           onChange={(e) => setDueDate(e.target.value)}
           className="max-w-[160px]"
         />
+        <Input
+          type="datetime-local"
+          value={reminderAt}
+          onChange={(e) => setReminderAt(e.target.value)}
+          className="max-w-[200px]"
+          title="זמן תזכורת במייל ובמערכת"
+        />
         <Select value={priority} onValueChange={setPriority}>
           <SelectTrigger className="max-w-[140px]">
             <SelectValue />
@@ -186,6 +203,15 @@ export function CaseTasksPanel({ caseId, clientId }: Props) {
                   </Badge>
                   {task.due_date && (
                     <Badge variant="outline">{new Date(task.due_date).toLocaleDateString('he-IL')}</Badge>
+                  )}
+                  {task.reminder_at && (
+                    <Badge
+                      variant="outline"
+                      className={cn('gap-1', task.reminder_sent_at ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary border-primary/20')}
+                    >
+                      <Bell className="h-3 w-3" />
+                      {new Date(task.reminder_at).toLocaleString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </Badge>
                   )}
                 </div>
                 <Button
