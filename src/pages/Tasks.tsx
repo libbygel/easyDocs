@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ListChecks, CheckCircle2, Briefcase, User } from 'lucide-react';
+import { Plus, Trash2, ListChecks, CheckCircle2, Briefcase, User, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -248,6 +248,17 @@ export default function Tasks() {
                   onChange={(e) => setDueDate(e.target.value)}
                   className="max-w-[180px]"
                 />
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Bell className="h-4 w-4 text-primary" />
+                  <span>תזכורת:</span>
+                </div>
+                <Input
+                  type="datetime-local"
+                  value={reminderAt}
+                  onChange={(e) => setReminderAt(e.target.value)}
+                  className="max-w-[210px]"
+                  title="זמן לשליחת תזכורת במייל ובהודעה במערכת"
+                />
                 <Select value={priority} onValueChange={setPriority}>
                   <SelectTrigger className="max-w-[160px]">
                     <SelectValue />
@@ -375,6 +386,21 @@ export default function Tasks() {
                           )}
                         >
                           {new Date(task.due_date).toLocaleDateString('he-IL')}
+                        </Badge>
+                      )}
+                      {task.reminder_at && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'gap-1',
+                            task.reminder_sent_at
+                              ? 'bg-muted text-muted-foreground'
+                              : 'bg-primary/10 text-primary border-primary/20',
+                          )}
+                          title={task.reminder_sent_at ? 'התזכורת נשלחה' : 'תזכורת ממתינה'}
+                        >
+                          <Bell className="h-3 w-3" />
+                          {new Date(task.reminder_at).toLocaleString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         </Badge>
                       )}
                       {task.case_id && (
