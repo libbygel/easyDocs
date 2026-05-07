@@ -17,6 +17,10 @@ function fromB64(b64: string): Uint8Array {
   return out;
 }
 
+function buf(u8: Uint8Array): ArrayBuffer {
+  return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) as ArrayBuffer;
+}
+
 export function randomSalt(): string {
   return toB64(crypto.getRandomValues(new Uint8Array(16)));
 }
@@ -26,7 +30,7 @@ async function deriveKey(password: string, saltB64: string, iterations = 200_000
     'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
   );
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: fromB64(saltB64), iterations, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: buf(fromB64(saltB64)), iterations, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
     false,
@@ -40,7 +44,7 @@ export async function makeVerifier(password: string, saltB64: string): Promise<s
     'raw', enc.encode(password + '|verify'), 'PBKDF2', false, ['deriveBits']
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: fromB64(saltB64), iterations: 200_000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: buf(fromB64(saltB64)), iterations: 200_000, hash: 'SHA-256' },
     baseKey,
     256
   );
@@ -67,6 +71,6 @@ export async function encryptText(session: VaultSession, plaintext: string): Pro
 }
 
 export async function decryptText(session: VaultSession, ct: string, iv: string): Promise<string> {
-  const buf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, session.key, fromB64(ct));
-  return dec.decode(buf);
+  const out = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf(fromB64(iv)) }, session.key, buf(fromB64(ct)));
+  return dec.decode(out);
 }
