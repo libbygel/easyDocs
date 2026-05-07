@@ -386,6 +386,51 @@ export type Database = {
         }
         Relationships: []
       }
+      client_passwords: {
+        Row: {
+          advisor_id: string
+          client_id: string
+          created_at: string
+          id: string
+          notes_ciphertext: string | null
+          notes_iv: string | null
+          password_ciphertext: string
+          password_iv: string
+          service_name: string
+          updated_at: string
+          username_ciphertext: string | null
+          username_iv: string | null
+        }
+        Insert: {
+          advisor_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          notes_ciphertext?: string | null
+          notes_iv?: string | null
+          password_ciphertext: string
+          password_iv: string
+          service_name: string
+          updated_at?: string
+          username_ciphertext?: string | null
+          username_iv?: string | null
+        }
+        Update: {
+          advisor_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          notes_ciphertext?: string | null
+          notes_iv?: string | null
+          password_ciphertext?: string
+          password_iv?: string
+          service_name?: string
+          updated_at?: string
+          username_ciphertext?: string | null
+          username_iv?: string | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           advisor_id: string
@@ -956,6 +1001,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vault_settings: {
+        Row: {
+          advisor_id: string
+          created_at: string
+          id: string
+          salt: string
+          updated_at: string
+          verifier: string
+        }
+        Insert: {
+          advisor_id: string
+          created_at?: string
+          id?: string
+          salt: string
+          updated_at?: string
+          verifier: string
+        }
+        Update: {
+          advisor_id?: string
+          created_at?: string
+          id?: string
+          salt?: string
+          updated_at?: string
+          verifier?: string
+        }
+        Relationships: []
       }
     }
     Views: {
