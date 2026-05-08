@@ -344,6 +344,36 @@ export type Database = {
         }
         Relationships: []
       }
+      client_conversations: {
+        Row: {
+          advisor_id: string
+          client_id: string
+          conversation_date: string
+          created_at: string
+          id: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          advisor_id: string
+          client_id: string
+          conversation_date?: string
+          created_at?: string
+          id?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          advisor_id?: string
+          client_id?: string
+          conversation_date?: string
+          created_at?: string
+          id?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_documents: {
         Row: {
           advisor_id: string
