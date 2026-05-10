@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, KeyRound, MessageSquare } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
