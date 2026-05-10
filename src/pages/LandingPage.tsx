@@ -186,9 +186,8 @@ export default function LandingPage() {
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-20 space-y-8">
+          <div className="text-center mb-20">
             <h2 className="text-3xl sm:text-4xl font-bold mb-10">איך זה עובד?</h2>
-            <p className="text-lg text-muted-foreground">ארבעה צעדים פשוטים — והתיק מוכן.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {howItWorks.map((step, i) => (
