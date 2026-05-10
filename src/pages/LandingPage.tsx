@@ -208,7 +208,7 @@ export default function LandingPage() {
               },
               {
                 icon: FileSignature,
-                title: "העלאת מסמכים ע"י היועץ",
+                title: 'העלאת מסמכים ע"י היועץ',
                 desc: "גם אתם יכולים להעלות מסמכים בשם הלקוח — סריקות, קבלות ומסמכים שהתקבלו.",
                 color: "bg-sky-600",
               },
