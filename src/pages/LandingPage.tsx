@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
   Mail, PenTool, Activity, Archive, BarChart3,
+  CheckCircle2, Star, Shield,
 } from "lucide-react";
 
 const testimonials = [
