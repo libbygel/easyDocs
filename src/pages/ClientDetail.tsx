@@ -23,7 +23,6 @@ import {
 } from '@/lib/billing';
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { ClientDocumentsPanel } from '@/components/clients/ClientDocumentsPanel';
-import { ClientPasswordsPanel } from '@/components/clients/ClientPasswordsPanel';
 import { ClientConversationsPanel } from '@/components/clients/ClientConversationsPanel';
 
 interface ClientRow {
@@ -335,10 +334,6 @@ export default function ClientDetail() {
               <MessageSquare className="h-4 w-4" />
               סיכומי שיחה
             </TabsTrigger>
-            <TabsTrigger value="passwords" className="gap-1">
-              <KeyRound className="h-4 w-4" />
-              סיסמאות
-            </TabsTrigger>
             <TabsTrigger value="finance">סיכום פיננסי</TabsTrigger>
             <TabsTrigger value="time">זמן עבודה</TabsTrigger>
             <TabsTrigger value="activity">היסטוריית פעילות</TabsTrigger>
@@ -347,11 +342,6 @@ export default function ClientDetail() {
           {/* Client documents */}
           <TabsContent value="documents">
             <ClientDocumentsPanel clientId={client.id} />
-          </TabsContent>
-
-          {/* Passwords vault */}
-          <TabsContent value="passwords">
-            <ClientPasswordsPanel clientId={client.id} />
           </TabsContent>
 
           {/* Conversation summaries */}
