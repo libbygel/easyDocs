@@ -4,13 +4,20 @@ import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
   Mail, PenTool, Activity, Archive, BarChart3,
-  CheckCircle2, Star, Shield,
+  CheckCircle2, Star, Shield, Link2, Send, Bell, Inbox,
 } from "lucide-react";
 
 const testimonials = [
   { name: "אורי כ.", role: "יועץ מס", text: "סוף סוף כל המסמכים מגיעים למקום אחד מסודר – בלי לחפש בוואטסאפ ובמיילים." },
   { name: "מיכל ד.", role: "יועצת מס", text: "הפסקתי לרדוף אחרי לקוחות. התזכורות עושות את העבודה במקומי." },
   { name: "יוסי ש.", role: "יועץ מס בכיר", text: "כל תיק נסגר מסודר מהרגע הראשון. אני יודע בדיוק מה התקבל ומה חסר." },
+];
+
+const howItWorks = [
+  { icon: FolderOpen, title: "יוצרים תיק ללקוח", desc: "בוחרים את סוג התיק והמסמכים הדרושים." },
+  { icon: Link2, title: "הלקוח מקבל לינק אישי", desc: "בלי התחברות, בלי סיסמאות – לחיצה אחת." },
+  { icon: Bell, title: "המערכת מתזכרת אוטומטית", desc: "מייל אוטומטי על כל מה שחסר, עד שמסיים." },
+  { icon: Inbox, title: "כל המסמכים מסודרים בתיק", desc: "מוכן להגשה או לשליחה לכל גורם חיצוני." },
 ];
 
 export default function LandingPage() {
@@ -26,7 +33,7 @@ export default function LandingPage() {
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
             <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-              קבל הצעה משתלמת
+              לראות את המערכת בפעולה
             </Button>
           </div>
         </div>
@@ -35,33 +42,26 @@ export default function LandingPage() {
       {/* ─── HERO ─── */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            גם אצלך איסוף המסמכים זה
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4rem)' }}>
+            תפסיקו לרדוף
             <br />
-            <span className="text-primary">הלוך ושוב אינסופי במייל?</span>
+            <span className="text-primary">אחרי מסמכים.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            שליחת מייל ללקוחות, ואז מעקב —
-            <br />
-            מי שלח, מה חסר, ועד מתי צריך להגיש. 
-            <br />
-            <strong className="text-foreground">EasyDocs</strong> עושה את זה בשבילך.
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.
           </p>
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-accent/10 text-foreground rounded-full px-5 py-2 text-sm sm:text-base font-medium border border-accent/20">
-            <span>🔔 תזכורות אוטומטיות</span>
-            <span className="text-muted-foreground">•</span>
-            <span>📁 המסמכים נאספים לבד ומוכנים בזמן</span>
-          </div>
-          <p className="text-base text-muted-foreground max-w-xl mx-auto">
-            בלי לזכור איפה כל לקוח אוחז. בלי לתזכר ידנית. בלי הפתעות לפני הגשה.
+          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-xl mx-auto leading-relaxed pt-2">
+            בלי לזכור איפה כל לקוח אוחז.<br />
+            בלי לתזכר ידנית.<br />
+            בלי הפתעות לפני הגשה.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              💎 קבל הצעה מותאמת למשרד שלך
+              💎 לראות את המערכת בפעולה
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
-              מה כלול?
+              איך זה עובד?
               <ChevronDown className="h-4 w-4" />
             </Button>
           </div>
@@ -71,8 +71,8 @@ export default function LandingPage() {
       {/* ─── PAIN SECTION ─── */}
       <section className="py-16 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">אם את/ה יועץ מס – זה בטוח מוכר לך</h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto text-xl">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">למה יועצי מס עוברים ל-EasyDocs?</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto text-lg">
             ככה נראה היום תהליך איסוף המסמכים אצל רוב היועצים — מייל, טלפון, והרבה הלוך ושוב.
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
@@ -92,14 +92,14 @@ export default function LandingPage() {
       </section>
 
       {/* ─── KEY HIGHLIGHTS ─── */}
-      <section id="features" className="py-20 px-4 bg-gradient-to-b from-primary/10 via-accent/5 to-background border-y border-primary/20">
+      <section id="features" className="py-24 px-4 bg-gradient-to-b from-primary/10 via-accent/5 to-background border-y border-primary/20">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14 space-y-3">
+          <div className="text-center mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-sm font-bold shadow-lg">
               <Zap className="h-4 w-4" />
-              הפיצ'רים שמשנים את כל המשחק
+              הפתרון
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
               לא עוד כלי איסוף.<br />
               <span className="text-primary">מערכת שעובדת בשבילך.</span>
             </h2>
@@ -108,17 +108,17 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
                 icon: FolderOpen,
                 title: "פורטל לקוח – לינק אחד",
-                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.\n\nהלקוח יכול לראות בכל רגע מה התקבל, מה חסר ומה סטטוס התיק שלו",
+                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.\n\nהלקוח רואה בכל רגע מה התקבל, מה חסר ומה סטטוס התיק שלו.",
                 color: "bg-primary",
               },
               {
                 icon: Mail,
-                title: "תזכורות אוטומטיות ללקוחות",
+                title: "תזכורות אוטומטיות",
                 desc: "המערכת רודפת אחרי הלקוח במקומך – מייל אוטומטי על כל מה שחסר.",
                 color: "bg-rose-500",
               },
@@ -131,7 +131,7 @@ export default function LandingPage() {
               {
                 icon: Activity,
                 title: "שליחה לכל גורם מקצועי חיצוני",
-                desc: "בלחיצת כפתור שליחת המסמכים לאנשי קשר חיצוניים",
+                desc: "בלחיצת כפתור שליחת המסמכים לאנשי קשר חיצוניים.",
                 color: "bg-amber-500",
               },
               {
@@ -161,61 +161,38 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
-            <Button
-              size="lg"
-              onClick={() => navigate("/get-offer")}
-              className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-xl shadow-primary/30 font-bold"
-            >
-              💎 קבל הצעה מותאמת למשרד שלך
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14 space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-bold">איך זה עובד?</h2>
+            <p className="text-lg text-muted-foreground">ארבעה צעדים פשוטים — והתיק מוכן.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {howItWorks.map((step, i) => (
+              <div key={i} className="relative bg-card rounded-2xl p-6 border border-border space-y-3">
+                <div className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shadow-md">
+                  {i + 1}
+                </div>
+                <step.icon className="h-8 w-8 text-primary" />
+                <h3 className="font-bold text-lg">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── VIDEO DEMO ─── */}
-      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl sm:text-4xl font-bold">🎬 רוצה לראות איך זה עובד?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן
-          </p>
-          {!showVideo ? (
-            <button
-              onClick={() => setShowVideo(true)}
-              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
-                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                  <Play className="h-10 w-10 mr-[-3px]" />
-                </div>
-                <span className="text-xl font-bold text-foreground">▶ צפה בהדגמה</span>
-              </div>
-            </button>
-          ) : (
-            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
-              <video
-                src="/easydocs-guide-v3.mp4"
-                controls
-                autoPlay
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* ─── BEFORE / AFTER ─── */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-card border-y border-border">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">לפני ואחרי EasyDocs</h2>
           <div className="grid sm:grid-cols-2 gap-6">
             <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 space-y-4">
-              <h3 className="font-bold text-lg text-destructive flex items-center gap-2">
-                <span className="text-xl">😫</span> בלי EasyDocs
-              </h3>
+              <h3 className="font-bold text-lg text-destructive">בלי EasyDocs</h3>
               <ul className="space-y-2 text-sm">
                 {[
                   "מסמכים מפוזרים בין וואטסאפ, מייל ושיחות",
@@ -232,9 +209,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="rounded-2xl border border-success/20 bg-success/5 p-6 space-y-4">
-              <h3 className="font-bold text-lg text-success flex items-center gap-2">
-                <span className="text-xl">🚀</span> עם EasyDocs
-              </h3>
+              <h3 className="font-bold text-lg text-success">עם EasyDocs</h3>
               <ul className="space-y-2 text-sm">
                 {[
                   "כל המסמכים נכנסים למקום אחד מסודר",
@@ -251,6 +226,38 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ─── VIDEO DEMO ─── */}
+      <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-background border-b border-border">
+        <div className="max-w-5xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl sm:text-4xl font-bold">רוצה לראות איך זה עובד?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            סרטון קצר שמראה את כל התהליך – מיצירת תבנית ועד העברת התיק המוכן.
+          </p>
+          {!showVideo ? (
+            <button
+              onClick={() => setShowVideo(true)}
+              className="relative mx-auto block w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 hover:border-primary/50 transition-all group cursor-pointer shadow-2xl"
+            >
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+                <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                  <Play className="h-10 w-10 mr-[-3px]" />
+                </div>
+                <span className="text-xl font-bold text-foreground">צפה בהדגמה</span>
+              </div>
+            </button>
+          ) : (
+            <div className="mx-auto w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl">
+              <video
+                src="/easydocs-guide-v3.mp4"
+                controls
+                autoPlay
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -281,10 +288,10 @@ export default function LandingPage() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
           <Shield className="h-10 w-10 text-primary mx-auto" />
-          <h2 className="text-2xl font-bold">אבטחה מלאה</h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            כל המידע נשמר בצורה מאובטחת. גישה רק ללקוח וליועץ המס.
-            שליטה מלאה על כל מסמך, בכל שלב.
+          <h2 className="text-2xl font-bold">אבטחה ברמה הגבוהה ביותר</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            כל המסמכים נשמרים בענן מאובטח עם גישה מוגבלת ליועץ וללקוח בלבד.
+            הפרדת לקוחות מלאה, הצפנה וגיבוי ענן אוטומטי — שקט נפשי בכל שלב.
           </p>
         </div>
       </section>
@@ -292,13 +299,13 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">הגיע הזמן לעשות סדר באיסוף המסמכים</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold">הגיע הזמן להתחיל לעבוד מסודר</h2>
           <p className="text-lg text-muted-foreground">
             לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            💎 קבל הצעה משתלמת מותאמת למשרד שלך
+            לראות את המערכת בפעולה
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </div>
@@ -310,7 +317,7 @@ export default function LandingPage() {
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} EasyDocs. כל הזכויות שמורות.</span>
           <div className="flex gap-4">
             <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">התחברות</button>
-            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">קבל הצעה</button>
+            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">לראות את המערכת</button>
           </div>
         </div>
       </footer>
