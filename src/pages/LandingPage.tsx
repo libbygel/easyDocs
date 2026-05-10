@@ -33,9 +33,12 @@ export default function LandingPage() {
           <span className="text-xl font-bold text-primary">EasyDocs</span>
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
-            <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-              לראות את המערכת בפעולה
-            </Button>
+            <div className="flex flex-col items-center">
+              <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                לקבל הצעה מותאמת למשרד שלי
+              </Button>
+              <span className="text-[10px] text-muted-foreground mt-1">בדיקה קצרה של דקה אחת</span>
+            </div>
           </div>
         </div>
       </nav>
@@ -57,10 +60,13 @@ export default function LandingPage() {
             בלי הפתעות לפני הגשה.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-              💎 לראות את המערכת בפעולה
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <div className="flex flex-col items-center">
+              <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+                לקבל הצעה מותאמת למשרד שלי
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <span className="text-xs text-muted-foreground mt-2">בדיקה קצרה של דקה אחת</span>
+            </div>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
               איך זה עובד?
               <ChevronDown className="h-4 w-4" />
@@ -351,10 +357,13 @@ export default function LandingPage() {
             לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
-          <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-            לראות את המערכת בפעולה
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
+              לקבל הצעה מותאמת למשרד שלי
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <span className="text-sm text-muted-foreground mt-3 font-medium text-primary italic">בדיקה קצרה של דקה אחת</span>
+          </div>
         </div>
       </section>
 
