@@ -51,7 +51,7 @@ export default function LandingPage() {
             <br />
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
             <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n"}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
@@ -190,7 +190,7 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-10">איך זה עובד?</h2>
             <p className="text-lg text-muted-foreground">ארבעה צעדים פשוטים — והתיק מוכן.</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {howItWorks.map((step, i) => (
               <div key={i} className="relative bg-card rounded-2xl p-6 border border-border space-y-3">
                 <div className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shadow-md">
