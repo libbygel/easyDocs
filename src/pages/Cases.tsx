@@ -20,6 +20,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { CreateCaseDialog } from '@/components/cases/CreateCaseDialog';
 import { BulkCreateCasesDialog } from '@/components/cases/BulkCreateCasesDialog';
+import { deriveCaseStatus } from '@/lib/caseStatusSync';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
@@ -37,6 +38,8 @@ import { useToast } from '@/hooks/use-toast';
 type CaseWithRelations = Case & {
   clients: Client | null;
   case_types: CaseType | null;
+  case_documents?: { required: boolean; review_status: string }[];
+  derived_status?: Case['status'];
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -65,7 +68,8 @@ export default function Cases() {
         .select(`
           *,
           clients!cases_client_id_fkey (*),
-          case_types!cases_case_type_id_fkey (*)
+          case_types!cases_case_type_id_fkey (*),
+          case_documents (required, review_status)
         `)
         .eq('advisor_id', user.id)
         .order('created_at', { ascending: false });
@@ -75,7 +79,17 @@ export default function Cases() {
       }
       
       if (data) {
-        setCases(data as CaseWithRelations[]);
+        const enriched = (data as CaseWithRelations[]).map((c) => {
+          const docs = c.case_documents || [];
+          const derived = deriveCaseStatus(docs as any, c.status as any);
+          const finalStatus = derived || c.status;
+          // Best-effort background sync if stale
+          if (derived && derived !== c.status) {
+            supabase.from('cases').update({ status: derived }).eq('id', c.id).then(() => {});
+          }
+          return { ...c, derived_status: finalStatus } as CaseWithRelations;
+        });
+        setCases(enriched);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -265,7 +279,7 @@ export default function Cases() {
                             {caseItem.case_types?.name || '-'}
                           </TableCell>
                           <TableCell>
-                            <StatusBadge status={caseItem.status} />
+                            <StatusBadge status={caseItem.derived_status || caseItem.status} />
                           </TableCell>
                           <TableCell className="tabular-nums">
                             {format(new Date(caseItem.created_at), 'dd/MM/yyyy')}
