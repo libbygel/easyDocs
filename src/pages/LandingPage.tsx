@@ -207,24 +207,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד?&nbsp;</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {steps.map((step) => (
-              <div key={step.num} className="space-y-3">
-                <div className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto">
-                  {step.num}
-                </div>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-                <p className="text-muted-foreground text-sm">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─── BEFORE / AFTER ─── */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
