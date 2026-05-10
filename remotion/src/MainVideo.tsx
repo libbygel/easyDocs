@@ -15,6 +15,7 @@ import { Scene9SendToBanker } from "./scenes/Scene9SendToBanker";
 import { Scene11Billing } from "./scenes/Scene11Billing";
 import { Scene12Timer } from "./scenes/Scene12Timer";
 import { Scene13ClientArea } from "./scenes/Scene13ClientArea";
+import { Scene14SmartCase } from "./scenes/Scene14SmartCase";
 import { Scene10Outro } from "./scenes/Scene10Outro";
 
 const T = 35;
@@ -30,6 +31,8 @@ export const MainVideo = () => (
       <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
       <TransitionSeries.Sequence durationInFrames={250}><Scene3CreateCase /></TransitionSeries.Sequence>
       <TransitionSeries.Transition presentation={fade()} timing={timing} />
+      <TransitionSeries.Sequence durationInFrames={260}><Scene14SmartCase /></TransitionSeries.Sequence>
+      <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
       <TransitionSeries.Sequence durationInFrames={240}><Scene4AddDocs /></TransitionSeries.Sequence>
       <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing} />
       <TransitionSeries.Sequence durationInFrames={220}><Scene5AdvisorUpload /></TransitionSeries.Sequence>
