@@ -33,10 +33,11 @@ export default function LandingPage() {
           <span className="text-xl font-bold text-primary">EasyDocs</span>
           <div className="flex gap-3">
             <div className="flex flex-col items-center">
-              <Button size="sm" onClick={() => navigate("/login")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                לנסות את המערכת
-              </Button>
-              <span className="text-[10px] text-muted-foreground mt-1">בדיקה קצרה של דקה אחת</span>
+              <div className="flex flex-col items-center">
+                <Button size="sm" onClick={() => navigate("/login")} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  לנסות את המערכת
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -60,11 +61,12 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
-              <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-                לנסות את המערכת
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <span className="text-xs text-muted-foreground mt-2">בדיקה קצרה של דקה אחת</span>
+              <div className="flex flex-col items-center">
+                <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+                  לנסות את המערכת
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base px-8 h-12 gap-2">
               איך זה עובד?
