@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
   BellRing, Mail, ListChecks, Timer, Building2, ClipboardList, PenTool,
-  CheckCircle2, Star, Shield,
+  CheckCircle2, Star, Shield, Archive, Activity, Users, Briefcase,
+  FileSignature, BarChart3, Lock,
 } from "lucide-react";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const steps = [
   { num: "1", title: "צור תיק ובחר תבנית", desc: "רשימת המסמכים נטענת אוטומטית לפי סוג התיק" },
@@ -125,10 +129,10 @@ export default function LandingPage() {
                 color: "bg-primary",
               },
               {
-                icon: ClipboardList,
-                title: "תבניות מס מוכנות",
-                desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת מסמכים נטענת אוטומטית.",
-                color: "bg-orange-500",
+                icon: Mail,
+                title: "תזכורות אוטומטיות ללקוחות",
+                desc: "המערכת רודפת אחרי הלקוח במקומך – מייל אוטומטי על כל מה שחסר.",
+                color: "bg-rose-500",
               },
               {
                 icon: PenTool,
@@ -137,34 +141,22 @@ export default function LandingPage() {
                 color: "bg-purple-500",
               },
               {
-                icon: Mail,
-                title: "תזכורות אוטומטיות חכמות",
-                desc: "המערכת רודפת אחרי הלקוח במקומך – מייל אוטומטי על כל מה שחסר.",
-                color: "bg-rose-500",
-              },
-              {
-                icon: BellRing,
-                title: "התראות בזמן אמת",
-                desc: "התראה מיידית בכל פעם שלקוח מעלה או חותם – תמיד מעודכן.",
+                icon: Activity,
+                title: "סטטוס תיק חכם",
+                desc: "תמיד יודע איפה כל תיק עומד – מה התקבל, מה נבדק ומה מוכן להגשה.",
                 color: "bg-amber-500",
               },
               {
-                icon: Building2,
-                title: "שליחה לכל גורם מקצועי חיצוני",
-                desc: "בנקאי, רו\"ח, ביטוח לאומי – כל המסמכים יוצאים בקליק מתוך המערכת.",
+                icon: BarChart3,
+                title: "דשבורד מעקב",
+                desc: "תמונת מצב מלאה של כל התיקים והלקוחות במסך אחד.",
                 color: "bg-emerald-500",
               },
               {
-                icon: Timer,
-                title: "מעקב שעות וחיוב לקוח",
-                desc: "טיימר לכל תיק, דוחות שעות חודשיים וחיובים חוזרים – הכל מובנה.",
+                icon: Archive,
+                title: "הורדת כל התיק ב־ZIP",
+                desc: "כל המסמכים של התיק בקובץ אחד מסודר – מוכן לשליחה לכל גורם.",
                 color: "bg-indigo-500",
-              },
-              {
-                icon: ListChecks,
-                title: "ניהול משימות לכל תיק",
-                desc: "פותחים משימות, מסמנים סטטוס, ולא שוכחים שום דבר באמצע התהליך.",
-                color: "bg-teal-500",
               },
             ].map((feat) => (
               <div
@@ -192,6 +184,77 @@ export default function LandingPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* ─── ALL CAPABILITIES ACCORDION ─── */}
+      <section className="py-20 px-4 bg-card border-y border-border">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10 space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-bold">כל מה שהמערכת כוללת</h2>
+            <p className="text-lg text-muted-foreground">מערכת מלאה שמלווה אותך מהלקוח הראשון ועד ההגשה הסופית.</p>
+          </div>
+          <Accordion type="multiple" className="space-y-3">
+            {[
+              {
+                icon: Users, title: "ניהול לקוחות",
+                items: ["כרטיס לקוח עם כל הפרטים והקשר", "ייבוא/ייצוא מאקסל", "סיכומי שיחות והערות אישיות", "אזור אישי ללקוח לצפייה בכל התיקים"],
+              },
+              {
+                icon: ClipboardList, title: "ניהול תיקים",
+                items: ["תבניות מס מוכנות (שכיר, עצמאי, החזר מס, הצהרת הון)", "פתיחת תיקים מרובים בלחיצה", "סטטוס חכם לכל תיק", "יומן פעילות מלא לכל תיק"],
+              },
+              {
+                icon: FolderOpen, title: "פורטל לקוח",
+                items: ["לינק אחד להעלאת כל המסמכים", "גישה מאובטחת עם זיהוי", "סרגל התקדמות אישי", "הודעה אישית מהיועץ"],
+              },
+              {
+                icon: FileSignature, title: "חתימות דיגיטליות",
+                items: ["דף חתימה אוטומטי", "חתימה מהמובייל", "PDF מוכן עם החתימה משולבת", "תבניות חתימה לשימוש חוזר"],
+              },
+              {
+                icon: BellRing, title: "אוטומציות והתראות",
+                items: ["תזכורות אוטומטיות ללקוחות", "התראות בזמן אמת על כל פעולה", "מיילים אוטומטיים על מסמכים נדחים", "התראות דד-ליין דחוף"],
+              },
+              {
+                icon: Timer, title: "משימות וזמנים",
+                items: ["משימות אישיות ולכל תיק", "טיימר לכל תיק", "דוחות שעות חודשיים", "חיובים חוזרים ללקוח"],
+              },
+              {
+                icon: BarChart3, title: "דוחות וייצוא",
+                items: ["דשבורד עם מדדים מרכזיים", "ייצוא לאקסל ו-PDF (תמיכת RTL)", "הורדת תיק שלם ב-ZIP", "שליחה לבנקאי / רו\"ח / כל גורם חיצוני"],
+              },
+              {
+                icon: Lock, title: "אבטחה והרשאות",
+                items: ["בידוד מלא של נתוני כל יועץ", "הצפנת מידע ואחסון מאובטח", "אימות זהות לכניסה לפורטל", "שליטה מלאה על מי רואה מה"],
+              },
+            ].map((cat, i) => (
+              <AccordionItem
+                key={cat.title}
+                value={`item-${i}`}
+                className="bg-background rounded-xl border-2 border-border px-5 data-[state=open]:border-primary/40 data-[state=open]:shadow-md transition-all"
+              >
+                <AccordionTrigger className="hover:no-underline py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
+                      <cat.icon className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-base text-foreground">{cat.title}</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-4 pr-13">
+                  <ul className="space-y-2 pr-13">
+                    {cat.items.map((item, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
