@@ -6,7 +6,9 @@ import {
   CheckCircle2, ArrowLeft, Shield, Zap, Clock, Star,
   ChevronDown, Smartphone, LayoutDashboard, Play, Inbox, Eye,
   Cloud, BellRing, Mail, UserCheck, ListChecks, Timer, Receipt,
-  Building2, MessageSquare, ClipboardList
+  Building2, MessageSquare, ClipboardList, Briefcase, UserPlus,
+  Copy, RefreshCw, FileSignature, GripVertical, History,
+  BarChart3, Archive, FolderTree
 } from "lucide-react";
 
 const steps = [
