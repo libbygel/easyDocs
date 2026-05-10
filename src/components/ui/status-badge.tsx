@@ -18,7 +18,7 @@ const reviewStatusConfig: Record<ReviewStatus, { label: string; className: strin
 const caseStatusConfig: Record<CaseStatus, { label: string; className: string; icon: typeof Check }> = {
   'פתוח': { label: 'פתוח', className: 'status-info', icon: Clock },
   'ממתין למסמכים': { label: 'ממתין למסמכים', className: 'status-warning', icon: Clock },
-  'בבדיקה': { label: 'בבדיקה', className: 'status-info', icon: Clock },
+  'בבדיקה': { label: 'ממתין לאישור היועץ', className: 'status-info', icon: Clock },
   'הושלם': { label: 'הושלם – כל המסמכים אושרו', className: 'status-success', icon: Check },
   'מוקפא': { label: 'מוקפא', className: 'status-pending', icon: AlertCircle },
 };
