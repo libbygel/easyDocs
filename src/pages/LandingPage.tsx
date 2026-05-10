@@ -113,7 +113,7 @@ export default function LandingPage() {
               {
                 icon: FolderOpen,
                 title: "פורטל לקוח – לינק אחד",
-                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.",
+                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.\n\nהלקוח יכול לראות בכל רגע מה התקבל, מה חסר ומה סטטוס התיק שלו",
                 color: "bg-primary",
               },
               {
@@ -142,8 +142,8 @@ export default function LandingPage() {
               },
               {
                 icon: Archive,
-                title: "שליחה בקליק לכל גורם חיצוני",
-                desc: "כל המסמכים של התיק בקובץ אחד מסודר – מוכן לשליחה מהירה.",
+                title: "ניהול תיקים חכם",
+                desc: "כל המידע של הלקוח במקום אחד — משימות, חיובים, מסמכים, סיכומי שיחה והיסטוריית פעילות מלאה.",
                 color: "bg-indigo-500",
               },
             ].map((feat) => (
@@ -156,7 +156,7 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="font-bold text-lg text-foreground">{feat.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{feat.desc}</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{feat.desc}</p>
                 </div>
               </div>
             ))}
