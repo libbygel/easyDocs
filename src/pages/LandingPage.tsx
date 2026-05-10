@@ -63,7 +63,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center">
               <div className="flex flex-col items-center">
                 <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-                  לנסות את המערכת
+                  להתחיל לעבוד מסודר
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </div>
@@ -360,7 +360,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col items-center">
             <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-              לנסות את המערכת
+              להתחיל לעבוד מסודר
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <span className="text-sm text-muted-foreground mt-3 font-medium text-primary italic">
