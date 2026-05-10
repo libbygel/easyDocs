@@ -8,7 +8,7 @@ interface Props {
   caseTitle?: string
   portalLink?: string
   advisorName?: string
-  emailType?: 'new_case' | 'reminder' | 'new_document'
+  emailType?: 'new_case' | 'reminder' | 'new_document' | 'master_portal'
 }
 
 function getTitle(emailType?: string, advisorName?: string, caseTitle?: string) {
@@ -17,6 +17,8 @@ function getTitle(emailType?: string, advisorName?: string, caseTitle?: string) 
       return advisorName ? `${advisorName} פתח/ה עבורך תיק חדש - ${caseTitle}` : `נפתח תיק חדש - ${caseTitle}`
     case 'new_document':
       return advisorName ? `${advisorName} הוסיף/ה מסמך חדש לתיק ${caseTitle}` : `נוסף מסמך חדש לתיק - ${caseTitle}`
+    case 'master_portal':
+      return advisorName ? `${advisorName} שלח/ה לך קישור לצפייה בתיקים שלך` : `קישור לצפייה בתיקים שלך`
     default:
       return `תזכורת: מסמכים ממתינים - ${caseTitle}`
   }
@@ -32,6 +34,10 @@ function getBody(emailType?: string, advisorName?: string, caseTitle?: string) {
       return advisorName
         ? `${advisorName} הוסיף/ה מסמך חדש לתיק ${caseTitle} שדורש את טיפולך.`
         : `נוסף מסמך חדש לתיק ${caseTitle} שדורש את טיפולך.`
+    case 'master_portal':
+      return advisorName
+        ? `קיבלת מ-${advisorName} קישור לצפייה בכל התיקים שלך באזור האישי. הקישור מיועד לצפייה בלבד.`
+        : `קיבלת קישור לצפייה בכל התיקים שלך באזור האישי. הקישור מיועד לצפייה בלבד.`
     default:
       return advisorName
         ? `זוהי תזכורת מ-${advisorName} בנוגע לתיק ${caseTitle} — ישנם מסמכים שעדיין ממתינים להעלאה.`
@@ -53,7 +59,7 @@ const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '',
           <Heading style={h1}>שלום {clientName},</Heading>
           <Text style={text}>{getBody(emailType, advisorName, caseTitle)}</Text>
           <Section style={buttonWrap}>
-            <Button href={portalLink} style={button}>פתיחת הפורטל</Button>
+            <Button href={portalLink} style={button}>{emailType === 'master_portal' ? 'צפייה בתיקים' : 'פתיחת הפורטל'}</Button>
           </Section>
         </Section>
         <Section style={footer}>הודעה זו נשלחה ממערכת EasyDocs.</Section>
