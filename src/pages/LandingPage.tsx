@@ -45,25 +45,24 @@ export default function LandingPage() {
 
       {/* ─── HERO ─── */}
       <section className="pt-32 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
+        <div className="max-w-4xl mx-auto text-center space-y-6 text-xl">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4rem)' }}>
             תפסיקו לרדוף
             <br />
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
-            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n"}
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line text-slate-800 sm:text-3xl">
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\nבלי מיילים אינסופיים.\nבלי מעקב ידני אחרי כל לקוח.\nבלי לנסות לזכור מה עדיין חסר. "}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
             {[
               "בלי לתזכר ידנית.",
-              "בלי הפתעות לפני הגשה.",
             ].map((line, i) => (
               <p
                 key={i}
                 className="text-xl sm:text-2xl font-bold tracking-wide leading-snug text-foreground"
               >
-                <span className="text-accent text-2xl sm:text-3xl font-black ml-1">
+                <span className="text-accent text-2xl sm:text-3xl font-black ml-1 text-2xl">
                   {line.split(" ")[0]}
                 </span>
                 {line.substring(line.indexOf(" "))}
@@ -138,7 +137,7 @@ export default function LandingPage() {
               {
                 icon: Mail,
                 title: "תזכורות אוטומטיות",
-                desc: "המערכת רודפת אחרי הלקוח במקומך – מייל אוטומטי על כל מה שחסר.",
+                desc: "המערכת מתזכרת אוטומטית את הלקוחות על כל מסמך שחסר",
                 color: "bg-rose-500",
               },
               {
