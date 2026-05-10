@@ -3,21 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
-  BellRing, Mail, ListChecks, Timer, Building2, ClipboardList, PenTool,
-  CheckCircle2, Star, Shield, Archive, Activity, Users, Briefcase,
-  FileSignature, BarChart3, Lock,
+  Mail, PenTool, Activity, Archive, BarChart3,
+  CheckCircle2, Star, Shield,
 } from "lucide-react";
-import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from "@/components/ui/accordion";
-
-const steps = [
-  { num: "1", title: "צור תיק ובחר תבנית", desc: "רשימת המסמכים נטענת אוטומטית לפי סוג התיק" },
-  { num: "2", title: "שלח לינק אחד ללקוח", desc: "הלקוח מעלה את כל המסמכים ישירות לתיק שלו" },
-  { num: "3", title: "סגור את האיסוף בשליטה", desc: "רואה הכל במקום אחד – מה התקבל ומה עדיין חסר" },
-  { num: "4", title: "כל המסמכים בתיקייה מסודרת של הלקוח", desc: "כל קובץ נשמר אוטומטית בתיקייה ייעודית לכל לקוח – מסודר, נגיש וזמין בכל רגע" },
-  { num: "5", title: "שלח להגשה בלחיצה אחת", desc: "כל המסמכים מוכנים לשליחה לביטוח לאומי, רשויות המס או כל גורם אחר – ישירות מהמערכת" },
-];
 
 const testimonials = [
   { name: "אורי כ.", role: "יועץ מס", text: "סוף סוף כל המסמכים מגיעים למקום אחד מסודר – בלי לחפש בוואטסאפ ובמיילים." },
@@ -187,77 +175,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── ALL CAPABILITIES ACCORDION ─── */}
-      <section className="py-20 px-4 bg-card border-y border-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10 space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">כל מה שהמערכת כוללת</h2>
-            <p className="text-lg text-muted-foreground">מערכת מלאה שמלווה אותך מהלקוח הראשון ועד ההגשה הסופית.</p>
-          </div>
-          <Accordion type="multiple" className="space-y-3">
-            {[
-              {
-                icon: Users, title: "ניהול לקוחות",
-                items: ["כרטיס לקוח עם כל הפרטים והקשר", "ייבוא/ייצוא מאקסל", "סיכומי שיחות והערות אישיות", "אזור אישי ללקוח לצפייה בכל התיקים"],
-              },
-              {
-                icon: ClipboardList, title: "ניהול תיקים",
-                items: ["תבניות מס מוכנות (שכיר, עצמאי, החזר מס, הצהרת הון)", "פתיחת תיקים מרובים בלחיצה", "סטטוס חכם לכל תיק", "יומן פעילות מלא לכל תיק"],
-              },
-              {
-                icon: FolderOpen, title: "פורטל לקוח",
-                items: ["לינק אחד להעלאת כל המסמכים", "גישה מאובטחת עם זיהוי", "סרגל התקדמות אישי", "הודעה אישית מהיועץ"],
-              },
-              {
-                icon: FileSignature, title: "חתימות דיגיטליות",
-                items: ["דף חתימה אוטומטי", "חתימה מהמובייל", "PDF מוכן עם החתימה משולבת", "תבניות חתימה לשימוש חוזר"],
-              },
-              {
-                icon: BellRing, title: "אוטומציות והתראות",
-                items: ["תזכורות אוטומטיות ללקוחות", "התראות בזמן אמת על כל פעולה", "מיילים אוטומטיים על מסמכים נדחים", "התראות דד-ליין דחוף"],
-              },
-              {
-                icon: Timer, title: "משימות וזמנים",
-                items: ["משימות אישיות ולכל תיק", "טיימר לכל תיק", "דוחות שעות חודשיים", "חיובים חוזרים ללקוח"],
-              },
-              {
-                icon: BarChart3, title: "דוחות וייצוא",
-                items: ["דשבורד עם מדדים מרכזיים", "ייצוא לאקסל ו-PDF (תמיכת RTL)", "הורדת תיק שלם ב-ZIP", "שליחה לבנקאי / רו\"ח / כל גורם חיצוני"],
-              },
-              {
-                icon: Lock, title: "אבטחה והרשאות",
-                items: ["בידוד מלא של נתוני כל יועץ", "הצפנת מידע ואחסון מאובטח", "אימות זהות לכניסה לפורטל", "שליטה מלאה על מי רואה מה"],
-              },
-            ].map((cat, i) => (
-              <AccordionItem
-                key={cat.title}
-                value={`item-${i}`}
-                className="bg-background rounded-xl border-2 border-border px-5 data-[state=open]:border-primary/40 data-[state=open]:shadow-md transition-all"
-              >
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                      <cat.icon className="h-5 w-5" />
-                    </div>
-                    <span className="font-bold text-base text-foreground">{cat.title}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4 pr-13">
-                  <ul className="space-y-2 pr-13">
-                    {cat.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
       {/* ─── VIDEO DEMO ─── */}
       <section className="py-20 px-4 bg-gradient-to-b from-primary/5 to-card border-y border-border">
         <div className="max-w-5xl mx-auto text-center space-y-8">
@@ -287,24 +204,6 @@ export default function LandingPage() {
               />
             </div>
           )}
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">איך זה עובד?&nbsp;</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {steps.map((step) => (
-              <div key={step.num} className="space-y-3">
-                <div className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto">
-                  {step.num}
-                </div>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-                <p className="text-muted-foreground text-sm">{step.desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
