@@ -32,9 +32,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <span className="text-xl font-bold text-primary">EasyDocs</span>
           <div className="flex gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
             <div className="flex flex-col items-center">
-              <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button size="sm" onClick={() => navigate("/login")} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 לנסות את המערכת
               </Button>
               <span className="text-[10px] text-muted-foreground mt-1">בדיקה קצרה של דקה אחת</span>
@@ -61,7 +60,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
-              <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+              <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
                 לנסות את המערכת
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -358,7 +357,7 @@ export default function LandingPage() {
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <div className="flex flex-col items-center">
-            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
+            <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
               לנסות את המערכת
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -372,8 +371,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} EasyDocs. כל הזכויות שמורות.</span>
           <div className="flex gap-4">
-            <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">התחברות</button>
-            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">לנסות את המערכת</button>
+            <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">לנסות את המערכת</button>
           </div>
         </div>
       </footer>
