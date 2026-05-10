@@ -5,6 +5,7 @@ import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
   Mail, PenTool, Activity, Archive, BarChart3,
   CheckCircle2, Star, Shield, Link2, Send, Bell, Inbox,
+  Calculator, Briefcase, Home, Users, FileText, Clock,
 } from "lucide-react";
 
 const testimonials = [
