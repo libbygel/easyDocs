@@ -54,7 +54,7 @@ export default function LandingPage() {
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.
           </p>
-          <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center" style={{ fontFamily: "'Heebo', 'Manrope', sans-serif" }}>
+          <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
             {[
               "בלי לזכור איפה כל לקוח אוחז.",
               "בלי לתזכר ידנית.",
