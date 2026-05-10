@@ -346,7 +346,7 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-24 px-4 text-center bg-gradient-to-b from-background to-primary/5">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">הגיע הזמן להתחיל לעבוד מסודר</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold">פחות מעקבים. פחות בלאגן. יותר שליטה.</h2>
           <p className="text-lg text-muted-foreground">
             לתת ללקוחות דרך אחת ברורה לשלוח הכול –<br />
             ולך מערכת אחת שאפשר לסמוך עליה.
