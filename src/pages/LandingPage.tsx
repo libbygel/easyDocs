@@ -35,7 +35,7 @@ export default function LandingPage() {
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>התחברות</Button>
             <div className="flex flex-col items-center">
               <Button size="sm" onClick={() => navigate("/get-offer")} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                לקבל הצעה מותאמת למשרד שלי
+                לנסות את המערכת
               </Button>
               <span className="text-[10px] text-muted-foreground mt-1">בדיקה קצרה של דקה אחת</span>
             </div>
@@ -62,7 +62,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
               <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-                לקבל הצעה מותאמת למשרד שלי
+                לנסות את המערכת
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <span className="text-xs text-muted-foreground mt-2">בדיקה קצרה של דקה אחת</span>
@@ -359,7 +359,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col items-center">
             <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-              לקבל הצעה מותאמת למשרד שלי
+              לנסות את המערכת
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <span className="text-sm text-muted-foreground mt-3 font-medium text-primary italic">בדיקה קצרה של דקה אחת</span>
@@ -373,7 +373,7 @@ export default function LandingPage() {
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} EasyDocs. כל הזכויות שמורות.</span>
           <div className="flex gap-4">
             <button onClick={() => navigate("/login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">התחברות</button>
-            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">לראות את המערכת</button>
+            <button onClick={() => navigate("/get-offer")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">לנסות את המערכת</button>
           </div>
         </div>
       </footer>
