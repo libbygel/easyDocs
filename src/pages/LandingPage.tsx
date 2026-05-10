@@ -6,7 +6,9 @@ import {
   CheckCircle2, ArrowLeft, Shield, Zap, Clock, Star,
   ChevronDown, Smartphone, LayoutDashboard, Play, Inbox, Eye,
   Cloud, BellRing, Mail, UserCheck, ListChecks, Timer, Receipt,
-  Building2, MessageSquare, ClipboardList
+  Building2, MessageSquare, ClipboardList, Briefcase, UserPlus,
+  Copy, RefreshCw, FileSignature, GripVertical, History,
+  BarChart3, Archive, FolderTree
 } from "lucide-react";
 
 const steps = [
@@ -173,6 +175,72 @@ export default function LandingPage() {
                 title: "תבניות מס מוכנות",
                 desc: "שכיר, עצמאי, החזר מס, הצהרת הון – רשימת מסמכים נטענת אוטומטית.",
                 color: "bg-orange-500",
+              },
+              {
+                icon: MessageSquare,
+                title: "סיכומי שיחות עם לקוחות",
+                desc: "תעדו כל שיחה או פגישה — התוכן, התאריך והנושא נשמרים בכרטיס הלקוח.",
+                color: "bg-cyan-600",
+              },
+              {
+                icon: Briefcase,
+                title: "אנשי קשר מקצועיים",
+                desc: "נהלו רשימת בנקאים, רואי חשבון ועורכי דין — ושלחו אליהם תיקים בקליק.",
+                color: "bg-slate-600",
+              },
+              {
+                icon: UserPlus,
+                title: "ייבוא לקוחות מקובץ",
+                desc: "העלו קובץ Excel/CSV עם רשימת לקוחות והמערכת תקלוט את כולם בבת אחת.",
+                color: "bg-pink-600",
+              },
+              {
+                icon: Copy,
+                title: "יצירת תיקים מרובים",
+                desc: "פתחו תיקים זהים למספר לקוחות בו-זמנית — חוסך שעות בעונת המס.",
+                color: "bg-violet-600",
+              },
+              {
+                icon: RefreshCw,
+                title: "חיובים חוזרים אוטומטיים",
+                desc: "הגדירו חיוב חודשי או שנתי קבוע והמערכת תיצור אותם לבד במועד.",
+                color: "bg-lime-600",
+              },
+              {
+                icon: FileSignature,
+                title: 'העלאת מסמכים ע"י היועץ',
+                desc: "גם אתם יכולים להעלות מסמכים בשם הלקוח — סריקות, קבלות ומסמכים שהתקבלו.",
+                color: "bg-sky-600",
+              },
+              {
+                icon: GripVertical,
+                title: "סידור מסמכים בגרירה",
+                desc: "גררו מסמכים לסדר הרצוי — הסדר נשמר ומוצג גם ללקוח בפורטל.",
+                color: "bg-fuchsia-600",
+              },
+              {
+                icon: History,
+                title: "היסטוריית פעילות מלאה",
+                desc: "ציר זמן מפורט לכל תיק — מי עשה מה ומתי, מתאים לביקורת ולמעקב.",
+                color: "bg-stone-600",
+              },
+              {
+                icon: BarChart3,
+                title: "דוחות וייצוא לאקסל / PDF",
+                desc: "דוח שעות חודשי, דוח פעילות וייצוא רשימות — הכל בעברית עם תמיכת RTL.",
+                color: "bg-rose-700",
+              },
+              {
+                icon: Archive,
+                title: "הורדה מרוכזת ב-ZIP",
+                desc: "הורידו את כל מסמכי התיק המאושרים בקובץ ZIP אחד — מוכן להעברה.",
+                color: "bg-yellow-600",
+              },
+              {
+                icon: FolderTree,
+                title: "קטגוריות וסיווג מסמכים",
+                desc: "ארגנו מסמכים לקטגוריות (הכנסות, הוצאות, אישורים) לתצוגה ברורה ונוחה.",
+                color: "bg-emerald-700",
               },
             ].map((feat) => (
               <div
