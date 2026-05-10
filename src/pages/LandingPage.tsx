@@ -3,21 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
-  BellRing, Mail, ListChecks, Timer, Building2, ClipboardList, PenTool,
-  CheckCircle2, Star, Shield, Archive, Activity, Users, Briefcase,
-  FileSignature, BarChart3, Lock,
+  Mail, PenTool, Activity, Archive, BarChart3,
 } from "lucide-react";
-import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from "@/components/ui/accordion";
-
-const steps = [
-  { num: "1", title: "צור תיק ובחר תבנית", desc: "רשימת המסמכים נטענת אוטומטית לפי סוג התיק" },
-  { num: "2", title: "שלח לינק אחד ללקוח", desc: "הלקוח מעלה את כל המסמכים ישירות לתיק שלו" },
-  { num: "3", title: "סגור את האיסוף בשליטה", desc: "רואה הכל במקום אחד – מה התקבל ומה עדיין חסר" },
-  { num: "4", title: "כל המסמכים בתיקייה מסודרת של הלקוח", desc: "כל קובץ נשמר אוטומטית בתיקייה ייעודית לכל לקוח – מסודר, נגיש וזמין בכל רגע" },
-  { num: "5", title: "שלח להגשה בלחיצה אחת", desc: "כל המסמכים מוכנים לשליחה לביטוח לאומי, רשויות המס או כל גורם אחר – ישירות מהמערכת" },
-];
 
 const testimonials = [
   { name: "אורי כ.", role: "יועץ מס", text: "סוף סוף כל המסמכים מגיעים למקום אחד מסודר – בלי לחפש בוואטסאפ ובמיילים." },
