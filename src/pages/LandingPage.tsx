@@ -54,11 +54,23 @@ export default function LandingPage() {
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.
           </p>
-          <p className="text-lg sm:text-xl font-semibold text-foreground max-w-xl mx-auto leading-relaxed pt-2">
-            בלי לזכור איפה כל לקוח אוחז.<br />
-            בלי לתזכר ידנית.<br />
-            בלי הפתעות לפני הגשה.
-          </p>
+          <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center" style={{ fontFamily: "'Heebo', 'Manrope', sans-serif" }}>
+            {[
+              "בלי לזכור איפה כל לקוח אוחז.",
+              "בלי לתזכר ידנית.",
+              "בלי הפתעות לפני הגשה.",
+            ].map((line, i) => (
+              <p
+                key={i}
+                className="text-xl sm:text-2xl font-bold tracking-wide leading-snug text-foreground"
+              >
+                <span className="text-accent text-2xl sm:text-3xl font-black ml-1">
+                  {line.split(" ")[0]}
+                </span>
+                {line.substring(line.indexOf(" "))}
+              </p>
+            ))}
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
               <div className="flex flex-col items-center">
