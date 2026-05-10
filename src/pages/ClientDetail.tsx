@@ -148,7 +148,7 @@ export default function ClientDetail() {
         portalLink: masterPortalLink,
         advisorEmail: user?.email || '',
         advisorName: advisorName || user?.email?.split('@')[0] || '',
-        emailType: 'reminder',
+        emailType: 'master_portal',
       });
       if ((response as any)?.error) throw new Error((response as any).error);
       toast({ title: 'הקישור נשלח', description: `קישור צפייה נשלח ל-${client.email}` });
