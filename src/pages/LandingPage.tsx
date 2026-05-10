@@ -285,6 +285,37 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── WHO IT'S FOR ─── */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12 space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-bold">למי זה מתאים?</h2>
+            <p className="text-lg text-muted-foreground">
+              לכל מי שאוסף מסמכים מלקוחות באופן קבוע — ורוצה לעשות את זה אחרת.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[
+              { icon: Calculator, label: "יועצי מס" },
+              { icon: BarChart3, label: "משרדי הנהלת חשבונות" },
+              { icon: FileText, label: "משרדי החזרי מס" },
+              { icon: Home, label: "יועצי משכנתאות" },
+              { icon: Briefcase, label: "רואי חשבון" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col items-center justify-center gap-3 bg-card border border-border rounded-2xl p-5 hover:border-primary/40 hover:shadow-md transition-all"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <span className="text-sm font-semibold text-center text-foreground">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── SECURITY ─── */}
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-4">
@@ -294,6 +325,21 @@ export default function LandingPage() {
             כל המסמכים נשמרים בענן מאובטח עם גישה מוגבלת ליועץ וללקוח בלבד.
             הפרדת לקוחות מלאה, הצפנה וגיבוי ענן אוטומטי — שקט נפשי בכל שלב.
           </p>
+        </div>
+      </section>
+
+      {/* ─── WHY NOW ─── */}
+      <section className="py-16 px-4 bg-gradient-to-b from-accent/10 to-background border-y border-accent/20">
+        <div className="max-w-3xl mx-auto text-center space-y-5">
+          <div className="inline-flex items-center gap-2 bg-accent/15 text-accent-foreground rounded-full px-4 py-1.5 text-sm font-bold">
+            <Clock className="h-4 w-4" />
+            למה עכשיו?
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold leading-snug">
+            במקום להתחיל עוד עונת דוחות עם אקסלים, וואטסאפ ותזכורות ידניות —
+            <br />
+            <span className="text-primary">אפשר לעבוד מסודר כבר מהלקוח הבא.</span>
+          </h2>
         </div>
       </section>
 
