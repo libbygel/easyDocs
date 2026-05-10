@@ -18,7 +18,7 @@ const howItWorks = [
   { icon: FolderOpen, title: "יוצרים תיק ללקוח", desc: "בוחרים את סוג התיק והמסמכים הדרושים." },
   { icon: Link2, title: "הלקוח מקבל לינק אישי", desc: "הלקוח מקבל לינק אישי ופשוט לשליחת המסמכים." },
   { icon: Bell, title: "המערכת מתזכרת אוטומטית", desc: "מייל אוטומטי על כל מה שחסר, עד שמסיים." },
-  { icon: Inbox, title: "כל המסמכים מסודרים בתיק", desc: "מוכן להגשה או לשליחה לכל גורם חיצוני." },
+  { icon: Inbox, title: "כל המסמכים מסודרים בתיק", desc: "מסודר, מלא, וניתן לשליחה לכל גורם בלחיצת כפתור" },
 ];
 
 export default function LandingPage() {
@@ -52,11 +52,10 @@ export default function LandingPage() {
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n"}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
             {[
-              "בלי לזכור איפה כל לקוח אוחז.",
               "בלי לתזכר ידנית.",
               "בלי הפתעות לפני הגשה.",
             ].map((line, i) => (
@@ -75,7 +74,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center">
               <div className="flex flex-col items-center">
                 <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-                  להתחיל לעבוד מסודר
+                  לראות איך EasyDocs חוסכת לך שעות כל שבוע
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </div>
@@ -133,7 +132,7 @@ export default function LandingPage() {
               {
                 icon: FolderOpen,
                 title: "פורטל לקוח – לינק אחד",
-                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן.\n\nהלקוח רואה בכל רגע מה התקבל, מה חסר ומה סטטוס התיק שלו.",
+                desc: "הלקוח מעלה הכל מלינק יחיד. בלי וואטסאפ, בלי בלאגן. וגם יכול לראות בכל רגע נתון את סטטוס התיק שלו",
                 color: "bg-primary",
               },
               {
@@ -187,8 +186,8 @@ export default function LandingPage() {
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14 space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">איך זה עובד?</h2>
+          <div className="text-center mb-20 space-y-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-10">איך זה עובד?</h2>
             <p className="text-lg text-muted-foreground">ארבעה צעדים פשוטים — והתיק מוכן.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -309,8 +308,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 space-y-3">
             <h2 className="text-3xl sm:text-4xl font-bold">למי זה מתאים?</h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground whitespace-pre-line">
               לכל מי שאוסף מסמכים מלקוחות באופן קבוע — ורוצה לעשות את זה אחרת.
+              {"\n"}אם אתם עובדים עם מסמכים מלקוחות — זה בשבילכם.
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
