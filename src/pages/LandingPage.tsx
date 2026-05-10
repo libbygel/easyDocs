@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   FolderOpen, ArrowLeft, Zap, ChevronDown, Play,
   BellRing, Mail, ListChecks, Timer, Building2, ClipboardList, PenTool,
+  CheckCircle2, Star, Shield,
 } from "lucide-react";
 
 const steps = [
