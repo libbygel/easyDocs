@@ -19,7 +19,7 @@ const caseStatusConfig: Record<CaseStatus, { label: string; className: string; i
   'פתוח': { label: 'פתוח', className: 'status-info', icon: Clock },
   'ממתין למסמכים': { label: 'ממתין למסמכים', className: 'status-warning', icon: Clock },
   'בבדיקה': { label: 'בבדיקה', className: 'status-info', icon: Clock },
-  'הושלם': { label: 'הושלם', className: 'status-success', icon: Check },
+  'הושלם': { label: 'הושלם – כל המסמכים אושרו', className: 'status-success', icon: Check },
   'מוקפא': { label: 'מוקפא', className: 'status-pending', icon: AlertCircle },
 };
 
