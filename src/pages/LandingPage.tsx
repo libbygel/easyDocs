@@ -52,12 +52,10 @@ export default function LandingPage() {
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line text-slate-800 sm:text-2xl text-right md:text-center">
-            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\n\nבלי לרדוף אחרי לקוחות.\n\nבלי לחפש מסמכים במיילים.\n\nבלי לנהל משימות, הערות וחיובים בכמה מקומות שונים.\n\n\n\n\nהכול מרוכז במקום אחד."}
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\nבלי לרדוף אחרי לקוחות.\n\nבלי לחפש מסמכים במיילים.\n\nבלי לנהל משימות, הערות וחיובים בכמה מקומות שונים.\n\n\nהכול מרוכז במקום אחד."}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
-            {[
-              "\n",
-            ].map((line, i) => (
+            {[].map((line, i) => (
               <p
                 key={i}
                 className="text-xl sm:text-2xl font-bold tracking-wide leading-snug text-foreground"
