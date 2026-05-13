@@ -353,7 +353,7 @@ export default function LandingPage() {
             למה עכשיו?
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold leading-snug">
-            במקום להתחיל עוד עונת דוחות עם אקסלים, וואטסאפ ותזכורות ידניות —
+            במקום להתחיל עוד עונת דוחות עם אקסלים, מיילים ותזכורות ידניות —
             <br />
             <span className="text-primary">אפשר לעבוד מסודר כבר מהלקוח הבא.</span>
           </h2>
