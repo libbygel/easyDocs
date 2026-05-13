@@ -56,7 +56,7 @@ export default function LandingPage() {
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
             {[
-              "בלי לתזכר ידנית.",
+              "\n",
             ].map((line, i) => (
               <p
                 key={i}
