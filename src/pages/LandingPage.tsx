@@ -52,7 +52,7 @@ export default function LandingPage() {
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line text-slate-800 sm:text-3xl">
-            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\nבלי מיילים אינסופיים.\nבלי מעקב ידני אחרי כל לקוח.\nבלי לנסות לזכור מה עדיין חסר. "}
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\nבלי מיילים אינסופיים.\nבלי מעקב ידני אחרי כל לקוח.\nבלי לנסות לזכור מה עדיין חסר."}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
             {[
