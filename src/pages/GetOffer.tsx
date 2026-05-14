@@ -118,7 +118,7 @@ export default function GetOffer() {
 
                 <div className="space-y-2">
                   <Label htmlFor="officeSize">גודל משרד / כמות לקוחות (לא חובה)</Label>
-                  <Input id="officeSize" value={form.officeSize} onChange={update("officeSize")} placeholder="לדוגמה: כ-150 לקוחות פעילים" maxLength={100} />
+                  <Input id="officeSize" value={form.officeSize} onChange={update("officeSize")} placeholder="" maxLength={100} />
                 </div>
 
                 <div className="space-y-2">
