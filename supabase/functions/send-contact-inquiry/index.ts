@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,32 +61,36 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    if (!RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is not configured");
+    if (!BREVO_API_KEY) {
+      console.error("BREVO_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "שירות המייל אינו מוגדר כרגע" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "api-key": BREVO_API_KEY,
+        Accept: "application/json",
       },
       body: JSON.stringify({
-        from: "EasyDocs Leads <onboarding@resend.dev>",
-        to: ["dv4343@gmail.com", "dg.smarter1@gmail.com"],
-        reply_to: email,
+        sender: { name: "EasyDocs Leads", email: "dg.smarter1@gmail.com" },
+        to: [
+          { email: "dv4343@gmail.com" },
+          { email: "dg.smarter1@gmail.com" },
+        ],
+        replyTo: { email },
         subject,
-        html: body,
+        htmlContent: body,
       }),
     });
 
     if (!res.ok) {
       const errorData = await res.text();
-      console.error("Resend API error:", errorData);
+      console.error("Brevo API error:", errorData);
       return new Response(
         JSON.stringify({ error: "שגיאה בשליחת הפנייה" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -94,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data = await res.json();
-    console.log("Inquiry sent successfully via Resend:", data);
+    console.log("Inquiry sent successfully via Brevo:", data);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
