@@ -70,7 +70,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
               <div className="flex flex-col items-center">
-                <Button size="lg" onClick={() => navigate("/getOffer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+                <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
                   תראי לי איך EasyDocs חוסך שעות
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -367,7 +367,7 @@ export default function LandingPage() {
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <div className="flex flex-col items-center">
-            <Button size="lg" onClick={() => navigate("/getOffer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
+            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
               תראי לי איך EasyDocs חוסך שעות
               <ArrowLeft className="h-5 w-5" />
             </Button>
