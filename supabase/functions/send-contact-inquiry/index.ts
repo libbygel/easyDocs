@@ -98,22 +98,5 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
-    }
-
-    const data = await res.json();
-    console.log("Inquiry sent successfully via Brevo:", data);
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-  } catch (error: any) {
-    console.error("Error sending inquiry:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  }
-};
 
 serve(handler);
