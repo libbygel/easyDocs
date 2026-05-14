@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "EasyDocs Leads <onboarding@resend.dev>",
-        to: ["dv4343@gmail.com"],
+        to: ["dv4343@gmail.com", "dg.smarter1@gmail.com"],
         reply_to: email,
         subject,
         html: body,
