@@ -54,7 +54,7 @@ export default function GetOffer() {
       console.error("Error submitting inquiry:", err);
       toast({
         title: "שגיאה בשליחה",
-        description: "אירעה שגיאה. נסה שוב או פנה אלינו בטלפון.",
+        description: "אירעה שגיאה. נסה שוב או פנה אלינו במייל dg.smarter1@gmail.com.",
         variant: "destructive",
       });
     } finally {
