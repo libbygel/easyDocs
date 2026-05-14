@@ -19,6 +19,7 @@ import { template as dailyRejection } from './daily-rejection.tsx'
 import { template as urgentDocs } from './urgent-documents.tsx'
 import { template as advisorApproved } from './advisor-approved.tsx'
 import { template as adminNewSignup } from './admin-new-signup.tsx'
+import { template as contactInquiry } from './contact-inquiry.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'portal-link': portalLink,
@@ -31,4 +32,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'urgent-documents': urgentDocs,
   'advisor-approved': advisorApproved,
   'admin-new-signup': adminNewSignup,
+  'contact-inquiry': contactInquiry,
 }
