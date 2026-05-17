@@ -4,6 +4,7 @@ import { useAdvisorName } from '@/hooks/useAdvisorName';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { logCaseActivity } from '@/lib/activityLog';
+import { absoluteAppUrl } from '@/lib/appUrl';
 import {
   Dialog,
   DialogContent,
@@ -170,7 +171,7 @@ export function AddUploadDocumentDialog({
     if (!portalToken || !clientEmail) return;
     setSendingLink(true);
     try {
-      const portalLink = `${window.location.origin}/portal/${portalToken}`;
+      const portalLink = absoluteAppUrl(`/portal/${portalToken}`);
       const response = await invokeEdgeFunction('send-portal-link', {
         clientName: clientName || 'לקוח',
         clientEmail,
@@ -191,7 +192,7 @@ export function AddUploadDocumentDialog({
 
   const handleCopyLink = () => {
     if (!portalToken) return;
-    const link = `${window.location.origin}/portal/${portalToken}`;
+    const link = absoluteAppUrl(`/portal/${portalToken}`);
     navigator.clipboard.writeText(link);
     toast({ title: 'הקישור הועתק', description: 'ניתן לשלוח ללקוח' });
   };

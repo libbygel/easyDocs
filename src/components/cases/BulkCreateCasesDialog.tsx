@@ -25,9 +25,7 @@ import { Loader2, FolderPlus, Search } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useAdvisorName } from '@/hooks/useAdvisorName';
-
-const isMissingColumnError = (error: any, column: string) =>
-  error?.code === '42703' || String(error?.message || '').includes(column);
+import { absoluteAppUrl } from '@/lib/appUrl';
 
 interface BulkCreateCasesDialogProps {
   open: boolean;
@@ -167,7 +165,6 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
       let skippedNoEmail = 0;
       let sendFailed = 0;
       if (autoSendPortal && createdCases.length > 0) {
-        const portalBase = `${window.location.origin}/portal`;
         for (const cc of createdCases) {
           if (!cc.client.email) {
             skippedNoEmail++;
@@ -180,7 +177,7 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
               .select('portal_token')
               .eq('id', cc.id)
               .maybeSingle();
-            const portalLink = `${portalBase}/${(caseRow as any)?.portal_token}`;
+            const portalLink = absoluteAppUrl(`/portal/${(caseRow as any)?.portal_token}`);
             const response = await invokeEdgeFunction('send-portal-link', {
               clientName: cc.client.full_name,
               clientEmail: cc.client.email,
@@ -192,8 +189,6 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
             });
             if (response?.error) throw new Error(response.error);
             const now = new Date().toISOString();
-            const sentAtUpdate = await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', cc.id);
-            if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) throw sentAtUpdate.error;
             await supabase.from('case_documents').update({ sent_to_client_at: now } as any).eq('case_id', cc.id);
             sentCount++;
           } catch (err) {

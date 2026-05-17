@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
+import { absoluteAppUrl, openAppPath } from '@/lib/appUrl';
 import type { Case, Client, CaseType, CaseDocument, Upload } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -269,7 +270,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
   const copyPortalLink = () => {
     if (!caseData) return;
-    const link = `${window.location.origin}/portal/${caseData.portal_token}`;
+    const link = absoluteAppUrl(`/portal/${caseData.portal_token}`);
     navigator.clipboard.writeText(link);
     toast({
       title: 'הקישור הועתק',
@@ -279,7 +280,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
   const copyMasterPortalLink = () => {
     if (!caseData?.client_id) return;
-    const link = `${window.location.origin}/client-portal/${caseData.client_id}`;
+    const link = absoluteAppUrl(`/client-portal/${caseData.client_id}`);
     navigator.clipboard.writeText(link);
     toast({
       title: 'קישור פורטל הלקוח הועתק',
@@ -673,7 +674,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                         העתק קישור לטופס
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => window.open(`/portal/${caseData.portal_token}`, '_blank')}
+                        onClick={() => openAppPath(`/portal/${caseData.portal_token}`)}
                         className="gap-2 cursor-pointer"
                       >
                         <Eye className="h-4 w-4" />
@@ -686,7 +687,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                         העתק קישור פורטל
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => caseData.client_id && window.open(`/client-portal/${caseData.client_id}`, '_blank')}
+                        onClick={() => caseData.client_id && openAppPath(`/client-portal/${caseData.client_id}`)}
                         className="gap-2 cursor-pointer"
                       >
                         <ExternalLink className="h-4 w-4" />

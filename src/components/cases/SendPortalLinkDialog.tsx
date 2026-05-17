@@ -13,10 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
+import { absoluteAppUrl, openAppPath } from '@/lib/appUrl';
 import { Loader2, Mail, Copy, Check, ExternalLink } from 'lucide-react';
-
-const isMissingColumnError = (error: any, column: string) =>
-  error?.code === '42703' || String(error?.message || '').includes(column);
 
 interface SendPortalLinkDialogProps {
   open: boolean;
@@ -46,7 +44,8 @@ export function SendPortalLinkDialog({
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const portalLink = `${window.location.origin}/portal/${portalToken}`;
+  const portalPath = `/portal/${portalToken}`;
+  const portalLink = absoluteAppUrl(portalPath);
   const [advisorName, setAdvisorName] = useState<string>('');
 
   useEffect(() => {
@@ -80,17 +79,7 @@ export function SendPortalLinkDialog({
 
       if (response?.error) throw new Error(response.error);
 
-      // Update last_portal_link_sent_at on case
       const now = new Date().toISOString();
-      const sentAtUpdate = await supabase
-        .from('cases')
-        .update({ last_portal_link_sent_at: now })
-        .eq('id', caseId);
-
-      if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) {
-        throw sentAtUpdate.error;
-      }
-
       // Update sent_to_client_at on all case documents
       await supabase
         .from('case_documents')
@@ -119,17 +108,7 @@ export function SendPortalLinkDialog({
     navigator.clipboard.writeText(portalLink);
     setCopied(true);
 
-    // Update last_portal_link_sent_at on copy too
     const now = new Date().toISOString();
-    const sentAtUpdate = await supabase
-      .from('cases')
-      .update({ last_portal_link_sent_at: now })
-      .eq('id', caseId);
-
-    if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) {
-      console.warn('Failed to update last_portal_link_sent_at:', sentAtUpdate.error);
-    }
-
     // Update sent_to_client_at on all case documents
     await supabase
       .from('case_documents')
@@ -198,7 +177,7 @@ export function SendPortalLinkDialog({
             {/* Open Portal Button */}
             <Button
               variant="ghost"
-              onClick={() => window.open(portalLink, '_blank')}
+              onClick={() => openAppPath(portalPath)}
               className="gap-2 w-full"
             >
               <ExternalLink className="h-4 w-4" />

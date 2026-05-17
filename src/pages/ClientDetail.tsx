@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
+import { absoluteAppUrl } from '@/lib/appUrl';
 import { format } from 'date-fns';
 import {
   listClientCharges,
@@ -24,9 +25,6 @@ import {
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { ClientDocumentsPanel } from '@/components/clients/ClientDocumentsPanel';
 import { ClientConversationsPanel } from '@/components/clients/ClientConversationsPanel';
-
-const isMissingColumnError = (error: any, column: string) =>
-  error?.code === '42703' || String(error?.message || '').includes(column);
 
 interface ClientRow {
   id: string;
@@ -134,7 +132,7 @@ export default function ClientDetail() {
     ? totals.totalCharged - (totals.totalSeconds / 3600) * hourlyRate
     : null;
 
-  const masterPortalLink = client ? `${window.location.origin}/client-portal/${client.id}` : '';
+  const masterPortalLink = client ? absoluteAppUrl(`/client-portal/${client.id}`) : '';
 
   const sendViewOnlyPortalLink = async () => {
     if (!client) return;
@@ -173,7 +171,7 @@ export default function ClientDetail() {
     }
     setSendingUploadLink(true);
     try {
-      const portalLink = `${window.location.origin}/portal/${caseRow.portal_token}`;
+      const portalLink = absoluteAppUrl(`/portal/${caseRow.portal_token}`);
       const response = await invokeEdgeFunction('send-portal-link', {
         clientName: client.full_name,
         clientEmail: client.email,
@@ -184,9 +182,6 @@ export default function ClientDetail() {
         emailType: 'reminder',
       });
       if ((response as any)?.error) throw new Error((response as any).error);
-      const now = new Date().toISOString();
-      const sentAtUpdate = await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', caseRow.id);
-      if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) throw sentAtUpdate.error;
       toast({ title: 'הקישור נשלח', description: `קישור להעלאת מסמכים נשלח ל-${client.email}` });
       setUploadCasePickerOpen(false);
     } catch (err: any) {
