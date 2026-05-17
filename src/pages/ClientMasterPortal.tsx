@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,9 +39,6 @@ interface ActivityRow {
   created_at: string;
 }
 
-// Store to preserve and restore advisor session when entering/leaving public portal
-let savedSessionDataMaster: any = null;
-
 const STATUS_STYLES: Record<string, string> = {
   'תקין': 'bg-success/10 text-success border-success/30',
   'הועלה': 'bg-info/10 text-info border-info/30',
@@ -70,36 +67,23 @@ export default function ClientMasterPortal() {
   const [pwInput, setPwInput] = useState('');
   const [pwError, setPwError] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const savedSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Public portal must not inherit an active advisor session.
     // Save current session, clear it, and restore on unmount to keep advisor logged in elsewhere.
-    const saveAndSignOut = async () => {
-      try {
-        const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-        const currentSession = localStorage.getItem(sessionKey);
-        if (currentSession) {
-          savedSessionDataMaster = currentSession;
-          // Clear session so portal doesn't have advisor context
-          localStorage.removeItem(sessionKey);
-        }
-      } catch (err) {
-        console.warn('ClientMasterPortal: failed to manage session:', err);
-      }
-    };
-
-    saveAndSignOut();
+    const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
+    const currentSession = localStorage.getItem(sessionKey);
+    if (currentSession) {
+      savedSessionRef.current = currentSession;
+      localStorage.removeItem(sessionKey);
+    }
 
     return () => {
       // Restore advisor session when leaving portal
-      try {
-        if (savedSessionDataMaster) {
-          const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-          localStorage.setItem(sessionKey, savedSessionDataMaster);
-          savedSessionDataMaster = null;
-        }
-      } catch (err) {
-        console.warn('ClientMasterPortal: failed to restore session on unmount:', err);
+      if (savedSessionRef.current) {
+        localStorage.setItem(sessionKey, savedSessionRef.current);
+        savedSessionRef.current = null;
       }
     };
   }, []);

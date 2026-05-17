@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
@@ -19,9 +19,6 @@ interface DocUploads {
   files: { id: string; fileName: string; fileUrl: string }[];
 }
 
-// Store to preserve and restore advisor session when entering/leaving public portal
-let savedSessionData: any = null;
-
 export default function ClientPortal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
@@ -40,6 +37,7 @@ export default function ClientPortal() {
   const [passwordError, setPasswordError] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const { toast } = useToast();
+  const savedSessionRef = useRef<string | null>(null);
 
   const fetchData = async (bypassPasswordCheck = false) => {
     if (!token) {
@@ -160,33 +158,19 @@ export default function ClientPortal() {
 
   useEffect(() => {
     // Public portal must not inherit an active advisor session.
-    // Save current session, sign out, and restore on unmount to keep advisor logged in elsewhere.
-    const saveAndSignOut = async () => {
-      try {
-        const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-        const currentSession = localStorage.getItem(sessionKey);
-        if (currentSession) {
-          savedSessionData = currentSession;
-          // Clear session so portal doesn't have advisor context
-          localStorage.removeItem(sessionKey);
-        }
-      } catch (err) {
-        console.warn('ClientPortal: failed to manage session:', err);
-      }
-    };
-
-    saveAndSignOut();
+    // Save current session, clear it, and restore on unmount to keep advisor logged in elsewhere.
+    const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
+    const currentSession = localStorage.getItem(sessionKey);
+    if (currentSession) {
+      savedSessionRef.current = currentSession;
+      localStorage.removeItem(sessionKey);
+    }
 
     return () => {
       // Restore advisor session when leaving portal
-      try {
-        if (savedSessionData) {
-          const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-          localStorage.setItem(sessionKey, savedSessionData);
-          savedSessionData = null;
-        }
-      } catch (err) {
-        console.warn('ClientPortal: failed to restore session on unmount:', err);
+      if (savedSessionRef.current) {
+        localStorage.setItem(sessionKey, savedSessionRef.current);
+        savedSessionRef.current = null;
       }
     };
   }, []);
