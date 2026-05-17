@@ -156,6 +156,14 @@ export default function ClientPortal() {
   };
 
   useEffect(() => {
+    // Public portal must not inherit an active advisor session from the same browser.
+    // This prevents accidental access to advisor screens when navigating back.
+    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
+      console.warn('ClientPortal: failed to clear local auth session', err);
+    });
+  }, []);
+
+  useEffect(() => {
     fetchData();
 
     // Realtime subscription for uploads

@@ -69,6 +69,14 @@ export default function ClientMasterPortal() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    // Public portal must not inherit an active advisor session from the same browser.
+    // This prevents accidental access to advisor screens when navigating back.
+    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
+      console.warn('ClientMasterPortal: failed to clear local auth session', err);
+    });
+  }, []);
+
+  useEffect(() => {
     if (!token) {
       setLoading(false);
       setNotFound(true);
