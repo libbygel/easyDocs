@@ -44,7 +44,7 @@ serve(async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     for (const [, data] of clientDocs) {
       const portalUrl = `https://easydocs.tech/portal/${data.portalToken}`;
-      const { data: advisorProfile } = await supabase.from('profiles').select('name, sender_display_name, email').eq('user_id', data.advisorId).single();
+      const { data: advisorProfile } = await supabase.from('profiles').select('name, sender_display_name, email').eq('id', data.advisorId).single();
       const advisorDisplay = (advisorProfile as any)?.sender_display_name || advisorProfile?.name || undefined;
 
       const { error } = await supabase.functions.invoke("send-transactional-email", {

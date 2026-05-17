@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { MonthlyTimeReport } from '@/components/cases/MonthlyTimeReport';
+import { MonthlyBillingLedger } from '@/components/cases/MonthlyBillingLedger';
 import {
   Dialog,
   DialogContent,
@@ -411,6 +412,14 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
         </CardContent>
       </Card>
 
+      {/* Unified monthly billing ledger (all categories color-coded) */}
+      <MonthlyBillingLedger
+        charges={charges}
+        payments={payments}
+        timeEntries={timeEntries}
+        hourlyRate={hourlyRate}
+      />
+
       {/* Monthly breakdown of time entries */}
       <MonthlyTimeReport entries={timeEntries} hourlyRate={hourlyRate} />
 
@@ -528,14 +537,16 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
               <Input value={paymentDesc} onChange={(e) => setPaymentDesc(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">סוגר חיוב</Label>
+              <Label className="text-xs" title="קישור התשלום לחיוב מסוים יסמן אותו כשולם (קיזוז)">
+                משויך לחיוב (קיזוז)
+              </Label>
               <Select value={paymentChargeId} onValueChange={setPaymentChargeId}>
-                <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="תשלום כללי" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">ללא קישור</SelectItem>
+                  <SelectItem value="none">תשלום כללי (ללא קישור)</SelectItem>
                   {charges.map((c) => {
                     const s = summarizeChargeSettlement(c, payments);
-                    const desc = c.description ? c.description.slice(0, 30) : 'חיוב';
+                    const desc = c.description ? c.description.replace(/\s*\[recurring:[^\]]+\]\s*/g, '').slice(0, 30) : 'חיוב';
                     return (
                       <SelectItem key={c.id} value={c.id} disabled={s.status === 'paid'}>
                         {desc} • {formatCurrency(c.amount)} {s.status === 'paid' ? '(שולם)' : s.status === 'partial' ? `(נותר ${formatCurrency(s.remaining)})` : ''}
@@ -624,14 +635,14 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
               <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">סוגר חיוב</Label>
+              <Label className="text-xs">משויך לחיוב (קיזוז)</Label>
               <Select value={editChargeId} onValueChange={setEditChargeId}>
-                <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="תשלום כללי" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">ללא קישור</SelectItem>
+                  <SelectItem value="none">תשלום כללי (ללא קישור)</SelectItem>
                   {charges.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {(c.description || 'חיוב').slice(0, 28)} • {formatCurrency(c.amount)}
+                      {(c.description || 'חיוב').replace(/\s*\[recurring:[^\]]+\]\s*/g, '').slice(0, 28)} • {formatCurrency(c.amount)}
                     </SelectItem>
                   ))}
                 </SelectContent>

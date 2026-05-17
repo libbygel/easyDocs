@@ -89,7 +89,7 @@ export function ClientProgressHeader({
         {/* Progress bar */}
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
-            <span className="font-medium">הושלמו {actualUploadsCount} מתוך {totalDocs} מסמכים</span>
+            <span className="font-medium">נשלחו {actualUploadsCount} מתוך {totalDocs} מסמכים</span>
             <span className="text-muted-foreground">{Math.round(progress)}%</span>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden">

@@ -54,20 +54,25 @@ export function RecurringChargesPanel({ clientId, defaultCaseId, onChargesGenera
   const fetchAll = async () => {
     if (!user) return;
     setLoading(true);
+    // Load cases independently so a failure in recurring_charges doesn't blank out
+    // the "תיק יעד" dropdown.
     try {
-      const [recs, casesRes] = await Promise.all([
-        listRecurringChargesForClient(clientId),
-        supabase
-          .from('cases')
-          .select('id, title')
-          .eq('client_id', clientId)
-          .eq('advisor_id', user.id)
-          .order('created_at', { ascending: false }),
-      ]);
-      setItems(recs);
+      const casesRes = await supabase
+        .from('cases')
+        .select('id, title')
+        .eq('client_id', clientId)
+        .eq('advisor_id', user.id)
+        .order('created_at', { ascending: false });
       setCases((casesRes.data as ClientCase[]) || []);
     } catch (err: any) {
-      console.error(err);
+      console.error('Failed to load cases for recurring panel', err);
+    }
+    try {
+      const recs = await listRecurringChargesForClient(clientId);
+      setItems(recs);
+    } catch (err: any) {
+      console.error('Failed to load recurring charges', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -102,8 +107,22 @@ export function RecurringChargesPanel({ clientId, defaultCaseId, onChargesGenera
       setAmount('');
       setDescription('');
       setDay('1');
-      toast({ title: 'נוסף חיוב חוזר' });
+      // Immediately generate this month's charge so it shows up (in purple)
+      // in the monthly ledger without waiting for the daily cron.
+      try {
+        const { data } = await supabase.functions.invoke('run-recurring-charges', {
+          body: { client_id: clientId },
+        });
+        const created = (data as any)?.created ?? 0;
+        toast({
+          title: 'נוסף חיוב חוזר',
+          description: created > 0 ? `נוצר חיוב לחודש הנוכחי (${created})` : 'יופק אוטומטית ביום שהוגדר',
+        });
+      } catch {
+        toast({ title: 'נוסף חיוב חוזר' });
+      }
       fetchAll();
+      onChargesGenerated?.();
     } catch (err: any) {
       toast({ title: 'שגיאה ביצירת חיוב חוזר', description: err?.message, variant: 'destructive' });
     }

@@ -25,6 +25,7 @@ export default function Settings() {
   const [previewMode, setPreviewMode] = useState<string>('new_tab');
   const [enableDailyReminders, setEnableDailyReminders] = useState(true);
   const [enableUrgentAlerts, setEnableUrgentAlerts] = useState(true);
+  const [notifyOnClientUpload, setNotifyOnClientUpload] = useState(true);
   const [reminderHour, setReminderHour] = useState('18');
   const [inactivityDays, setInactivityDays] = useState('2');
 
@@ -37,6 +38,7 @@ export default function Settings() {
           setSenderDisplayName(profile.senderDisplayName || '');
           setHourlyRate(profile.hourlyRate != null ? String(profile.hourlyRate) : '');
           setTimerMode(profile.timerMode);
+          setNotifyOnClientUpload(profile.notifyOnClientUpload !== false);
         });
 
       // Load settings from localStorage
@@ -74,6 +76,7 @@ export default function Settings() {
         email: profileEmail,
         hourlyRate: parsedRate != null && !isNaN(parsedRate) ? parsedRate : null,
         timerMode,
+        notifyOnClientUpload,
       });
 
       toast({ title: 'ההגדרות נשמרו בהצלחה' });
@@ -266,6 +269,22 @@ export default function Settings() {
                 </div>
               </div>
               <Switch checked={enableUrgentAlerts} onCheckedChange={setEnableUrgentAlerts} />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label>התראת מייל על העלאת מסמך מהלקוח</Label>
+                <p className="text-sm text-muted-foreground">
+                  קבלת מייל מיידי לכתובת שלך בכל פעם שלקוח מעלה או שולח מסמך מהפורטל
+                </p>
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 space-y-1 mt-1">
+                  <p>📨 <strong>מתי נשלח מייל?</strong></p>
+                  <p>• בכל העלאת מסמך בודד מהלקוח דרך הפורטל</p>
+                  <p>• כשהלקוח לוחץ על "שלח מסמכים ליועץ" ושולח את כל החדשים</p>
+                  <p>• ההתראה במערכת (פעמון) תמשיך לעבוד גם אם תכבה את ההתראה במייל</p>
+                </div>
+              </div>
+              <Switch checked={notifyOnClientUpload} onCheckedChange={setNotifyOnClientUpload} />
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-4">

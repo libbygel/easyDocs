@@ -15,6 +15,9 @@ import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { Loader2, Mail, Copy, Check, ExternalLink } from 'lucide-react';
 
+const isMissingColumnError = (error: any, column: string) =>
+  error?.code === '42703' || String(error?.message || '').includes(column);
+
 interface SendPortalLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -63,20 +66,7 @@ export function SendPortalLinkDialog({
 
     setSending(true);
     try {
-      // Determine if this is the first email for this case.
-      // If no portal link was sent before, treat it as a new-case email
-      // instead of a reminder, regardless of the emailType passed in.
       let effectiveEmailType = emailType;
-      if (effectiveEmailType === 'reminder') {
-        const { data: caseRow } = await supabase
-          .from('cases')
-          .select('last_portal_link_sent_at')
-          .eq('id', caseId)
-          .maybeSingle();
-        if (!(caseRow as any)?.last_portal_link_sent_at) {
-          effectiveEmailType = 'new_case';
-        }
-      }
 
       const response = await invokeEdgeFunction('send-portal-link', {
         clientName: clientName || '',
@@ -92,10 +82,14 @@ export function SendPortalLinkDialog({
 
       // Update last_portal_link_sent_at on case
       const now = new Date().toISOString();
-      await supabase
+      const sentAtUpdate = await supabase
         .from('cases')
         .update({ last_portal_link_sent_at: now })
         .eq('id', caseId);
+
+      if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) {
+        throw sentAtUpdate.error;
+      }
 
       // Update sent_to_client_at on all case documents
       await supabase
@@ -127,10 +121,14 @@ export function SendPortalLinkDialog({
 
     // Update last_portal_link_sent_at on copy too
     const now = new Date().toISOString();
-    await supabase
+    const sentAtUpdate = await supabase
       .from('cases')
       .update({ last_portal_link_sent_at: now })
       .eq('id', caseId);
+
+    if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) {
+      console.warn('Failed to update last_portal_link_sent_at:', sentAtUpdate.error);
+    }
 
     // Update sent_to_client_at on all case documents
     await supabase

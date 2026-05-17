@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FolderOpen, Loader2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
-import { supabase } from '@/lib/supabaseClient';
+
+const AUTH_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co/auth/v1";
+const API_KEY = "sb_publishable_KK3uDx2kOLcgvFpyTcU3IA_vf7E6x0F";
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -47,12 +50,20 @@ export default function Login() {
     }
     setResetLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/login`,
+      const res = await fetch(`${AUTH_URL}/recover`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': API_KEY,
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          redirect_to: `${window.location.origin}/reset-password`,
+        }),
       });
 
-      if (error) {
-        throw error;
+      if (!res.ok) {
+        throw new Error('Reset failed');
       }
 
       toast({ title: 'נשלח בהצלחה', description: 'קישור לאיפוס סיסמה נשלח לאימייל שלך' });
@@ -186,15 +197,10 @@ export default function Login() {
               )}
             </Button>
           </form>
-          <div className="mt-6 rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center">
-            <p className="text-sm font-semibold text-foreground mb-2">
-              עדיין אין לך חשבון?
-            </p>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center w-full rounded-lg bg-primary px-4 py-2.5 text-base font-bold text-primary-foreground shadow-md hover:bg-primary/90 transition-all hover:shadow-lg"
-            >
-              הירשם עכשיו  ←
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            עדיין אין לך חשבון?{' '}
+            <Link to="/signup" className="text-primary hover:underline font-medium">
+              הרשמה
             </Link>
           </div>
           <div className="mt-4 flex justify-center">

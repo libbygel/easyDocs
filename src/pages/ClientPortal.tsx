@@ -245,7 +245,9 @@ export default function ClientPortal() {
       description: `הלקוח העלה את המסמך "${docName}"`,
     });
 
-    // Notify advisor in real-time about the upload (notification + email)
+    // Notify advisor in real-time about the upload (in-app notification only).
+    // Email is sent once per submission (when client clicks "send to advisor"),
+    // not per individual document upload.
     try {
       const clientName = caseData?.clients?.full_name || 'לקוח';
       const caseTitle = caseData?.title || '';
@@ -257,18 +259,6 @@ export default function ClientPortal() {
         title: `${clientName} העלה מסמך - ${caseTitle}`,
         message: `הלקוח ${clientName} העלה את המסמך "${docName}" לתיק "${caseTitle}"`,
       });
-
-      const advisorProfile = await fetchAdvisorProfileByUserId(caseData.advisor_id);
-
-      if (advisorProfile.email) {
-        invokeEdgeFunction('send-documents-to-advisor', {
-          clientName,
-          caseTitle,
-          documentNames: [docName],
-          advisorEmail: advisorProfile.email,
-          advisorName: advisorProfile.displayName,
-        }).catch((e) => console.warn('[ClientPortal] upload notify email failed:', e));
-      }
     } catch (notifyErr) {
       console.warn('[ClientPortal] upload notify failed:', notifyErr);
     }
@@ -413,16 +403,20 @@ export default function ClientPortal() {
       }
 
       // Call edge function only for email sending (no DB access needed)
-      try {
-        await invokeEdgeFunction('send-documents-to-advisor', {
-          clientName,
-          caseTitle,
-          documentNames,
-          advisorEmail: advisorProfile.email,
-          advisorName: advisorProfile.displayName,
-        });
-      } catch (emailErr) {
-        console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
+      if (advisorProfile.notifyOnClientUpload !== false) {
+        try {
+          await invokeEdgeFunction('send-documents-to-advisor', {
+            mode: 'client-submission',
+            clientName,
+            caseTitle,
+            documentNames,
+            advisorEmail: advisorProfile.email,
+            advisorName: advisorProfile.displayName,
+            portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+          });
+        } catch (emailErr) {
+          console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
+        }
       }
 
       // Update case status

@@ -16,7 +16,7 @@ const testimonials = [
 
 const howItWorks = [
   { icon: FolderOpen, title: "יוצרים תיק ללקוח", desc: "בוחרים את סוג התיק והמסמכים הדרושים." },
-  { icon: Link2, title: "הלקוח מקבל לינק אישי", desc: "מייל אוטומטי על כל מה שחסר, עד שהתיק מוכן." },
+  { icon: Link2, title: "הלקוח מקבל לינק אישי", desc: "הלקוח מקבל לינק אישי ופשוט לשליחת המסמכים." },
   { icon: Bell, title: "המערכת מתזכרת אוטומטית", desc: "מייל אוטומטי על כל מה שחסר, עד שמסיים." },
   { icon: Inbox, title: "כל המסמכים מסודרים בתיק", desc: "מסודר, מלא, וניתן לשליחה לכל גורם בלחיצת כפתור" },
 ];
@@ -51,11 +51,13 @@ export default function LandingPage() {
             <br />
             <span className="text-primary">אחרי מסמכים.</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line text-slate-800 sm:text-2xl text-right md:text-center">
-            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\nבלי לרדוף אחרי לקוחות.\n\nבלי לחפש מסמכים במיילים.\n\nבלי לנהל משימות, הערות וחיובים בכמה מקומות שונים.\n\nהכול מרוכז במקום אחד."}
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line text-slate-800 sm:text-3xl">
+            <strong className="text-foreground">EasyDocs</strong> אוספת, מתזכרת ומסדרת את כל המסמכים בשבילך — אוטומטית.{"\n\n\nבלי מיילים אינסופיים.\nבלי מעקב ידני אחרי כל לקוח.\nבלי לנסות לזכור מה עדיין חסר. "}
           </p>
           <div className="pt-6 max-w-xl mx-auto flex flex-col gap-3 items-center">
-            {[].map((line, i) => (
+            {[
+              "בלי לתזכר ידנית.",
+            ].map((line, i) => (
               <p
                 key={i}
                 className="text-xl sm:text-2xl font-bold tracking-wide leading-snug text-foreground"
@@ -70,8 +72,8 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <div className="flex flex-col items-center">
               <div className="flex flex-col items-center">
-                <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
-                  תראי לי איך EasyDocs חוסך שעות
+                <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-10 h-14 gap-2 shadow-lg shadow-primary/30 animate-pulse hover:animate-none font-bold">
+                  לראות איך EasyDocs חוסכת לך שעות כל שבוע
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </div>
@@ -93,7 +95,7 @@ export default function LandingPage() {
           </p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              "שליחת מייל ואז מעקב אחרי כל לקוח בנפרד מה שלח ומה חסר",
+              "שולחת מייל ואז מעקב אחרי כל לקוח בנפרד מה שלח ומה חסר",
               "אי אפשר לזכור איפה כל לקוח אוחז וכמה תיקים נשארו להגיש ועד מתי",
               "לקוחות שוכחים לשלוח, וצריך לתזכר אותם בזמן — שוב ושוב, ידנית",
               "מסמכים מגיעים חסרים או לא ברורים, וכל פנייה דורשת מייל וטלפון נוספים",
@@ -129,7 +131,7 @@ export default function LandingPage() {
               {
                 icon: FolderOpen,
                 title: "פורטל לקוח – לינק אחד",
-                desc: "הלקוח מעלה את כל המסמכים דרך לינק אחד מסודר — בלי מיילים ובלי בלאגן.\nבכל רגע אפשר לראות מה התקבל, מה חסר ומה סטטוס התיק.\n",
+                desc: "הלקוח מעלה את כל המסמכים דרך לינק אחד מסודר — בלי וואטסאפ ובלי בלאגן.\nבכל רגע אפשר לראות מה התקבל, מה חסר ומה סטטוס התיק.\n",
                 color: "bg-primary",
               },
               {
@@ -351,7 +353,7 @@ export default function LandingPage() {
             למה עכשיו?
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold leading-snug">
-            במקום להתחיל עוד עונת דוחות עם אקסלים, מיילים ותזכורות ידניות —
+            במקום להתחיל עוד עונת דוחות עם אקסלים, וואטסאפ ותזכורות ידניות —
             <br />
             <span className="text-primary">אפשר לעבוד מסודר כבר מהלקוח הבא.</span>
           </h2>
@@ -367,8 +369,8 @@ export default function LandingPage() {
             ולך מערכת אחת שאפשר לסמוך עליה.
           </p>
           <div className="flex flex-col items-center">
-            <Button size="lg" onClick={() => navigate("/get-offer")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
-              תראי לי איך EasyDocs חוסך שעות
+            <Button size="lg" onClick={() => navigate("/login")} className="bg-gradient-to-l from-primary to-accent text-white hover:opacity-90 text-lg px-12 h-16 gap-3 shadow-xl shadow-primary/30 font-bold">
+              לראות איך EasyDocs חוסכת לך שעות כל שבוע
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <span className="text-sm text-muted-foreground mt-3 font-medium text-primary italic">

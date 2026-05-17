@@ -1,17 +1,21 @@
+// Dedicated Supabase client pointing to the external "aegw" project.
+// The auto-generated `@/integrations/supabase/client` is bound to Lovable Cloud
+// (vpzbspnqwyonyffsgfas), but this app's auth + data live in the aegw project.
+// Using the wrong client breaks login: tokens issued by aegw are rejected by
+// Lovable Cloud's JWKS, so setSession silently fails and ProtectedRoute kicks
+// the user back to /login.
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const AEGW_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co";
+const AEGW_ANON_KEY =
+  "sb_publishable_KK3uDx2kOLcgvFpyTcU3IA_vf7E6x0F";
 
-if (!url || !key) {
-  throw new Error("Missing Supabase env vars: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY");
-}
-
-export const supabase = createClient<Database>(url, key, {
+export const supabase = createClient<Database>(AEGW_URL, AEGW_ANON_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    storageKey: "sb-hndzejkwwpwrtzqpnqme-auth-token",
   },
 });

@@ -63,31 +63,7 @@ function approvalEmailText(advisorName: string, loginUrl: string): string {
   return `${greeting}\n\nהחשבון שלך במערכת EasyDocs אושר בהצלחה.\n\nאפשר להיכנס למערכת כאן:\n${loginUrl}\n\nEasyDocs - easydocs.tech`
 }
 
-async function sendApprovalWithBrevo(recipientEmail: string, advisorName: string, loginUrl: string) {
-  const brevoApiKey = Deno.env.get('BREVO_API_KEY')
-  if (!brevoApiKey) return false
-
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'api-key': brevoApiKey,
-    },
-    body: JSON.stringify({
-      sender: { name: 'EasyDocs', email: 'dg.smarter1@gmail.com' },
-      to: [{ email: recipientEmail }],
-      subject: 'החשבון שלך ב-EasyDocs אושר',
-      htmlContent: approvalEmailHtml(advisorName, loginUrl),
-      textContent: approvalEmailText(advisorName, loginUrl),
-    }),
-  })
-
-  const body = await response.text()
-  if (!response.ok) {
-    throw new Error(`Brevo approval email failed: ${response.status} ${body.slice(0, 300)}`)
-  }
-  return true
-}
+// Brevo removed — using Resend only
 
 async function sendApprovalWithResend(recipientEmail: string, advisorName: string, loginUrl: string) {
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
@@ -100,7 +76,7 @@ async function sendApprovalWithResend(recipientEmail: string, advisorName: strin
       Authorization: `Bearer ${resendApiKey}`,
     },
     body: JSON.stringify({
-      from: 'EasyDocs <onboarding@resend.dev>',
+      from: 'EasyDocs <noreply@libbygel.com>',
       to: [recipientEmail],
       subject: 'החשבון שלך ב-EasyDocs אושר',
       html: approvalEmailHtml(advisorName, loginUrl),
@@ -142,30 +118,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    let sentViaBrevo = false
-    try {
-      sentViaBrevo = await sendApprovalWithBrevo(recipientEmail, advisorName, loginUrl)
-    } catch (brevoError) {
-      console.error('Brevo approval email failed, falling back to Lovable email:', brevoError)
-    }
-    if (sentViaBrevo) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      if (supabaseUrl && supabaseServiceKey) {
-        const supabase = createClient(supabaseUrl, supabaseServiceKey)
-        await supabase.from('email_send_log').insert({
-          message_id: crypto.randomUUID(),
-          template_name: 'advisor-approved',
-          recipient_email: recipientEmail,
-          status: 'sent',
-          metadata: { provider: 'brevo', advisorName: advisorName || null },
-        })
-      }
-
-      return new Response(JSON.stringify({ success: true, provider: 'brevo', advisorName: advisorName || null }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    // Brevo path removed — Resend is the sole external provider
 
     let sentViaResend = false
     try {

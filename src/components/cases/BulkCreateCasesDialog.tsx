@@ -26,6 +26,9 @@ import { addDays, format } from 'date-fns';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useAdvisorName } from '@/hooks/useAdvisorName';
 
+const isMissingColumnError = (error: any, column: string) =>
+  error?.code === '42703' || String(error?.message || '').includes(column);
+
 interface BulkCreateCasesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -189,7 +192,8 @@ export function BulkCreateCasesDialog({ open, onOpenChange, onSuccess }: BulkCre
             });
             if (response?.error) throw new Error(response.error);
             const now = new Date().toISOString();
-            await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', cc.id);
+            const sentAtUpdate = await supabase.from('cases').update({ last_portal_link_sent_at: now }).eq('id', cc.id);
+            if (sentAtUpdate.error && !isMissingColumnError(sentAtUpdate.error, 'last_portal_link_sent_at')) throw sentAtUpdate.error;
             await supabase.from('case_documents').update({ sent_to_client_at: now } as any).eq('case_id', cc.id);
             sentCount++;
           } catch (err) {

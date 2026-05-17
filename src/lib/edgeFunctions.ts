@@ -1,8 +1,9 @@
 // Helper to call Edge Functions on Lovable Cloud
-// Both URL and key are taken from the app's Supabase env variables.
+// The main supabase client points to aegw (external project for data),
+// but edge functions are deployed on Lovable Cloud.
 
-const LOVABLE_CLOUD_URL = import.meta.env.VITE_SUPABASE_URL;
-const LOVABLE_CLOUD_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const LOVABLE_CLOUD_URL = 'https://secsdczrrrdncibhpbhs.supabase.co';
+const LOVABLE_CLOUD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InNlY3NkY3pycnJkbmNpYmhwYmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTU2NDMsImV4cCI6MjA5NDA5MTY0M30.dBWnIYFNZpYvt_1BL_Wkb5eSmsk_U14rnzHAWE9NlE8';
 
 function safeParseJson(rawText: string) {
   if (!rawText) return null;
@@ -18,10 +19,6 @@ export async function invokeEdgeFunction<T extends Record<string, any> = Record<
   functionName: string,
   body: Record<string, any>
 ): Promise<T> {
-  if (!LOVABLE_CLOUD_URL || !LOVABLE_CLOUD_KEY) {
-    throw new Error('Edge function error: Missing VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY');
-  }
-
   const url = `${LOVABLE_CLOUD_URL}/functions/v1/${functionName}`;
 
   const response = await fetch(url, {

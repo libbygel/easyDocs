@@ -46,21 +46,24 @@ function buildEmailHtml(taskTitle: string, advisorName: string, dueDate: string 
 </body></html>`
 }
 
-async function sendBrevoEmail(toEmail: string, toName: string, subject: string, html: string) {
-  const brevoApiKey = Deno.env.get('BREVO_API_KEY')
-  if (!brevoApiKey) return { ok: false, error: 'BREVO_API_KEY not set' }
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+async function sendResendEmail(toEmail: string, _toName: string, subject: string, html: string) {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendApiKey) return { ok: false, error: 'RESEND_API_KEY not set' }
+  const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'api-key': brevoApiKey },
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Authorization: `Bearer ${resendApiKey}`,
+    },
     body: JSON.stringify({
-      sender: { name: 'EasyDocs', email: 'dg.smarter1@gmail.com' },
-      to: [{ email: toEmail, name: toName || toEmail }],
+      from: 'EasyDocs <noreply@libbygel.com>',
+      to: [toEmail],
       subject,
-      htmlContent: html,
+      html,
     }),
   })
   const text = await response.text()
-  if (!response.ok) return { ok: false, error: `Brevo ${response.status}: ${text.slice(0, 300)}` }
+  if (!response.ok) return { ok: false, error: `Resend ${response.status}: ${text.slice(0, 300)}` }
   return { ok: true }
 }
 
@@ -108,7 +111,7 @@ Deno.serve(async (req: Request) => {
         const { data: profile } = await supa
           .from('profiles')
           .select('email, name, sender_display_name')
-          .eq('user_id', task.advisor_id)
+          .eq('id', task.advisor_id)
           .maybeSingle()
         advisorEmail = (profile as any)?.email || ''
         advisorName = (profile as any)?.sender_display_name || (profile as any)?.name || ''
@@ -116,7 +119,7 @@ Deno.serve(async (req: Request) => {
 
       if (advisorEmail) {
         const html = buildEmailHtml(task.title, advisorName, task.due_date, task.description)
-        const result = await sendBrevoEmail(
+        const result = await sendResendEmail(
           advisorEmail,
           advisorName,
           `⏰ תזכורת: ${task.title}`,

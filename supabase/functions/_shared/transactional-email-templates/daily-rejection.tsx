@@ -9,13 +9,13 @@ interface Props { clientName?: string; advisorName?: string; portalUrl?: string;
 const DailyRejectionEmail = ({ clientName = 'לקוח/ה יקר/ה', advisorName, portalUrl = '#', rejectedDocs = [] }: Props) => (
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
-    <Preview>מסמכים שנדחו דורשים תיקון</Preview>
+    <Preview>היועץ שלח לך הודעת דחייה על מסמכים</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={card}>
           <Heading style={h1}>שלום {clientName},</Heading>
           <Text style={text}>
-            ישנם מסמכים{advisorName ? ` ש-${advisorName} סימן/ה` : ''} כדורשים תיקון:
+            {advisorName ? `${advisorName} שלח/ה לך הודעת דחייה` : 'התקבלה הודעת דחייה'} על המסמכים הבאים:
           </Text>
           <Section style={docsWrap}>
             {rejectedDocs.map((d, i) => (
@@ -38,7 +38,7 @@ const DailyRejectionEmail = ({ clientName = 'לקוח/ה יקר/ה', advisorName
 
 export const template = {
   component: DailyRejectionEmail,
-  subject: 'מסמכים דורשים תיקון',
-  displayName: 'תזכורת יומית למסמכים שנדחו',
+  subject: 'היועץ שלח לך הודעת דחייה על מסמכים',
+  displayName: 'הודעת דחייה ללקוח',
   previewData: { clientName: 'יוסי כהן', advisorName: 'דנה לוי', portalUrl: 'https://easydocs.tech/portal/abc', rejectedDocs: [{ doc_name: 'תלוש שכר', rejection_reason: 'לא קריא', case_title: 'משכנתא' }] },
 } satisfies TemplateEntry

@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Lovable Cloud — Edge Functions live here (handle-email-unsubscribe)
+const SUPABASE_URL = "https://secsdczrrrdncibhpbhs.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlY3NkY3pycnJkbmNpYmhwYmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTU2NDMsImV4cCI6MjA5NDA5MTY0M30.dBWnIYFNZpYvt_1BL_Wkb5eSmsk_U14rnzHAWE9NlE8";
 
 type Status = "loading" | "valid" | "already" | "invalid" | "success" | "error" | "submitting";
 
@@ -16,12 +17,6 @@ export default function Unsubscribe() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      setStatus("error");
-      setErrorMsg("Missing Supabase env vars");
-      return;
-    }
-
     if (!token) { setStatus("invalid"); return; }
     (async () => {
       try {
@@ -37,12 +32,6 @@ export default function Unsubscribe() {
 
   const handleConfirm = async () => {
     if (!token) return;
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      setStatus("error");
-      setErrorMsg("Missing Supabase env vars");
-      return;
-    }
-
     setStatus("submitting");
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/handle-email-unsubscribe`, {

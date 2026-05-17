@@ -3,6 +3,10 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
+// External auth endpoint for direct password sign-in.
+const AUTH_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co/auth/v1";
+const API_KEY = "sb_publishable_KK3uDx2kOLcgvFpyTcU3IA_vf7E6x0F";
+
 type AuthResult = {
   error: Error | null;
 };
@@ -38,7 +42,14 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+type AuthContextGlobal = typeof globalThis & {
+  __EASYDOCS_AUTH_CONTEXT__?: ReturnType<typeof createContext<AuthContextType | undefined>>;
+};
+
+const authContextGlobal = globalThis as AuthContextGlobal;
+const AuthContext =
+  authContextGlobal.__EASYDOCS_AUTH_CONTEXT__ ??
+  (authContextGlobal.__EASYDOCS_AUTH_CONTEXT__ = createContext<AuthContextType | undefined>(undefined));
 
 const createSignupRequestId = () => `signup-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -69,17 +80,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string): Promise<AuthResult> => {
     console.log('[Auth] Attempting sign in for:', email);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch(`${AUTH_URL}/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': API_KEY,
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
+      const body = await res.json();
+
+      if (!res.ok) {
+        const error = new Error(body.message || body.msg || 'Login failed');
         console.error('[Auth] Sign in failed:', error.message);
         return { error };
       }
 
-      console.log('[Auth] Sign in successful');
+      console.log('[Auth] Sign in successful, hydrating session');
+      await supabase.auth.setSession({
+        access_token: body.access_token,
+        refresh_token: body.refresh_token,
+      });
+
+      // Approval gate: only is_paid=true users may stay signed in.
+      try {
+        const userId = body?.user?.id;
+        if (userId) {
+          const isMissingColumn = (err: any) =>
+            err?.code === '42703' || /column .* does not exist/i.test(err?.message ?? '');
+
+          // External DB uses profiles.id = auth user id; do not query user_id because that column does not exist there.
+          let profile: { is_paid?: boolean } | null = null;
+          let profileError: any = null;
+
+          const byId = await supabase
+            .from('profiles')
+            .select('is_paid')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (!byId.error && byId.data) {
+            profile = byId.data;
+          } else if (byId.error && !isMissingColumn(byId.error)) {
+            profileError = byId.error;
+          } else {
+            const byEmail = await supabase
+              .from('profiles')
+              .select('is_paid')
+              .eq('email', body?.user?.email ?? email)
+              .maybeSingle();
+            profile = byEmail.data ?? null;
+            profileError = byEmail.error ?? null;
+          }
+
+          if (profileError) {
+            throw profileError;
+          }
+
+          if (!profile?.is_paid) {
+            await supabase.auth.signOut();
+            return {
+              error: new Error('החשבון שלך ממתין לאישור מנהלת המערכת. תקבל/י הודעה כשהגישה תאושר.'),
+            };
+          }
+        }
+      } catch (gateErr) {
+        console.warn('[Auth] approval gate check failed, denying access:', gateErr);
+        await supabase.auth.signOut();
+        return { error: new Error('לא ניתן לאמת את סטטוס החשבון כעת. נסה/י שוב מאוחר יותר.') };
+      }
 
       return { error: null };
     } catch (err: any) {
@@ -138,8 +208,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return {
         error: null,
-        pendingApproval: result.pendingApproval ?? true,
-        message: result.message ?? 'בקשת ההרשמה נקלטה. החשבון ממתין לאישור מנהל המערכת. לפניות: dv4343@gmail.com',
+        pendingApproval: result.pendingApproval ?? false,
+        message: result.message ?? 'ההרשמה נקלטה בהצלחה. אפשר להתחבר למערכת.',
         requestId: result?.requestId ?? requestId,
         invocationCount: result?.invocationCount,
         upstreamInvocationCount: result?.upstreamInvocationCount,

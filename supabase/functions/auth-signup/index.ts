@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+const EXTERNAL_SUPABASE_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co";
+const EXTERNAL_SUPABASE_ANON_KEY = "sb_publishable_KK3uDx2kOLcgvFpyTcU3IA_vf7E6x0F";
 const ADMIN_NOTIFY_EMAIL = "dv4343@gmail.com";
 
 async function notifyAdminViaLovableEmails(email: string, name: string | undefined) {
@@ -40,38 +42,71 @@ async function notifyAdminOfSignup(email: string, name: string | undefined) {
   // Send via Lovable Emails (branded + logged in email_send_log)
   await notifyAdminViaLovableEmails(email, name);
 
-  // Also send via Brevo as backup
-  const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-  if (!brevoApiKey) {
-    console.warn("BREVO_API_KEY not set, skipping admin notification");
+  // Also send via Resend as backup
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    console.warn("RESEND_API_KEY not set, skipping admin notification");
     return;
   }
   try {
-    await fetch("https://api.brevo.com/v3/smtp/email", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": brevoApiKey,
+        "Authorization": `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        sender: { name: "EasyDocs", email: "dg.smarter1@gmail.com" },
-        to: [{ email: ADMIN_NOTIFY_EMAIL }],
+        from: "EasyDocs <noreply@libbygel.com>",
+        to: [ADMIN_NOTIFY_EMAIL],
         subject: `הרשמה חדשה למערכת: ${name || email}`,
-        htmlContent: `
+        html: `
           <div dir="rtl" style="font-family:Arial,sans-serif;padding:20px;">
             <h2>משתמש חדש נרשם למערכת EasyDocs</h2>
             <p><strong>שם:</strong> ${name || "לא צוין"}</p>
             <p><strong>אימייל:</strong> ${email}</p>
             <p><strong>זמן:</strong> ${new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" })}</p>
             <hr/>
-            <p style="color:#888;">החשבון ממתין לאישור. היכנס לפאנל כדי להפעיל אותו.</p>
+            <p style="color:#888;">החשבון הופעל אוטומטית ויכול להתחבר למערכת.</p>
           </div>
         `,
       }),
     });
-    console.log("Admin notification sent for signup:", email);
+    const body = await res.text();
+    console.log("Resend admin notification status:", res.status, body.slice(0, 200));
   } catch (err) {
     console.error("Failed to send admin notification:", err);
+  }
+}
+
+async function ensureExternalProfile(userId: string | null, accessToken: string | null, email: string, name: string | undefined) {
+  if (!userId || !accessToken) return;
+
+  const baseProfile = {
+    id: userId,
+    email,
+    name: name || email.split("@")[0],
+  };
+
+  const headers = {
+    "Content-Type": "application/json",
+    "apikey": EXTERNAL_SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${accessToken}`,
+    "Prefer": "resolution=merge-duplicates",
+  };
+
+  const upsert = async (body: Record<string, unknown>) => fetch(`${EXTERNAL_SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  let res = await upsert({ ...baseProfile, is_paid: true });
+  if (!res.ok && res.status === 400) {
+    res = await upsert(baseProfile);
+  }
+
+  if (!res.ok) {
+    console.warn("External profile upsert failed:", res.status, (await res.text()).slice(0, 300));
   }
 }
 
@@ -262,27 +297,12 @@ serve(async (req: Request) => {
         email: normalizedEmail,
       }));
 
-      const authUrl = Deno.env.get("SUPABASE_URL");
-      const authKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
-
-      if (!authUrl || !authKey) {
-        return {
-          success: false,
-          error: "Missing Supabase edge env vars: SUPABASE_URL and SUPABASE_ANON_KEY",
-          status: 500,
-          code: "missing_env",
-          requestId,
-          invocationCount,
-          upstreamInvocationCount,
-        };
-      }
-
-      const signupResponse = await fetch(`${authUrl}/auth/v1/signup`, {
+      const signupResponse = await fetch(`${EXTERNAL_SUPABASE_URL}/auth/v1/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "apikey": authKey,
+          "apikey": EXTERNAL_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({
           email: normalizedEmail,
@@ -333,12 +353,17 @@ serve(async (req: Request) => {
         return errorResponse;
       }
 
+      const userId = (parsedBody?.user as { id?: string } | undefined)?.id ?? (parsedBody?.id as string | undefined) ?? null;
+      const accessToken = (parsedBody?.access_token as string | undefined) ?? (parsedBody?.session as { access_token?: string } | undefined)?.access_token ?? null;
+
+      await ensureExternalProfile(userId, accessToken, normalizedEmail, normalizedName);
+
       const successResponse: SignupResponse = {
         success: true,
         error: null,
-        pendingApproval: true,
-        message: "בקשת ההרשמה נקלטה. החשבון ממתין לאישור מנהל המערכת. לפניות: dv4343@gmail.com",
-        userId: (parsedBody?.user as { id?: string } | undefined)?.id ?? (parsedBody?.id as string | undefined) ?? null,
+        pendingApproval: false,
+        message: "ההרשמה נקלטה בהצלחה. אפשר להתחבר למערכת.",
+        userId,
         requestId,
         invocationCount,
         upstreamInvocationCount,
