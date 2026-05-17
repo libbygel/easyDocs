@@ -19,6 +19,9 @@ interface DocUploads {
   files: { id: string; fileName: string; fileUrl: string }[];
 }
 
+// Store to preserve and restore advisor session when entering/leaving public portal
+let savedSessionData: any = null;
+
 export default function ClientPortal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
@@ -156,11 +159,36 @@ export default function ClientPortal() {
   };
 
   useEffect(() => {
-    // Public portal must not inherit an active advisor session from the same browser.
-    // This prevents accidental access to advisor screens when navigating back.
-    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
-      console.warn('ClientPortal: failed to clear local auth session', err);
-    });
+    // Public portal must not inherit an active advisor session.
+    // Save current session, sign out, and restore on unmount to keep advisor logged in elsewhere.
+    const saveAndSignOut = async () => {
+      try {
+        const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
+        const currentSession = localStorage.getItem(sessionKey);
+        if (currentSession) {
+          savedSessionData = currentSession;
+          // Clear session so portal doesn't have advisor context
+          localStorage.removeItem(sessionKey);
+        }
+      } catch (err) {
+        console.warn('ClientPortal: failed to manage session:', err);
+      }
+    };
+
+    saveAndSignOut();
+
+    return () => {
+      // Restore advisor session when leaving portal
+      try {
+        if (savedSessionData) {
+          const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
+          localStorage.setItem(sessionKey, savedSessionData);
+          savedSessionData = null;
+        }
+      } catch (err) {
+        console.warn('ClientPortal: failed to restore session on unmount:', err);
+      }
+    };
   }, []);
 
   useEffect(() => {
