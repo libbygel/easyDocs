@@ -1,6 +1,6 @@
 // Dedicated Supabase client pointing to the external "aegw" project.
 // The auto-generated `@/integrations/supabase/client` is bound to Lovable Cloud
-// (vpzbspnqwyonyffsgfas), but this app's auth + data live in the aegw project.
+// (secsdczrrrdncibhpbhs), but this app's auth + data live in the aegw project.
 // Using the wrong client breaks login: tokens issued by aegw are rejected by
 // Lovable Cloud's JWKS, so setSession silently fails and ProtectedRoute kicks
 // the user back to /login.

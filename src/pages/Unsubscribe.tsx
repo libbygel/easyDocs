@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vpzbspnqwyonyffsgfas.supabase.co";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://secsdczrrrdncibhpbhs.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
 type Status = "loading" | "valid" | "already" | "invalid" | "success" | "error" | "submitting";

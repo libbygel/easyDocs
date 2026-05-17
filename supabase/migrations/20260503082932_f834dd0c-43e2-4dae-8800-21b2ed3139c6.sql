@@ -9,7 +9,7 @@ SET search_path = public
 AS $$
 DECLARE
   service_key text;
-  function_url text := 'https://vpzbspnqwyonyffsgfas.supabase.co/functions/v1/notify-advisor-approved';
+  function_url text := 'https://secsdczrrrdncibhpbhs.supabase.co/functions/v1/notify-advisor-approved';
 BEGIN
   IF NEW.is_paid = true AND (OLD.is_paid IS DISTINCT FROM true) THEN
     -- Get service role key from vault if available, otherwise rely on header

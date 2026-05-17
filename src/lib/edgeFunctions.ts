@@ -2,8 +2,8 @@
 // The main supabase client points to aegw (external project for data),
 // but edge functions are deployed on Lovable Cloud.
 
-const LOVABLE_CLOUD_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vpzbspnqwyonyffsgfas.supabase.co';
-const LOVABLE_CLOUD_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwemJzcG5xd3lvbnlmZnNnZmFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MDgxMDksImV4cCI6MjA5MjM4NDEwOX0.L51EzejaLsuP0LCYonHU7RJJQ4epUCSuzWm4LS_JNOY';
+const LOVABLE_CLOUD_URL = 'https://secsdczrrrdncibhpbhs.supabase.co';
+const LOVABLE_CLOUD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlY3NkY3pycnJkbmNpYmhwYmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTU2NDMsImV4cCI6MjA5NDA5MTY0M30.dBWnIYFNZpYvt_1BL_Wkb5eSmsk_U14rnzHAWE9NlE8';
 
 function safeParseJson(rawText: string) {
   if (!rawText) return null;
