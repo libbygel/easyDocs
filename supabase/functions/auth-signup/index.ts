@@ -1,7 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const EXTERNAL_SUPABASE_URL = "https://aegwmpkihkeaemcdgyqq.supabase.co";
-const EXTERNAL_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlZ3dtcGtpaGtlYWVtY2RneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDg0NzUsImV4cCI6MjA4NTA4NDQ3NX0.5sfLvSwcmzUJShwPg8NpMD3t7VrEBYrfwdNBGlFjWdM";
 const ADMIN_NOTIFY_EMAIL = "dv4343@gmail.com";
 
 async function notifyAdminViaLovableEmails(email: string, name: string | undefined) {
@@ -264,12 +262,27 @@ serve(async (req: Request) => {
         email: normalizedEmail,
       }));
 
-      const signupResponse = await fetch(`${EXTERNAL_SUPABASE_URL}/auth/v1/signup`, {
+      const authUrl = Deno.env.get("SUPABASE_URL");
+      const authKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+
+      if (!authUrl || !authKey) {
+        return {
+          success: false,
+          error: "Missing Supabase edge env vars: SUPABASE_URL and SUPABASE_ANON_KEY",
+          status: 500,
+          code: "missing_env",
+          requestId,
+          invocationCount,
+          upstreamInvocationCount,
+        };
+      }
+
+      const signupResponse = await fetch(`${authUrl}/auth/v1/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "apikey": EXTERNAL_SUPABASE_ANON_KEY,
+          "apikey": authKey,
         },
         body: JSON.stringify({
           email: normalizedEmail,

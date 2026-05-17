@@ -8,9 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FolderOpen, Loader2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
-
-const AUTH_URL = "https://aegwmpkihkeaemcdgyqq.supabase.co/auth/v1";
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlZ3dtcGtpaGtlYWVtY2RneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDg0NzUsImV4cCI6MjA4NTA4NDQ3NX0.5sfLvSwcmzUJShwPg8NpMD3t7VrEBYrfwdNBGlFjWdM";
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -49,20 +47,12 @@ export default function Login() {
     }
     setResetLoading(true);
     try {
-      const res = await fetch(`${AUTH_URL}/recover`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': API_KEY,
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          redirect_to: `${window.location.origin}/login`,
-        }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
       });
 
-      if (!res.ok) {
-        throw new Error('Reset failed');
+      if (error) {
+        throw error;
       }
 
       toast({ title: 'נשלח בהצלחה', description: 'קישור לאיפוס סיסמה נשלח לאימייל שלך' });

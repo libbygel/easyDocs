@@ -3,10 +3,6 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
-// External auth endpoint for direct password sign-in.
-const AUTH_URL = "https://aegwmpkihkeaemcdgyqq.supabase.co/auth/v1";
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlZ3dtcGtpaGtlYWVtY2RneXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MDg0NzUsImV4cCI6MjA4NTA4NDQ3NX0.5sfLvSwcmzUJShwPg8NpMD3t7VrEBYrfwdNBGlFjWdM";
-
 type AuthResult = {
   error: Error | null;
 };
@@ -73,28 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string): Promise<AuthResult> => {
     console.log('[Auth] Attempting sign in for:', email);
     try {
-      const res = await fetch(`${AUTH_URL}/token?grant_type=password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': API_KEY,
-        },
-        body: JSON.stringify({ email, password }),
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const body = await res.json();
-
-      if (!res.ok) {
-        const error = new Error(body.message || body.msg || 'Login failed');
+      if (error) {
         console.error('[Auth] Sign in failed:', error.message);
         return { error };
       }
 
-      console.log('[Auth] Sign in successful, hydrating session');
-      await supabase.auth.setSession({
-        access_token: body.access_token,
-        refresh_token: body.refresh_token,
-      });
+      console.log('[Auth] Sign in successful');
 
       return { error: null };
     } catch (err: any) {
