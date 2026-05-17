@@ -88,7 +88,7 @@ export default function ClientMasterPortal() {
     };
   }, []);
 
-  useEffect(() {
+  useEffect(() => {
     if (!token) {
       setLoading(false);
       setNotFound(true);
