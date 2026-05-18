@@ -208,6 +208,15 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
     };
 
     // Smart batch insert: automatically strips unknown columns on error
+    const isMissingCol = (err: any) =>
+      err?.code === 'PGRST204' ||
+      /column\s+['"]?(\w+)['"]?.*does not exist/i.test(err?.message ?? '');
+
+    const extractBadCol = (msg: string): string | null => {
+      const m = msg.match(/column\s+['"]?(\w+)/i);
+      return m?.[1] ?? null;
+    };
+
     const insertBatch = async (payloads: any[]): Promise<{ ok: number; err: string | null }> => {
       let current = payloads;
       for (let attempt = 0; attempt < 10; attempt++) {
@@ -215,11 +224,12 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
         if (!error) return { ok: data?.length || current.length, err: null };
 
         // If the error is "column X does not exist", strip that column and retry
-        const colMatch = error.message.match(/column ["\s]*(\w+)["\s]* does not exist/i);
-        if (colMatch) {
-          const badCol = colMatch[1];
-          current = current.map((p) => { const c = { ...p }; delete c[badCol]; return c; });
-          continue;
+        if (isMissingCol(error)) {
+          const badCol = extractBadCol(error.message);
+          if (badCol) {
+            current = current.map((p) => { const c = { ...p }; delete c[badCol]; return c; });
+            continue;
+          }
         }
 
         // Any other error — fall back to row-by-row so we count each failure individually
@@ -230,8 +240,10 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
           for (let r = 0; r < 10; r++) {
             const res = await supabase.from('clients').insert(payload);
             if (!res.error) { ok++; rowError = null; break; }
-            const cm = res.error.message.match(/column ["\s]*(\w+)["\s]* does not exist/i);
-            if (cm) { const bc = cm[1]; payload = { ...payload }; delete payload[bc]; continue; }
+            if (isMissingCol(res.error)) {
+              const bc = extractBadCol(res.error.message);
+              if (bc) { payload = { ...payload }; delete payload[bc]; continue; }
+            }
             rowError = res.error;
             break;
           }

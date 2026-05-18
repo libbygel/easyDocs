@@ -130,7 +130,14 @@ export default function Clients() {
       setClients((prev) => prev.filter((c) => !ids.includes(c.id)));
       toast({ title: `${ids.length} לקוחות נמחקו` });
     } else {
-      toast({ title: 'שגיאה במחיקה', description: error.message, variant: 'destructive' });
+      const isFK = error.message?.includes('foreign key') || error.message?.includes('violates');
+      toast({
+        title: 'לא ניתן למחוק',
+        description: isFK
+          ? 'לחלק מהלקוחות יש תיקים או נתונים קשורים. יש למחוק אותם קודם.'
+          : error.message,
+        variant: 'destructive',
+      });
     }
     setSelectedIds(new Set());
     setBulkDeleteOpen(false);
