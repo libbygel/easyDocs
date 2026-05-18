@@ -210,11 +210,17 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
     // Smart batch insert: automatically strips unknown columns on error
     const isMissingCol = (err: any) =>
       err?.code === 'PGRST204' ||
-      /column\s+['"]?(\w+)['"]?.*does not exist/i.test(err?.message ?? '');
+      /column.*does not exist/i.test(err?.message ?? '') ||
+      /schema cache/i.test(err?.message ?? '');
 
     const extractBadCol = (msg: string): string | null => {
-      const m = msg.match(/column\s+['"]?(\w+)/i);
-      return m?.[1] ?? null;
+      // "Could not find the 'spouse_full_name' column of 'clients' in the schema cache"
+      let m = msg.match(/find\s+(?:the\s+)?['"]?(\w+)['"]?\s+column/i);
+      if (m) return m[1];
+      // "column 'spouse_full_name' of relation 'clients' does not exist"
+      m = msg.match(/column\s+['"](\w+)['"]/i);
+      if (m) return m[1];
+      return null;
     };
 
     const insertBatch = async (payloads: any[]): Promise<{ ok: number; err: string | null }> => {
