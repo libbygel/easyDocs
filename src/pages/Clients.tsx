@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components
 import { Plus, Search, Users, Trash2, Edit2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { CreateClientDialog } from '@/components/clients/CreateClientDialog';
 import { EditClientDialog } from '@/components/clients/EditClientDialog';
 import { SendGroupEmailDialog } from '@/components/clients/SendGroupEmailDialog';
@@ -20,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
-import { Mail, FolderPlus, FileSpreadsheet } from 'lucide-react';
+import { Mail, FolderPlus, FileSpreadsheet, TrendingDown } from 'lucide-react';
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -98,6 +99,72 @@ export default function Clients() {
     fetchClients();
   };
 
+  const handleExportDebtors = async () => {
+    if (!user) return;
+    toast({ title: 'מכין דוח חייבים...' });
+    try {
+      // Fetch all charges and payments for this advisor in parallel
+      const [chargesRes, paymentsRes] = await Promise.all([
+        supabase.from('case_charges' as any).select('client_id, amount').eq('advisor_id', user.id),
+        supabase.from('case_payments' as any).select('client_id, amount').eq('advisor_id', user.id),
+      ]);
+
+      // Sum charges per client
+      const chargesByClient = new Map<string, number>();
+      for (const c of (chargesRes.data || []) as any[]) {
+        chargesByClient.set(c.client_id, (chargesByClient.get(c.client_id) || 0) + Number(c.amount || 0));
+      }
+
+      // Sum payments per client
+      const paymentsByClient = new Map<string, number>();
+      for (const p of (paymentsRes.data || []) as any[]) {
+        paymentsByClient.set(p.client_id, (paymentsByClient.get(p.client_id) || 0) + Number(p.amount || 0));
+      }
+
+      // Build debtors list — only clients with balance > 0
+      const rows = clients
+        .map((client) => {
+          const charged = chargesByClient.get(client.id) || 0;
+          const paid = paymentsByClient.get(client.id) || 0;
+          const balance = charged - paid;
+          return { client, charged, paid, balance };
+        })
+        .filter((r) => r.balance > 0)
+        .sort((a, b) => b.balance - a.balance);
+
+      if (rows.length === 0) {
+        toast({ title: 'אין חייבים', description: 'לכל הלקוחות יתרה אפסית או חיובית' });
+        return;
+      }
+
+      const wsData = [
+        ['שם לקוח', 'ת.ז.', 'טלפון', 'אימייל', 'סך חיובים (₪)', 'סך תשלומים (₪)', 'יתרה לגבייה (₪)'],
+        ...rows.map((r) => [
+          r.client.full_name,
+          r.client.id_number || '',
+          r.client.phone || '',
+          r.client.email || '',
+          r.charged,
+          r.paid,
+          r.balance,
+        ]),
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Column widths
+      ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 16 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 20 }];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'חייבים');
+      XLSX.writeFile(wb, `דוח_חייבים_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+
+      toast({ title: `הדוח הופק בהצלחה`, description: `${rows.length} לקוחות חייבים` });
+    } catch (err: any) {
+      toast({ title: 'שגיאה בהפקת הדוח', description: err?.message, variant: 'destructive' });
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -122,6 +189,10 @@ export default function Clients() {
             <Button variant="outline" onClick={() => { setGroupEmailInitialCategory(undefined); setGroupEmailOpen(true); }} className="gap-2">
               <Mail className="h-4 w-4" />
               מייל קבוצתי
+            </Button>
+            <Button variant="outline" onClick={handleExportDebtors} className="gap-2">
+              <TrendingDown className="h-4 w-4" />
+              דוח חייבים
             </Button>
           </div>
         </div>

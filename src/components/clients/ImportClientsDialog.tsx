@@ -50,10 +50,10 @@ const HEBREW_HINTS: Record<string, string[]> = {
   phone: ['טלפון', 'נייד', 'phone', 'mobile', 'tel'],
   email: ['מייל', 'אימייל', 'דוא״ל', 'email', 'mail'],
   notes: ['הערות', 'הערה', 'notes', 'remark'],
-  spouse_full_name: ['בן זוג', 'בת זוג', 'בן/בת זוג', 'spouse'],
-  spouse_id_number: ['ת.ז בן זוג', 'ת.ז בת זוג', 'ת.ז. בן/בת זוג'],
-  spouse_phone: ['טלפון בן זוג', 'טלפון בת זוג'],
-  spouse_email: ['מייל בן זוג', 'מייל בת זוג', 'אימייל בן/בת זוג'],
+  spouse_full_name: ['שם מלא בן', 'שם מלא בת', 'בן זוג', 'בת זוג', 'בן/בת זוג', 'בן/בת ה', 'spouse'],
+  spouse_id_number: ['ת.ז בן', 'ת.ז בת', 'תעודת זהות בן', 'תעודת זהות בת', 'ת.ז. בן/בת'],
+  spouse_phone: ['טלפון בן', 'טלפון בת'],
+  spouse_email: ['מייל בן', 'מייל בת', 'אימייל בן', 'אימייל בת', 'אימייל בן/בת'],
 };
 
 function autoDetectMapping(headers: string[]): Record<string, string> {
@@ -91,6 +91,7 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
   const [validRows, setValidRows] = useState<any[]>([]);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState({ created: 0, updated: 0, skipped: 0, failed: 0 });
+  const [firstError, setFirstError] = useState<string | null>(null);
 
   const reset = () => {
     setStep('upload');
@@ -101,6 +102,7 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
     setDuplicates([]);
     setValidRows([]);
     setResult({ created: 0, updated: 0, skipped: 0, failed: 0 });
+    setFirstError(null);
   };
 
   const handleClose = (o: boolean) => {
@@ -195,6 +197,7 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
     setStep('importing');
     setImporting(true);
     let created = 0, updated = 0, skipped = 0, failed = 0;
+    let capturedError: string | null = null;
 
     const buildPayload = (r: any) => {
       const p: any = { advisor_id: user.id };
@@ -204,37 +207,52 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
       return p;
     };
 
-    // Insert fresh rows in batches
+    // Smart batch insert: automatically strips unknown columns on error
+    const insertBatch = async (payloads: any[]): Promise<{ ok: number; err: string | null }> => {
+      let current = payloads;
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const { data, error } = await supabase.from('clients').insert(current).select('id');
+        if (!error) return { ok: data?.length || current.length, err: null };
+
+        // If the error is "column X does not exist", strip that column and retry
+        const colMatch = error.message.match(/column ["\s]*(\w+)["\s]* does not exist/i);
+        if (colMatch) {
+          const badCol = colMatch[1];
+          current = current.map((p) => { const c = { ...p }; delete c[badCol]; return c; });
+          continue;
+        }
+
+        // Any other error — fall back to row-by-row so we count each failure individually
+        let ok = 0;
+        for (const p of current) {
+          let payload = { ...p };
+          let rowError: any = null;
+          for (let r = 0; r < 10; r++) {
+            const res = await supabase.from('clients').insert(payload);
+            if (!res.error) { ok++; rowError = null; break; }
+            const cm = res.error.message.match(/column ["\s]*(\w+)["\s]* does not exist/i);
+            if (cm) { const bc = cm[1]; payload = { ...payload }; delete payload[bc]; continue; }
+            rowError = res.error;
+            break;
+          }
+          if (rowError) {
+            failed++;
+            if (!capturedError) capturedError = rowError.message;
+          }
+        }
+        return { ok, err: error.message };
+      }
+      return { ok: 0, err: 'מספר ניסיונות חזרה עבר את המגבלה' };
+    };
+
+    // Insert fresh rows + duplicates with action=create
     const toInsert = fresh.map(buildPayload);
-    // Also include duplicates with action=create
     dups.filter((d) => d.action === 'create').forEach((d) => toInsert.push(buildPayload(d.newData)));
 
     if (toInsert.length > 0) {
-      // Try with full payload, fall back removing spouse fields if column missing
-      let { data, error } = await supabase.from('clients').insert(toInsert).select('id');
-      if (error && /column .* does not exist/i.test(error.message)) {
-        const fallback = toInsert.map((p) => {
-          const c = { ...p };
-          delete c.spouse_full_name;
-          delete c.spouse_id_number;
-          delete c.spouse_phone;
-          delete c.spouse_email;
-          return c;
-        });
-        const retry = await supabase.from('clients').insert(fallback).select('id');
-        data = retry.data;
-        error = retry.error;
-      }
-      if (error) {
-        // Fall back to row-by-row to count failures
-        for (const p of toInsert) {
-          const { error: e } = await supabase.from('clients').insert(p);
-          if (e) failed++;
-          else created++;
-        }
-      } else {
-        created = data?.length || toInsert.length;
-      }
+      const { ok, err } = await insertBatch(toInsert);
+      created = ok;
+      if (err && !capturedError) capturedError = err;
     }
 
     // Process update / skip duplicates
@@ -250,10 +268,11 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
         if (v !== undefined && v !== null && v !== '') payload[field.key] = v;
       }
       const { error } = await supabase.from('clients').update(payload).eq('id', d.existing.id);
-      if (error) failed++;
+      if (error) { failed++; if (!capturedError) capturedError = error.message; }
       else updated++;
     }
 
+    setFirstError(capturedError);
     setResult({ created, updated, skipped, failed });
     setImporting(false);
     setStep('done');
@@ -485,6 +504,12 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
                 <div className="text-muted-foreground">נכשלו</div>
               </div>
             </div>
+            {firstError && (
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg p-3 text-sm text-right max-w-md mx-auto">
+                <p className="font-medium text-red-700 mb-1">סיבת הכשלון:</p>
+                <p className="text-red-600 font-mono text-xs break-all">{firstError}</p>
+              </div>
+            )}
             <Button onClick={() => handleClose(false)} className="mt-4">סיום</Button>
           </div>
         )}
