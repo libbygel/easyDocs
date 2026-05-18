@@ -37,7 +37,6 @@ const FIELDS = [
   { key: 'id_number', label: 'תעודת זהות', required: false },
   { key: 'phone', label: 'טלפון', required: false },
   { key: 'email', label: 'אימייל', required: false },
-  { key: 'notes', label: 'הערות', required: false },
   { key: 'spouse_full_name', label: 'שם בן/בת זוג', required: false },
   { key: 'spouse_id_number', label: 'ת.ז. בן/בת זוג', required: false },
   { key: 'spouse_phone', label: 'טלפון בן/בת זוג', required: false },
