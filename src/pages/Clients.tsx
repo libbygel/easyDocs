@@ -125,12 +125,16 @@ export default function Clients() {
   const handleBulkDeleteConfirm = async () => {
     setBulkDeleting(true);
     const ids = [...selectedIds];
-    await supabase.from('clients').delete().in('id', ids);
-    toast({ title: `${ids.length} לקוחות נמחקו` });
+    const { error } = await supabase.from('clients').delete().in('id', ids);
+    if (!error) {
+      setClients((prev) => prev.filter((c) => !ids.includes(c.id)));
+      toast({ title: `${ids.length} לקוחות נמחקו` });
+    } else {
+      toast({ title: 'שגיאה במחיקה', description: error.message, variant: 'destructive' });
+    }
     setSelectedIds(new Set());
     setBulkDeleteOpen(false);
     setBulkDeleting(false);
-    fetchClients();
   };
 
   const handleExportDebtors = async () => {
