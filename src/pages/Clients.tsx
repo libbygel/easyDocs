@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Users, Trash2, Edit2, Eye } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Edit2, Eye, CheckSquare } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -38,6 +39,9 @@ export default function Clients() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -96,6 +100,36 @@ export default function Clients() {
     toast({ title: 'הלקוח נמחק' });
     setDeleteDialogOpen(false);
     setClientToDelete(null);
+    fetchClients();
+  };
+
+  const allVisibleSelected = sortedData.length > 0 && sortedData.every((c) => selectedIds.has(c.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelectAll = () => {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedData.map((c) => c.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    setBulkDeleting(true);
+    const ids = [...selectedIds];
+    await supabase.from('clients').delete().in('id', ids);
+    toast({ title: `${ids.length} לקוחות נמחקו` });
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
     fetchClients();
   };
 
@@ -230,10 +264,29 @@ export default function Clients() {
 
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              לקוחות ({filteredClients.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                לקוחות ({filteredClients.length})
+              </CardTitle>
+              {someSelected && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{selectedIds.size} נבחרו</span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setBulkDeleteOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    מחק נבחרים
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+                    בטל בחירה
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -248,6 +301,13 @@ export default function Clients() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <th className="h-12 px-4 w-10">
+                        <Checkbox
+                          checked={allVisibleSelected}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="בחר הכל"
+                        />
+                      </th>
                       <SortableTableHead<Client> sortKey="full_name" sortConfig={sortConfig} onSort={requestSort}>
                         שם מלא
                       </SortableTableHead>
@@ -271,9 +331,15 @@ export default function Clients() {
                     {sortedData.map((client) => (
                       <TableRow
                         key={client.id}
-                        className="cursor-pointer hover:bg-accent/50"
+                        className={`cursor-pointer hover:bg-accent/50 ${selectedIds.has(client.id) ? 'bg-accent/30' : ''}`}
                         onClick={() => navigate(`/clients/${client.id}`)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedIds.has(client.id)}
+                            onCheckedChange={() => toggleSelect(client.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{client.full_name}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
@@ -326,6 +392,13 @@ export default function Clients() {
         onConfirm={handleDeleteConfirm}
         title="מחיקת לקוח"
         description="האם אתה בטוח שברצונך למחוק לקוח זה? כל התיקים המשויכים אליו יימחקו גם כן."
+      />
+      <DeleteConfirmationDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDeleteConfirm}
+        title={`מחיקת ${selectedIds.size} לקוחות`}
+        description={`האם למחוק ${selectedIds.size} לקוחות? כל התיקים המשויכים אליהם יימחקו גם כן. פעולה זו אינה הפיכה.`}
       />
     </AppLayout>
   );
