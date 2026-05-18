@@ -331,12 +331,6 @@ export default function Clients() {
                       <SortableTableHead<Client> sortKey="email" sortConfig={sortConfig} onSort={requestSort}>
                         אימייל
                       </SortableTableHead>
-                      <SortableTableHead<Client> sortKey="spouse_full_name" sortConfig={sortConfig} onSort={requestSort}>
-                        שם בן/בת זוג
-                      </SortableTableHead>
-                      <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">ת.ז. בן/בת זוג</th>
-                      <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">טלפון בן/בת זוג</th>
-                      <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">אימייל בן/בת זוג</th>
                       <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">סיווג</th>
                       <SortableTableHead<Client> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
                         נוצר
@@ -361,10 +355,6 @@ export default function Clients() {
                         <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
                         <TableCell dir="ltr" className="text-start">{client.email || '-'}</TableCell>
-                        <TableCell>{(client as any).spouse_full_name || '-'}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{(client as any).spouse_id_number || '-'}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{(client as any).spouse_phone || '-'}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{(client as any).spouse_email || '-'}</TableCell>
                         <TableCell>
                           {(client as any).category_id ? (
                             <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
