@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Client } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Users, Trash2, Edit2, Eye, CheckSquare } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Edit2, Eye, CheckSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +42,15 @@ export default function Clients() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -322,13 +331,13 @@ export default function Clients() {
                       <SortableTableHead<Client> sortKey="full_name" sortConfig={sortConfig} onSort={requestSort}>
                         שם מלא
                       </SortableTableHead>
-                      <SortableTableHead<Client> sortKey="id_number" sortConfig={sortConfig} onSort={requestSort}>
+                      <SortableTableHead<Client> sortKey="id_number" sortConfig={sortConfig} onSort={requestSort} dir="ltr">
                         ת.ז.
                       </SortableTableHead>
-                      <SortableTableHead<Client> sortKey="phone" sortConfig={sortConfig} onSort={requestSort}>
+                      <SortableTableHead<Client> sortKey="phone" sortConfig={sortConfig} onSort={requestSort} dir="ltr">
                         טלפון
                       </SortableTableHead>
-                      <SortableTableHead<Client> sortKey="email" sortConfig={sortConfig} onSort={requestSort}>
+                      <SortableTableHead<Client> sortKey="email" sortConfig={sortConfig} onSort={requestSort} dir="ltr">
                         אימייל
                       </SortableTableHead>
                       <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">סיווג</th>
@@ -339,47 +348,81 @@ export default function Clients() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedData.map((client) => (
-                      <TableRow
-                        key={client.id}
-                        className={`cursor-pointer hover:bg-accent/50 ${selectedIds.has(client.id) ? 'bg-accent/30' : ''}`}
-                        onClick={() => navigate(`/clients/${client.id}`)}
-                      >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedIds.has(client.id)}
-                            onCheckedChange={() => toggleSelect(client.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{client.full_name}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
-                        <TableCell dir="ltr" className="text-start">{client.email || '-'}</TableCell>
-                        <TableCell>
-                          {(client as any).category_id ? (
-                            <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                              {categoryNameById.get((client as any).category_id) || '—'}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
+                    {sortedData.map((client) => {
+                      const isExpanded = expandedIds.has(client.id);
+                      const hasSpouse = (client as any).spouse_full_name || (client as any).spouse_id_number || (client as any).spouse_phone || (client as any).spouse_email;
+                      return (
+                        <React.Fragment key={client.id}>
+                          <TableRow
+                            className={`cursor-pointer hover:bg-accent/50 ${selectedIds.has(client.id) ? 'bg-accent/30' : ''} ${isExpanded ? 'border-b-0' : ''}`}
+                            onClick={() => toggleExpand(client.id)}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedIds.has(client.id)}
+                                onCheckedChange={() => toggleSelect(client.id)}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">{client.full_name}</TableCell>
+                            <TableCell dir="ltr" className="text-start">{client.id_number || '-'}</TableCell>
+                            <TableCell dir="ltr" className="text-start">{client.phone || '-'}</TableCell>
+                            <TableCell dir="ltr" className="text-start">{client.email || '-'}</TableCell>
+                            <TableCell>
+                              {(client as any).category_id ? (
+                                <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                  {categoryNameById.get((client as any).category_id) || '—'}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <div className="flex gap-1">
+                                {hasSpouse && (
+                                  <Button variant="ghost" size="sm" onClick={() => toggleExpand(client.id)} title="בן/בת זוג">
+                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${client.id}`)} title="פתח עמוד לקוח">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(client.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {isExpanded && (
+                            <TableRow className="bg-muted/40 hover:bg-muted/40">
+                              <TableCell colSpan={8} className="py-3 px-6">
+                                <div className="flex flex-wrap gap-6 text-sm">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">שם בן/בת זוג</p>
+                                    <p className="font-medium">{(client as any).spouse_full_name || '—'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">ת.ז. בן/בת זוג</p>
+                                    <p dir="ltr">{(client as any).spouse_id_number || '—'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">טלפון בן/בת זוג</p>
+                                    <p dir="ltr">{(client as any).spouse_phone || '—'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">אימייל בן/בת זוג</p>
+                                    <p dir="ltr">{(client as any).spouse_email || '—'}</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
                           )}
-                        </TableCell>
-                        <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${client.id}`)} title="פתח עמוד לקוח">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(client.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                        </React.Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
