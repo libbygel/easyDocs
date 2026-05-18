@@ -100,7 +100,7 @@ export function InlineCreateClientDialog({
       .select()
       .single();
 
-    if (error && /column .* does not exist/i.test(error.message)) {
+    if (error && (error.code === 'PGRST204' || /column .* does not exist/i.test(error.message) || /schema cache/i.test(error.message))) {
       const fallback = { ...insertPayload };
       delete fallback.category_id;
       delete fallback.spouse_full_name;

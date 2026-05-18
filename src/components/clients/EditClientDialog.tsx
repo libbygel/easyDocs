@@ -83,7 +83,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
 
     let { error } = await supabase.from('clients').update(fullPayload).eq('id', client.id);
     // Fallback: drop unknown columns and retry
-    if (error && /column .* does not exist/i.test(error.message)) {
+    if (error && (error.code === 'PGRST204' || /column .* does not exist/i.test(error.message) || /schema cache/i.test(error.message))) {
       const minimal: any = {
         full_name: fullName,
         phone: phone || null,
