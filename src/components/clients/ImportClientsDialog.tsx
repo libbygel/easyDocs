@@ -42,6 +42,7 @@ const FIELDS = [
   { key: 'spouse_id_number', label: 'ת.ז. בן/בת זוג', required: false },
   { key: 'spouse_phone', label: 'טלפון בן/בת זוג', required: false },
   { key: 'spouse_email', label: 'אימייל בן/בת זוג', required: false },
+  { key: 'category_name', label: 'סיווג', required: false },
 ] as const;
 
 const HEBREW_HINTS: Record<string, string[]> = {
@@ -54,6 +55,7 @@ const HEBREW_HINTS: Record<string, string[]> = {
   spouse_id_number: ['ת.ז בן', 'ת.ז בת', 'תעודת זהות בן', 'תעודת זהות בת', 'ת.ז. בן/בת'],
   spouse_phone: ['טלפון בן', 'טלפון בת'],
   spouse_email: ['מייל בן', 'מייל בת', 'אימייל בן', 'אימייל בת', 'אימייל בן/בת'],
+  category_name: ['סיווג', 'קטגוריה', 'category', 'סוג לקוח'],
 };
 
 function autoDetectMapping(headers: string[]): Record<string, string> {
@@ -267,6 +269,30 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
     const toInsert = fresh.map(buildPayload);
     dups.filter((d) => d.action === 'create').forEach((d) => toInsert.push(buildPayload(d.newData)));
 
+    // Resolve category_name → category_id
+    const resolveCategoryIds = async (payloads: any[]) => {
+      const names = [...new Set(payloads.map((p) => p.category_name).filter(Boolean))] as string[];
+      if (names.length === 0) { payloads.forEach((p) => delete p.category_name); return; }
+      const { data: existing } = await supabase.from('client_categories' as any).select('id, name').eq('advisor_id', user.id);
+      const catMap = new Map<string, string>();
+      (existing || []).forEach((c: any) => catMap.set(String(c.name).toLowerCase(), c.id));
+      const missing = names.filter((n) => !catMap.has(n.toLowerCase()));
+      if (missing.length > 0) {
+        const { data: created } = await supabase.from('client_categories' as any)
+          .insert(missing.map((name) => ({ name, advisor_id: user.id }))).select('id, name');
+        (created || []).forEach((c: any) => catMap.set(String(c.name).toLowerCase(), c.id));
+      }
+      payloads.forEach((p) => {
+        if (p.category_name) {
+          const id = catMap.get(String(p.category_name).toLowerCase());
+          if (id) p.category_id = id;
+        }
+        delete p.category_name;
+      });
+    };
+
+    await resolveCategoryIds(toInsert);
+
     if (toInsert.length > 0) {
       const { ok, err } = await insertBatch(toInsert);
       created = ok;
@@ -284,6 +310,10 @@ export function ImportClientsDialog({ open, onOpenChange, onSuccess }: ImportCli
       for (const field of FIELDS) {
         const v = d.newData[field.key];
         if (v !== undefined && v !== null && v !== '') payload[field.key] = v;
+      }
+      // category_name was already resolved to category_id in toInsert; handle update case
+      if (payload.category_name) {
+        delete payload.category_name; // already handled or skip
       }
       const { error } = await supabase.from('clients').update(payload).eq('id', d.existing.id);
       if (error) { failed++; if (!capturedError) capturedError = error.message; }
