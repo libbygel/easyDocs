@@ -1,7 +1,7 @@
 import * as React from 'npm:react@18.3.1'
 import { Body, Container, Head, Heading, Html, Preview, Text, Button, Section } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { main, container, heroBox, heroTitle, heroSub, card, h1, text, button, buttonWrap, footer } from './_styles.ts'
+import { main, container, heroBox, heroTitle, heroSub, card, h1, text, button, buttonWrap, footer, docsWrap, docBox, muted } from './_styles.ts'
 
 interface Props {
   clientName?: string
@@ -9,6 +9,7 @@ interface Props {
   portalLink?: string
   advisorName?: string
   emailType?: 'new_case' | 'reminder' | 'new_document' | 'master_portal'
+  requiredDocuments?: string[]
 }
 
 function getTitle(emailType?: string, advisorName?: string, caseTitle?: string) {
@@ -45,7 +46,7 @@ function getBody(emailType?: string, advisorName?: string, caseTitle?: string) {
   }
 }
 
-const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', portalLink = '#', advisorName, emailType = 'reminder' }: Props) => (
+const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', portalLink = '#', advisorName, emailType = 'reminder', requiredDocuments = [] }: Props) => (
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>{getTitle(emailType, advisorName, caseTitle)}</Preview>
@@ -58,6 +59,14 @@ const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '',
         <Section style={card}>
           <Heading style={h1}>שלום {clientName},</Heading>
           <Text style={text}>{getBody(emailType, advisorName, caseTitle)}</Text>
+          {emailType !== 'master_portal' && requiredDocuments.length > 0 && (
+            <Section style={docsWrap}>
+              <Text style={muted}>מסמכים נדרשים להעלאה:</Text>
+              {requiredDocuments.map((doc, idx) => (
+                <Text key={`${doc}-${idx}`} style={docBox}>• {doc}</Text>
+              ))}
+            </Section>
+          )}
           <Section style={buttonWrap}>
             <Button href={portalLink} style={button}>{emailType === 'master_portal' ? 'צפייה בתיקים' : 'פתיחת הפורטל'}</Button>
           </Section>
