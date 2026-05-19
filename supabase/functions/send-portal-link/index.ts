@@ -28,6 +28,12 @@ serve(async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ error: "חסרים פרטים נדרשים" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
+    // Normalize clientName: strip invisible/control Unicode characters that can cause rendering artifacts
+    const cleanClientName = (clientName || '')
+      .normalize('NFC')
+      .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g, '')
+      .trim();
+
     const { data, error } = await supa.functions.invoke("send-transactional-email", {
       body: {
         templateName: "portal-link",
@@ -35,7 +41,7 @@ serve(async (req: Request): Promise<Response> => {
         idempotencyKey: `portal-${portalLink}-${emailType || "reminder"}-${Date.now()}`,
         senderName: advisorName || undefined,
         replyTo: advisorEmail || undefined,
-        templateData: { clientName, caseTitle, portalLink, advisorName, emailType: emailType || "reminder" },
+        templateData: { clientName: cleanClientName, caseTitle, portalLink, advisorName, emailType: emailType || "reminder" },
       },
     });
     if (error) throw error;

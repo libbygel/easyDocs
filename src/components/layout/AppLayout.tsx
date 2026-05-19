@@ -15,6 +15,7 @@ import {
   Contact,
   HelpCircle,
   ListChecks,
+  ReceiptText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,7 @@ const navItems = [
   { href: '/clients', label: 'לקוחות', icon: Users },
   { href: '/contacts', label: 'אנשי קשר', icon: Contact },
   { href: '/tasks', label: 'משימות', icon: ListChecks },
+  { href: '/billing-report', label: 'דוח חיובים', icon: ReceiptText },
   { href: '/templates', label: 'תבניות', icon: FileText },
   { href: '/how-it-works', label: 'מדריך', icon: HelpCircle },
   { href: '/notifications', label: 'התראות', icon: Bell },

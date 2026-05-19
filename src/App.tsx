@@ -18,6 +18,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Tasks from "./pages/Tasks";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
+import BillingReport from "./pages/BillingReport";
 import ClientPortal from "./pages/ClientPortal";
 import ClientMasterPortal from "./pages/ClientMasterPortal";
 import NotFound from "./pages/NotFound";
@@ -80,6 +81,7 @@ const AppRoutes = () => (
     <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
     <Route path="/how-it-works" element={<ProtectedRoute><HowItWorks /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+    <Route path="/billing-report" element={<ProtectedRoute><BillingReport /></ProtectedRoute>} />
     <Route path="/portal/:token" element={<ClientPortal />} />
     <Route path="/client-portal/:token" element={<ClientMasterPortal />} />
     <Route path="*" element={<NotFound />} />

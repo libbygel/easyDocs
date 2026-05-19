@@ -119,11 +119,17 @@ export function SendPortalLinkDialog({
       .from('case_documents')
       .update({ sent_to_client_at: now } as any)
       .eq('case_id', caseId);
+    // Update last_portal_link_sent_at on the case
+    await supabase
+      .from('cases')
+      .update({ last_portal_link_sent_at: now } as any)
+      .eq('id', caseId);
 
     toast({
       title: 'הקישור הועתק',
       description: 'ניתן לשלוח ללקוח',
     });
+    onComplete();
     setTimeout(() => setCopied(false), 2000);
   };
 

@@ -41,6 +41,7 @@ type CaseWithRelations = Case & {
   case_types: CaseType | null;
   case_documents?: { required: boolean; review_status: string }[];
   derived_status?: Case['status'];
+  urgency?: string;
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -279,7 +280,9 @@ export default function Cases() {
                         <SortableTableHead<CaseWithRelations> sortKey="status" sortConfig={sortConfig} onSort={requestSort}>
                           סטטוס
                         </SortableTableHead>
-                        <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">דחיפות</th>
+                        <SortableTableHead<CaseWithRelations> sortKey="urgency" sortConfig={sortConfig} onSort={requestSort}>
+                          דחיפות
+                        </SortableTableHead>
                         <SortableTableHead<CaseWithRelations> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
                           נוצר בתאריך
                         </SortableTableHead>

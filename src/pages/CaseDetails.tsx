@@ -1073,6 +1073,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
         clientEmail={caseData.clients?.email || undefined}
         clientName={caseData.clients?.full_name}
         caseTitle={caseData.title}
+        emailType={(caseData as any).last_portal_link_sent_at ? 'reminder' : 'new_case'}
         onComplete={() => {}}
       />
 
