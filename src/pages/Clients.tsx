@@ -355,7 +355,7 @@ export default function Clients() {
                         <React.Fragment key={client.id}>
                           <TableRow
                             className={`cursor-pointer hover:bg-accent/50 ${selectedIds.has(client.id) ? 'bg-accent/30' : ''} ${isExpanded ? 'border-b-0' : ''}`}
-                            onClick={() => toggleExpand(client.id)}
+                            onClick={() => navigate(`/clients/${client.id}`)}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
