@@ -38,7 +38,6 @@ import {
   deleteTimeEntry,
   updateTimeEntry,
   effectiveHourlyRate,
-  summarizeCase,
   summarizeChargeSettlement,
   updatePaymentChargeLink,
   updatePayment,
@@ -197,10 +196,17 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId, refreshKey]);
 
-  const summary = useMemo(
-    () => summarizeCase(charges, payments, timeEntries, hourlyRate),
-    [charges, payments, timeEntries, hourlyRate],
-  );
+  const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
+  const summary = useMemo(() => {
+    const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+    const totalSeconds = timeEntries.reduce((s, e) => s + (e.duration_seconds || 0), 0);
+    return {
+      totalCharged: extraCharged,
+      totalPaid,
+      balance: extraCharged - totalPaid,
+      totalSeconds,
+    };
+  }, [extraCharged, payments, timeEntries]);
   const hours = summary.totalSeconds / 3600;
   // Accurate per-row computation (uses each entry's override when set).
   const timeCharged = useMemo(
@@ -211,8 +217,6 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
       }, 0),
     [timeEntries, hourlyRate],
   );
-  const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
-
   const handleAddCharge = async () => {
     if (!user) return;
     const amt = parseFloat(chargeAmount);
@@ -489,7 +493,7 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
           {/* Grand total summary row */}
           <div className="mt-4 pt-3 border-t-2 space-y-1.5">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">חיוב על זמן עבודה</span>
+              <span className="text-muted-foreground">שווי זמן עבודה (מידע בלבד)</span>
               <span className="tabular-nums">{formatCurrency(timeCharged)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -501,7 +505,7 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
               <span className="tabular-nums">−{formatCurrency(summary.totalPaid)}</span>
             </div>
             <div className="flex items-center justify-between pt-2 mt-1 border-t">
-              <span className="font-semibold">סך הכל חוב הלקוח</span>
+              <span className="font-semibold">סך הכל חוב הלקוח (חיובים בלבד)</span>
               <span
                 className={`text-lg font-bold tabular-nums ${
                   summary.balance > 0 ? 'text-warning' : 'text-success'
