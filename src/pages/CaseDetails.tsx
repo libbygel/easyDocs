@@ -570,19 +570,17 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
               documents={documents}
               onSuccess={fetchData}
             />
-            {(caseData.status === 'הושלם' || caseData.status === 'הוגש') && (
-              <Button
-                variant={caseData.status === 'הוגש' ? 'default' : 'outline'}
-                className="gap-2"
-                onClick={async () => {
-                  const newStatus = caseData.status === 'הוגש' ? 'הושלם' : 'הוגש';
-                  const { error } = await supabase.from('cases').update({ status: newStatus } as any).eq('id', id!);
-                  if (!error) { fetchData(); toast({ title: newStatus === 'הוגש' ? 'התיק סומן כהוגש' : 'הסטטוס שונה בחזרה להושלם' }); }
-                }}
-              >
-                {caseData.status === 'הוגש' ? '✓ הוגש' : 'סמן כהוגש'}
-              </Button>
-            )}
+            <Button
+              variant={caseData.status === 'הוגש' ? 'default' : 'outline'}
+              className="gap-2"
+              onClick={async () => {
+                const newStatus = caseData.status === 'הוגש' ? 'פתוח' : 'הוגש';
+                const { error } = await supabase.from('cases').update({ status: newStatus } as any).eq('id', id!);
+                if (!error) { fetchData(); toast({ title: newStatus === 'הוגש' ? 'התיק סומן כהוגש' : 'הסטטוס שונה בחזרה לפתוח' }); }
+              }}
+            >
+              {caseData.status === 'הוגש' ? '✓ הוגש' : 'סמן כהוגש'}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">

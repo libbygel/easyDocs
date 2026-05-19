@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/pagination';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type CaseWithRelations = Case & {
   clients: Client | null;
@@ -49,6 +50,7 @@ export default function Cases() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showClosed, setShowClosed] = useState(false);
+  const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
 
   const CLOSED_STATUSES = ['הושלם', 'הוגש'];
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -113,6 +115,7 @@ export default function Cases() {
   const filteredCases = cases.filter((c) => {
     const status = c.derived_status || c.status;
     if (!showClosed && CLOSED_STATUSES.includes(status)) return false;
+    if (urgencyFilter !== 'all' && ((c as any).urgency || 'normal') !== urgencyFilter) return false;
     if (!searchTerm.trim()) return true;
     const search = searchTerm.toLowerCase().trim();
     const title = c.title?.toLowerCase() || '';
@@ -195,14 +198,27 @@ export default function Cases() {
         {/* Search */}
         <Card className="shadow-sm">
           <CardContent className="pt-4">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="חיפוש לפי שם לקוח, כותרת או סוג תיק..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="חיפוש לפי שם לקוח, כותרת או סוג תיק..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
+              <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="דחיפות" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הדחיפויות</SelectItem>
+                  <SelectItem value="normal">רגיל</SelectItem>
+                  <SelectItem value="urgent">דחוף</SelectItem>
+                  <SelectItem value="critical">דחוף מאוד</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -263,6 +279,7 @@ export default function Cases() {
                         <SortableTableHead<CaseWithRelations> sortKey="status" sortConfig={sortConfig} onSort={requestSort}>
                           סטטוס
                         </SortableTableHead>
+                        <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">דחיפות</th>
                         <SortableTableHead<CaseWithRelations> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
                           נוצר בתאריך
                         </SortableTableHead>
@@ -290,6 +307,17 @@ export default function Cases() {
                           </TableCell>
                           <TableCell>
                             <StatusBadge status={caseItem.derived_status || caseItem.status} />
+                          </TableCell>
+                          <TableCell>
+                            {(caseItem as any).urgency === 'urgent' && (
+                              <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">דחוף</span>
+                            )}
+                            {(caseItem as any).urgency === 'critical' && (
+                              <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">דחוף מאוד</span>
+                            )}
+                            {(!(caseItem as any).urgency || (caseItem as any).urgency === 'normal') && (
+                              <span className="text-xs text-muted-foreground">רגיל</span>
+                            )}
                           </TableCell>
                           <TableCell className="tabular-nums">
                             {format(new Date(caseItem.created_at), 'dd/MM/yyyy')}
