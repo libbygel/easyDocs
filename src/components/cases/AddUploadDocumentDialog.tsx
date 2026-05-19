@@ -182,6 +182,10 @@ export function AddUploadDocumentDialog({
         emailType: 'new_document',
       });
       if (response?.error) throw new Error(response.error.message);
+      await supabase
+        .from('cases')
+        .update({ last_portal_link_sent_at: new Date().toISOString() } as any)
+        .eq('id', caseId);
       toast({ title: 'הקישור נשלח ללקוח בהצלחה' });
       handleClose();
     } catch (error: any) {

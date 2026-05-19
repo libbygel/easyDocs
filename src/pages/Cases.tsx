@@ -308,16 +308,34 @@ export default function Cases() {
                           <TableCell>
                             <StatusBadge status={caseItem.derived_status || caseItem.status} />
                           </TableCell>
-                          <TableCell>
-                            {(caseItem as any).urgency === 'urgent' && (
-                              <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">דחוף</span>
-                            )}
-                            {(caseItem as any).urgency === 'critical' && (
-                              <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">דחוף מאוד</span>
-                            )}
-                            {(!(caseItem as any).urgency || (caseItem as any).urgency === 'normal') && (
-                              <span className="text-xs text-muted-foreground">רגיל</span>
-                            )}
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              value={(caseItem as any).urgency || 'normal'}
+                              onValueChange={async (value) => {
+                                const prev = (caseItem as any).urgency || 'normal';
+                                setCases((old) => old.map((c) => c.id === caseItem.id ? { ...c, urgency: value } as any : c));
+                                const { error } = await supabase.from('cases').update({ urgency: value } as any).eq('id', caseItem.id);
+                                if (error) {
+                                  setCases((old) => old.map((c) => c.id === caseItem.id ? { ...c, urgency: prev } as any : c));
+                                  toast({ title: 'שגיאה בעדכון דחיפות', variant: 'destructive' });
+                                }
+                              }}
+                            >
+                              <SelectTrigger className={`h-7 w-32 text-xs rounded-full border ${
+                                ((caseItem as any).urgency || 'normal') === 'critical'
+                                  ? 'border-red-300 text-red-700 bg-red-50'
+                                  : ((caseItem as any).urgency || 'normal') === 'urgent'
+                                  ? 'border-orange-300 text-orange-700 bg-orange-50'
+                                  : 'border-gray-200 text-gray-600'
+                              }`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="normal">רגיל</SelectItem>
+                                <SelectItem value="urgent">דחוף</SelectItem>
+                                <SelectItem value="critical">דחוף מאוד</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell className="tabular-nums">
                             {format(new Date(caseItem.created_at), 'dd/MM/yyyy')}
