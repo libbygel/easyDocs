@@ -132,6 +132,13 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
   const [financeRefresh, setFinanceRefresh] = useState(0);
+  const [urgency, setUrgency] = useState<string>('normal');
+
+  const URGENCY_CONFIG: Record<string, { label: string; triggerClass: string }> = {
+    normal:   { label: 'רגיל',       triggerClass: 'border-gray-200 text-gray-600' },
+    urgent:   { label: 'דחוף',       triggerClass: 'border-orange-300 text-orange-700 bg-orange-50' },
+    critical: { label: 'דחוף מאוד', triggerClass: 'border-red-300 text-red-700 bg-red-50' },
+  };
   
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -201,6 +208,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
       if (caseResult.data) {
         setCaseData(caseResult.data as CaseWithRelations);
+        setUrgency((caseResult.data as any).urgency || 'normal');
       }
 
       // Merge uploads into documents efficiently
@@ -267,6 +275,16 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       return () => { supabase.removeChannel(channel); };
     }
   }, [id, user]);
+
+  const handleUrgencyChange = async (value: string) => {
+    const prev = urgency;
+    setUrgency(value);
+    const { error } = await supabase.from('cases').update({ urgency: value } as any).eq('id', id!);
+    if (error) {
+      toast({ title: 'שגיאה בעדכון הדחיפות', variant: 'destructive' });
+      setUrgency(prev);
+    }
+  };
 
   const copyPortalLink = () => {
     if (!caseData) return;
@@ -552,6 +570,19 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
               documents={documents}
               onSuccess={fetchData}
             />
+            {(caseData.status === 'הושלם' || caseData.status === 'הוגש') && (
+              <Button
+                variant={caseData.status === 'הוגש' ? 'default' : 'outline'}
+                className="gap-2"
+                onClick={async () => {
+                  const newStatus = caseData.status === 'הוגש' ? 'הושלם' : 'הוגש';
+                  const { error } = await supabase.from('cases').update({ status: newStatus } as any).eq('id', id!);
+                  if (!error) { fetchData(); toast({ title: newStatus === 'הוגש' ? 'התיק סומן כהוגש' : 'הסטטוס שונה בחזרה להושלם' }); }
+                }}
+              >
+                {caseData.status === 'הוגש' ? '✓ הוגש' : 'סמן כהוגש'}
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
@@ -607,7 +638,19 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                 {caseData.case_types?.name}
               </p>
             </div>
-            <StatusBadge status={caseData.status} />
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Select value={urgency} onValueChange={handleUrgencyChange}>
+                <SelectTrigger className={`w-32 h-8 text-xs font-medium border rounded-full ${URGENCY_CONFIG[urgency]?.triggerClass}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">רגיל</SelectItem>
+                  <SelectItem value="urgent">דחוף</SelectItem>
+                  <SelectItem value="critical">דחוף מאוד</SelectItem>
+                </SelectContent>
+              </Select>
+              <StatusBadge status={caseData.status} />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2">

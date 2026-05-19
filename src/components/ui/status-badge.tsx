@@ -21,6 +21,7 @@ const caseStatusConfig: Record<CaseStatus, { label: string; className: string; i
   'בבדיקה': { label: 'ממתין לאישור היועץ', className: 'status-info', icon: Clock },
   'הושלם': { label: 'הושלם – כל המסמכים אושרו', className: 'status-success', icon: Check },
   'מוקפא': { label: 'מוקפא', className: 'status-pending', icon: AlertCircle },
+  'הוגש': { label: 'הוגש', className: 'status-success', icon: Check },
 };
 
 const sentStatusConfig: Record<SentStatus, { label: string; className: string; icon: typeof Check }> = {

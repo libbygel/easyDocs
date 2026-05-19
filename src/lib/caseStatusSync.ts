@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import type { CaseDocument } from '@/lib/supabase';
 import { logCaseActivity } from '@/lib/activityLog';
 
-type CaseStatus = 'פתוח' | 'ממתין למסמכים' | 'בבדיקה' | 'הושלם' | 'מוקפא';
+type CaseStatus = 'פתוח' | 'ממתין למסמכים' | 'בבדיקה' | 'הושלם' | 'מוקפא' | 'הוגש';
 
 /**
  * Derive the appropriate case status from the current document states.

@@ -48,6 +48,9 @@ export default function Cases() {
   const [cases, setCases] = useState<CaseWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showClosed, setShowClosed] = useState(false);
+
+  const CLOSED_STATUSES = ['הושלם', 'הוגש'];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,16 +111,14 @@ export default function Cases() {
   }, [searchTerm]);
 
   const filteredCases = cases.filter((c) => {
+    const status = c.derived_status || c.status;
+    if (!showClosed && CLOSED_STATUSES.includes(status)) return false;
     if (!searchTerm.trim()) return true;
-    
     const search = searchTerm.toLowerCase().trim();
     const title = c.title?.toLowerCase() || '';
     const clientName = c.clients?.full_name?.toLowerCase() || '';
     const caseType = c.case_types?.name?.toLowerCase() || '';
-    
-    return title.includes(search) ||
-           clientName.includes(search) ||
-           caseType.includes(search);
+    return title.includes(search) || clientName.includes(search) || caseType.includes(search);
   });
 
   const { sortedData, sortConfig, requestSort } = useTableSort(filteredCases, 'created_at', 'desc');
@@ -209,10 +210,19 @@ export default function Cases() {
         {/* Cases Table */}
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FolderOpen className="h-5 w-5" />
-              רשימת תיקים ({filteredCases.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FolderOpen className="h-5 w-5" />
+                רשימת תיקים ({filteredCases.length})
+              </CardTitle>
+              <Button
+                variant={showClosed ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowClosed((v) => !v)}
+              >
+                {showClosed ? 'הסתר סגורים' : 'הצג סגורים'}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
