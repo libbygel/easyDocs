@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { supabase } from '@/lib/supabase';
-import { formatCurrency, type CaseCharge, type CasePayment } from '@/lib/billing';
+import { effectiveHourlyRate, formatCurrency, type CaseCharge, type CasePayment, type CaseTimeEntry } from '@/lib/billing';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,11 @@ import * as XLSX from 'xlsx';
 
 type ChargeRow = CaseCharge & { clientName: string; caseTitle: string };
 type PaymentRow = CasePayment & { clientName: string; caseTitle: string };
+type TimeChargeRow = CaseTimeEntry & {
+  clientName: string;
+  caseTitle: string;
+  chargedAmount: number;
+};
 
 function startOfMonth() {
   const d = new Date();
@@ -36,6 +41,7 @@ export default function BillingReport() {
   const [loading, setLoading] = useState(false);
   const [charges, setCharges] = useState<ChargeRow[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [timeCharges, setTimeCharges] = useState<TimeChargeRow[]>([]);
   const [fetched, setFetched] = useState(false);
   const [runningCharges, setRunningCharges] = useState(false);
 
@@ -61,7 +67,7 @@ export default function BillingReport() {
       const fromTs = `${from}T00:00:00`;
       const toTs = `${to}T23:59:59`;
 
-      const [chargesRes, paymentsRes, clientsRes, casesRes] = await Promise.all([
+      const [chargesRes, paymentsRes, timeRes, clientsRes, casesRes] = await Promise.all([
         supabase
           .from('case_charges' as any)
           .select('*')
@@ -76,7 +82,14 @@ export default function BillingReport() {
           .gte('paid_at', fromTs)
           .lte('paid_at', toTs)
           .order('paid_at', { ascending: false }),
-        supabase.from('clients').select('id,full_name').eq('advisor_id', user.id),
+        supabase
+          .from('case_time_entries' as any)
+          .select('*')
+          .eq('advisor_id', user.id)
+          .gte('started_at', fromTs)
+          .lte('started_at', toTs)
+          .order('started_at', { ascending: false }),
+        supabase.from('clients').select('id,full_name,hourly_rate').eq('advisor_id', user.id),
         supabase.from('cases').select('id,title').eq('advisor_id', user.id),
       ]);
 
@@ -85,6 +98,9 @@ export default function BillingReport() {
       );
       const caseMap = new Map<string, string>(
         ((casesRes.data || []) as any[]).map((c: any) => [c.id, c.title])
+      );
+      const clientRateMap = new Map<string, number | null>(
+        ((clientsRes.data || []) as any[]).map((c: any) => [c.id, c.hourly_rate ?? null])
       );
 
       const enrichCharge = (r: any): ChargeRow => ({
@@ -97,9 +113,22 @@ export default function BillingReport() {
         clientName: clientMap.get(r.client_id) || '-',
         caseTitle: caseMap.get(r.case_id) || '-',
       });
+      const enrichTime = (r: any): TimeChargeRow => {
+        const row = r as CaseTimeEntry;
+        const clientRate = clientRateMap.get(row.client_id) ?? null;
+        const rate = effectiveHourlyRate(row, clientRate);
+        const chargedAmount = ((row.duration_seconds || 0) / 3600) * rate;
+        return {
+          ...row,
+          chargedAmount,
+          clientName: clientMap.get(row.client_id) || '-',
+          caseTitle: caseMap.get(row.case_id) || '-',
+        };
+      };
 
       setCharges(((chargesRes.data || []) as any[]).map(enrichCharge));
       setPayments(((paymentsRes.data || []) as any[]).map(enrichPayment));
+      setTimeCharges(((timeRes.data || []) as any[]).map(enrichTime));
       setFetched(true);
     } catch (err: any) {
       toast({ title: 'שגיאה בטעינת דוח', description: err?.message, variant: 'destructive' });
@@ -113,22 +142,28 @@ export default function BillingReport() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const totalCharged = useMemo(() => charges.reduce((s, c) => s + Number(c.amount), 0), [charges]);
+  const totalManualCharged = useMemo(() => charges.reduce((s, c) => s + Number(c.amount), 0), [charges]);
+  const totalTimeCharged = useMemo(() => timeCharges.reduce((s, t) => s + Number(t.chargedAmount), 0), [timeCharges]);
+  const totalCharged = totalManualCharged + totalTimeCharged;
   const totalPaid = useMemo(() => payments.reduce((s, p) => s + Number(p.amount), 0), [payments]);
   const balance = totalCharged - totalPaid;
 
   const clientSummary = useMemo(() => {
-    const map = new Map<string, { clientName: string; charged: number; paid: number }>();
+    const map = new Map<string, { clientName: string; charged: number; timeCharged: number; paid: number }>();
     for (const c of charges) {
-      const prev = map.get(c.client_id) || { clientName: c.clientName, charged: 0, paid: 0 };
+      const prev = map.get(c.client_id) || { clientName: c.clientName, charged: 0, timeCharged: 0, paid: 0 };
       map.set(c.client_id, { ...prev, charged: prev.charged + Number(c.amount) });
     }
+    for (const t of timeCharges) {
+      const prev = map.get(t.client_id) || { clientName: t.clientName, charged: 0, timeCharged: 0, paid: 0 };
+      map.set(t.client_id, { ...prev, timeCharged: prev.timeCharged + Number(t.chargedAmount), charged: prev.charged + Number(t.chargedAmount) });
+    }
     for (const p of payments) {
-      const prev = map.get(p.client_id) || { clientName: p.clientName, charged: 0, paid: 0 };
+      const prev = map.get(p.client_id) || { clientName: p.clientName, charged: 0, timeCharged: 0, paid: 0 };
       map.set(p.client_id, { ...prev, paid: prev.paid + Number(p.amount) });
     }
     return Array.from(map.values()).sort((a, b) => b.charged - a.charged);
-  }, [charges, payments]);
+  }, [charges, payments, timeCharges]);
 
   const exportExcel = () => {
     const chargesSheet = charges.map((c) => ({
@@ -147,10 +182,19 @@ export default function BillingReport() {
       סכום: p.amount,
       'אמצעי תשלום': p.payment_method || '',
     }));
+    const timeSheet = timeCharges.map((t) => ({
+      תאריך: format(new Date(t.started_at), 'dd/MM/yyyy HH:mm'),
+      לקוח: t.clientName,
+      תיק: t.caseTitle,
+      תיאור: t.description || '',
+      משך: t.duration_seconds || 0,
+      'חיוב זמן': t.chargedAmount,
+    }));
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(chargesSheet), 'חיובים');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(paymentsSheet), 'תשלומים');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(timeSheet), 'חיובי זמן');
     const label = `${from}_${to}`;
     XLSX.writeFile(wb, `דוח_חיובים_${label}.xlsx`);
   };
@@ -221,6 +265,7 @@ export default function BillingReport() {
                     <div>
                       <p className="text-xs text-muted-foreground">סה״כ חיובים</p>
                       <p className="text-xl font-bold tabular-nums">{formatCurrency(totalCharged)}</p>
+                      <p className="text-xs text-muted-foreground">זמן: {formatCurrency(totalTimeCharged)} • נוספים: {formatCurrency(totalManualCharged)}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -261,6 +306,7 @@ export default function BillingReport() {
                     <CardTitle className="text-base">פירוט</CardTitle>
                     <TabsList>
                       <TabsTrigger value="charges">חיובים ({charges.length})</TabsTrigger>
+                      <TabsTrigger value="time">חיובי זמן ({timeCharges.length})</TabsTrigger>
                       <TabsTrigger value="payments">תשלומים ({payments.length})</TabsTrigger>
                       <TabsTrigger value="by-client">לפי לקוח ({clientSummary.length})</TabsTrigger>
                     </TabsList>
@@ -301,6 +347,40 @@ export default function BillingReport() {
                       </Table>
                     )}
                   </TabsContent>
+                  <TabsContent value="time" className="mt-0">
+                    {timeCharges.length === 0 ? (
+                      <p className="text-center text-sm text-muted-foreground py-8">אין חיובי זמן בתקופה זו</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>תאריך</TableHead>
+                            <TableHead>לקוח</TableHead>
+                            <TableHead>תיק</TableHead>
+                            <TableHead>תיאור</TableHead>
+                            <TableHead className="text-start">משך</TableHead>
+                            <TableHead className="text-start">חיוב זמן</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {timeCharges.map((t) => {
+                            const hh = Math.floor((t.duration_seconds || 0) / 3600);
+                            const mm = Math.floor(((t.duration_seconds || 0) % 3600) / 60);
+                            return (
+                              <TableRow key={t.id}>
+                                <TableCell className="tabular-nums text-sm">{format(new Date(t.started_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                                <TableCell className="font-medium">{t.clientName}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{t.caseTitle}</TableCell>
+                                <TableCell className="text-sm">{t.description || '-'}</TableCell>
+                                <TableCell className="tabular-nums">{`${hh}:${String(mm).padStart(2, '0')}`}</TableCell>
+                                <TableCell className="tabular-nums font-semibold">{formatCurrency(t.chargedAmount)}</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </TabsContent>
                   <TabsContent value="by-client" className="mt-0">
                     {clientSummary.length === 0 ? (
                       <p className="text-center text-sm text-muted-foreground py-8">אין נתונים בתקופה זו</p>
@@ -310,6 +390,7 @@ export default function BillingReport() {
                           <TableRow>
                             <TableHead>לקוח</TableHead>
                             <TableHead className="text-start">סה״כ חיובים</TableHead>
+                            <TableHead className="text-start">מתוכם זמן</TableHead>
                             <TableHead className="text-start">סה״כ תשלומים</TableHead>
                             <TableHead className="text-start">יתרה לגבייה</TableHead>
                           </TableRow>
@@ -321,6 +402,7 @@ export default function BillingReport() {
                               <TableRow key={row.clientName}>
                                 <TableCell className="font-medium">{row.clientName}</TableCell>
                                 <TableCell className="tabular-nums">{formatCurrency(row.charged)}</TableCell>
+                                <TableCell className="tabular-nums text-blue-600">{formatCurrency(row.timeCharged)}</TableCell>
                                 <TableCell className="tabular-nums text-green-600">{formatCurrency(row.paid)}</TableCell>
                                 <TableCell className={`tabular-nums font-semibold ${bal > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{formatCurrency(bal)}</TableCell>
                               </TableRow>

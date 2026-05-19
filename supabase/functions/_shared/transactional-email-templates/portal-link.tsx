@@ -50,20 +50,20 @@ const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '',
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>{getTitle(emailType, advisorName, caseTitle)}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={heroBox}>
-          <Heading style={heroTitle}>📋 EasyDocs</Heading>
-          {advisorName && <Text style={heroSub}>מאת {advisorName}</Text>}
+    <Body style={{ ...main, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+      <Container style={{ ...container, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+        <Section style={{ ...heroBox, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...heroTitle, textAlign: 'right' }}>📋 EasyDocs</Heading>
+          {advisorName && <Text style={{ ...heroSub, textAlign: 'right' }} dir="rtl">מאת {advisorName}</Text>}
         </Section>
-        <Section style={card}>
-          <Heading style={h1}>שלום {clientName},</Heading>
-          <Text style={text}>{getBody(emailType, advisorName, caseTitle)}</Text>
+        <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...h1, textAlign: 'right' }} dir="rtl">שלום {clientName},</Heading>
+          <Text style={{ ...text, textAlign: 'right', direction: 'rtl' }} dir="rtl">{getBody(emailType, advisorName, caseTitle)}</Text>
           {emailType !== 'master_portal' && requiredDocuments.length > 0 && (
-            <Section style={docsWrap}>
-              <Text style={muted}>מסמכים נדרשים להעלאה:</Text>
+            <Section style={{ ...docsWrap, textAlign: 'right', direction: 'rtl' }} dir="rtl">
+              <Text style={{ ...muted, textAlign: 'right' }} dir="rtl">מסמכים נדרשים להעלאה:</Text>
               {requiredDocuments.map((doc, idx) => (
-                <Text key={`${doc}-${idx}`} style={docBox}>• {doc}</Text>
+                <Text key={`${doc}-${idx}`} style={{ ...docBox, textAlign: 'right', direction: 'rtl' }} dir="rtl">• {doc}</Text>
               ))}
             </Section>
           )}
@@ -71,7 +71,7 @@ const PortalLinkEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '',
             <Button href={portalLink} style={button}>{emailType === 'master_portal' ? 'צפייה בתיקים' : 'פתיחת הפורטל'}</Button>
           </Section>
         </Section>
-        <Section style={footer}>הודעה זו נשלחה ממערכת EasyDocs.</Section>
+        <Section style={footer} dir="rtl">הודעה זו נשלחה ממערכת EasyDocs.</Section>
       </Container>
     </Body>
   </Html>

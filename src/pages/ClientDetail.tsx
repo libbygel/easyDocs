@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare } from 'lucide-react';
@@ -13,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { absoluteAppUrl } from '@/lib/appUrl';
 import { format } from 'date-fns';
 import {
+  effectiveHourlyRate,
   listClientCharges,
   listClientPayments,
   listClientTimeEntries,
@@ -32,6 +34,7 @@ interface ClientRow {
   email: string | null;
   phone: string | null;
   id_number: string | null;
+  hourly_rate: number | null;
   notes: string | null;
   created_at: string;
 }
@@ -69,6 +72,8 @@ export default function ClientDetail() {
   const [timeEntries, setTimeEntries] = useState<CaseTimeEntry[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [hourlyRateInput, setHourlyRateInput] = useState('');
+  const [savingRate, setSavingRate] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,13 +89,16 @@ export default function ClientDetail() {
           fetchCurrentAdvisorProfile(user),
         ]);
 
-        setClient((clientRes.data as any) || null);
+        const clientData = (clientRes.data as any) || null;
+        setClient(clientData);
         const caseList = (casesRes.data as any[]) || [];
         setCases(caseList);
         setCharges(ch);
         setPayments(pa);
         setTimeEntries(te);
-        setHourlyRate(profile.hourlyRate);
+        const effectiveRate = clientData?.hourly_rate != null ? Number(clientData.hourly_rate) : profile.hourlyRate;
+        setHourlyRate(effectiveRate ?? null);
+        setHourlyRateInput(effectiveRate != null ? String(effectiveRate) : '');
         setAdvisorName(profile.displayName || '');
 
         if (caseList.length > 0) {
@@ -109,12 +117,22 @@ export default function ClientDetail() {
     })();
   }, [id, user]);
 
+  const timeCharged = useMemo(
+    () =>
+      timeEntries.reduce((sum, e) => {
+        const rate = effectiveHourlyRate(e, hourlyRate);
+        return sum + ((e.duration_seconds || 0) / 3600) * rate;
+      }, 0),
+    [timeEntries, hourlyRate],
+  );
+
   const totals = useMemo(() => {
-    const totalCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
+    const extraCharged = charges.reduce((s, c) => s + Number(c.amount || 0), 0);
     const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
     const totalSeconds = timeEntries.reduce((s, e) => s + (e.duration_seconds || 0), 0);
+    const totalCharged = extraCharged + timeCharged;
     return { totalCharged, totalPaid, balance: totalCharged - totalPaid, totalSeconds };
-  }, [charges, payments, timeEntries]);
+  }, [charges, payments, timeEntries, timeCharged]);
 
   const perCase = useMemo(() => {
     const map = new Map<string, { charged: number; paid: number; seconds: number }>();
@@ -124,13 +142,45 @@ export default function ClientDetail() {
     };
     charges.forEach((c) => (ensure(c.case_id).charged += Number(c.amount || 0)));
     payments.forEach((p) => (ensure(p.case_id).paid += Number(p.amount || 0)));
-    timeEntries.forEach((t) => (ensure(t.case_id).seconds += t.duration_seconds || 0));
+    timeEntries.forEach((t) => {
+      const row = ensure(t.case_id);
+      const secs = t.duration_seconds || 0;
+      const rate = effectiveHourlyRate(t, hourlyRate);
+      row.seconds += secs;
+      row.charged += (secs / 3600) * rate;
+    });
     return map;
-  }, [charges, payments, timeEntries]);
+  }, [charges, payments, timeEntries, hourlyRate]);
 
   const profitability = hourlyRate != null
     ? totals.totalCharged - (totals.totalSeconds / 3600) * hourlyRate
     : null;
+  const hasPersonalRate = client?.hourly_rate != null;
+
+  const saveClientHourlyRate = async () => {
+    if (!client) return;
+    const nextRate = hourlyRateInput.trim() === '' ? null : Number(hourlyRateInput);
+    if (nextRate != null && (Number.isNaN(nextRate) || nextRate < 0)) {
+      toast({ title: 'תעריף לא תקין', description: 'יש להזין מספר חיובי או להשאיר ריק', variant: 'destructive' });
+      return;
+    }
+
+    setSavingRate(true);
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ hourly_rate: nextRate } as any)
+        .eq('id', client.id);
+      if (error) throw error;
+      setHourlyRate(nextRate);
+      setClient((prev) => (prev ? ({ ...prev, hourly_rate: nextRate } as any) : prev));
+      toast({ title: 'תעריף העבודה עודכן' });
+    } catch (err: any) {
+      toast({ title: 'שגיאה בעדכון תעריף', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSavingRate(false);
+    }
+  };
 
   const masterPortalLink = client ? absoluteAppUrl(`/client-portal/${client.id}`) : '';
 
@@ -222,7 +272,24 @@ export default function ClientDetail() {
               <ArrowRight className="h-4 w-4" />
               חזרה ללקוחות
             </Button>
-            <h1 className="text-2xl font-bold">{client.full_name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold">{client.full_name}</h1>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                  hasPersonalRate
+                    ? 'bg-primary/10 text-primary'
+                    : hourlyRate != null
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {hasPersonalRate
+                  ? `תעריף אישי: ${formatCurrency(Number(client.hourly_rate))}/שעה`
+                  : hourlyRate != null
+                    ? `יורש תעריף כללי: ${formatCurrency(Number(hourlyRate))}/שעה`
+                    : 'ללא תעריף שעה'}
+              </span>
+            </div>
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               {client.id_number && (
                 <span className="flex items-center gap-1"><IdCard className="h-4 w-4" />{client.id_number}</span>
@@ -318,7 +385,7 @@ export default function ClientDetail() {
             label="זמן עבודה"
             value={formatDuration(totals.totalSeconds)}
             icon={<TrendingUp className="h-4 w-4" />}
-            subtext={profitability != null ? `כדאיות: ${formatCurrency(profitability)}` : 'הגדר תעריף שעה בהגדרות'}
+            subtext={profitability != null ? `כדאיות: ${formatCurrency(profitability)}` : 'הגדר תעריף שעה בכרטיס הלקוח'}
           />
         </div>
 
@@ -390,6 +457,38 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">תעריף עבודה ללקוח</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                  <div className="space-y-1 sm:w-56">
+                    <div className="text-xs text-muted-foreground">תעריף לשעה (₪)</div>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={hourlyRateInput}
+                      onChange={(e) => setHourlyRateInput(e.target.value)}
+                      placeholder="למשל 350"
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button onClick={saveClientHourlyRate} disabled={savingRate}>
+                    {savingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    שמור תעריף
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setHourlyRateInput('')}
+                    disabled={savingRate}
+                  >
+                    נקה תעריף
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="shadow-sm">
               <CardHeader><CardTitle className="text-base">חיובים</CardTitle></CardHeader>
               <CardContent>
