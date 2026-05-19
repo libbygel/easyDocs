@@ -17,8 +17,8 @@ export function deriveCaseStatus(
   documents: Pick<CaseDocument, 'required' | 'review_status'>[],
   current: CaseStatus | undefined,
 ): CaseStatus | null {
-  // Never override frozen cases automatically.
-  if (current === 'מוקפא') return null;
+  // Never override frozen or submitted cases automatically.
+  if (current === 'מוקפא' || current === 'הוגש') return null;
 
   const required = documents.filter((d) => d.required);
   if (required.length === 0) return null;
