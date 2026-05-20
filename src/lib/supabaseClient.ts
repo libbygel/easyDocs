@@ -19,3 +19,22 @@ export const supabase = createClient<Database>(AEGW_URL, AEGW_ANON_KEY, {
     storageKey: "sb-hndzejkwwpwrtzqpnqme-auth-token",
   },
 });
+
+/**
+ * Creates a Supabase client with the portal token sent as x-portal-token header.
+ * Use this ONLY in portal pages (ClientPortal, ClientMasterPortal).
+ * Never use for advisor-side requests.
+ */
+export function createPortalClient(portalToken: string) {
+  return createClient<Database>(AEGW_URL, AEGW_ANON_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: {
+        "x-portal-token": portalToken,
+      },
+    },
+  });
+}

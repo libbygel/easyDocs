@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { createPortalClient } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { fetchAdvisorProfileByUserId } from '@/lib/advisorProfile';
 
@@ -21,6 +21,7 @@ interface DocUploads {
 
 export default function ClientPortal() {
   const { token } = useParams<{ token: string }>();
+  const supabase = useMemo(() => createPortalClient(token || ''), [token]);
   const [searchParams] = useSearchParams();
   const readOnly = searchParams.get('view') === '1';
   const [caseData, setCaseData] = useState<any>(null);
