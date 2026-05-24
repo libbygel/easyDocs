@@ -9,19 +9,19 @@ const GroupMessageEmail = ({ name = 'לקוח/ה יקר/ה', message = '', advis
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>{message.slice(0, 80)}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={card}>
-          <Heading style={h1}>שלום {name},</Heading>
-          {advisorName && <Text style={{ ...text, color: '#555', margin: '0 0 12px' }}>מאת: <strong>{advisorName}</strong></Text>}
-          <Text style={{ ...text, whiteSpace: 'pre-wrap' }}>{message}</Text>
+    <Body style={{ ...main, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+      <Container style={{ ...container, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+        <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...h1, textAlign: 'right' }} dir="rtl">שלום {name},</Heading>
+          {advisorName && <Text style={{ ...text, color: '#555', margin: '0 0 12px', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">מאת: <strong>{advisorName}</strong></Text>}
+          <Text style={{ ...text, whiteSpace: 'pre-wrap', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">{message}</Text>
           {portalLink && (
             <Section style={buttonWrap}>
               <Button href={portalLink} style={button}>פתח פורטל אישי</Button>
             </Section>
           )}
         </Section>
-        <Section style={footer}>הודעה זו נשלחה מ-EasyDocs.</Section>
+        <Section style={{ ...footer, direction: 'rtl' }} dir="rtl">הודעה זו נשלחה מ-EasyDocs.</Section>
       </Container>
     </Body>
   </Html>

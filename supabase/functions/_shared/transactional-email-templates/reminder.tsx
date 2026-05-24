@@ -17,36 +17,36 @@ const ReminderEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', p
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>תזכורת על מסמכים חסרים בתיק {caseTitle}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={heroBox}>
-          <Heading style={heroTitle}>📋 EasyDocs</Heading>
-          {advisorName && <Text style={heroSub}>מאת {advisorName}</Text>}
+    <Body style={{ ...main, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+      <Container style={{ ...container, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+        <Section style={{ ...heroBox, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...heroTitle, textAlign: 'right' }}>📋 EasyDocs</Heading>
+          {advisorName && <Text style={{ ...heroSub, textAlign: 'right' }} dir="rtl">מאת {advisorName}</Text>}
         </Section>
-        <Section style={card}>
-          <Heading style={h1}>שלום {clientName},</Heading>
-          <Text style={text}>
+        <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...h1, textAlign: 'right' }} dir="rtl">שלום {clientName},</Heading>
+          <Text style={{ ...text, textAlign: 'right', direction: 'rtl', unicodeBidi: 'embed' }} dir="rtl">
             זוהי תזכורת{advisorName ? ` מ-${advisorName}` : ''} בנוגע למסמכים שטרם הועלו לתיק: <strong>{caseTitle}</strong>
           </Text>
           {personalMessage && (
-            <Section style={noteBox}>
-              <Text style={{ ...text, color: '#1e40af', margin: '0 0 4px', fontWeight: 600 }}>💬 הודעה מהיועץ:</Text>
-              <Text style={{ ...text, color: '#1e3a5f', whiteSpace: 'pre-wrap', margin: 0 }}>{personalMessage}</Text>
+            <Section style={{ ...noteBox, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+              <Text style={{ ...text, color: '#1e40af', margin: '0 0 4px', fontWeight: 600, direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">💬 הודעה מהיועץ:</Text>
+              <Text style={{ ...text, color: '#1e3a5f', whiteSpace: 'pre-wrap', margin: 0, direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">{personalMessage}</Text>
             </Section>
           )}
           {missingDocs.length > 0 && (
-            <Section style={docsWrap}>
-              <Text style={{ ...text, fontWeight: 600, color: '#334155', margin: '0 0 16px' }}>📄 מסמכים נדרשים ({missingDocs.length}):</Text>
+            <Section style={{ ...docsWrap, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+              <Text style={{ ...text, fontWeight: 600, color: '#334155', margin: '0 0 16px', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">📄 מסמכים נדרשים ({missingDocs.length}):</Text>
               {missingDocs.map((doc, i) => {
                 const isRejected = doc.review_status === 'לא תקין'
                 return (
-                  <Section key={i} style={docBox}>
-                    <Text style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#1e293b' }}>{doc.doc_name}</Text>
-                    <Text style={{ margin: '4px 0 0', fontSize: '13px', color: isRejected ? '#dc2626' : '#d97706', fontWeight: 500 }}>
+                  <Section key={i} style={{ ...docBox, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+                    <Text style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#1e293b', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">{doc.doc_name}</Text>
+                    <Text style={{ margin: '4px 0 0', fontSize: '13px', color: isRejected ? '#dc2626' : '#d97706', fontWeight: 500, direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">
                       {isRejected ? '❌ נדחה - נדרש העלאה מחדש' : '⏳ טרם הועלה'}
                     </Text>
-                    {doc.advisor_note && <Text style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b' }}>💬 {doc.advisor_note}</Text>}
-                    {doc.due_date && <Text style={{ margin: '4px 0 0', fontSize: '13px', color: '#dc2626' }}>📅 תאריך יעד: {new Date(doc.due_date).toLocaleDateString('he-IL')}</Text>}
+                    {doc.advisor_note && <Text style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">💬 {doc.advisor_note}</Text>}
+                    {doc.due_date && <Text style={{ margin: '4px 0 0', fontSize: '13px', color: '#dc2626', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">📅 תאריך יעד: {new Date(doc.due_date).toLocaleDateString('he-IL')}</Text>}
                   </Section>
                 )
               })}
@@ -57,7 +57,7 @@ const ReminderEmail = ({ clientName = 'לקוח/ה יקר/ה', caseTitle = '', p
           </Section>
           <Text style={{ ...muted, textAlign: 'center' }}>לחץ על הכפתור כדי לעבור לפורטל ולהעלות את המסמכים</Text>
         </Section>
-        <Section style={footer}>הודעה זו נשלחה אוטומטית ממערכת EasyDocs.</Section>
+        <Section style={{ ...footer, direction: 'rtl' }} dir="rtl">הודעה זו נשלחה אוטומטית ממערכת EasyDocs.</Section>
       </Container>
     </Body>
   </Html>

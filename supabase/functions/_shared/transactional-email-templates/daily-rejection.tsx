@@ -10,19 +10,19 @@ const DailyRejectionEmail = ({ clientName = 'לקוח/ה יקר/ה', advisorName
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /><meta httpEquiv="Content-Type" content="text/html; charset=utf-8" /></Head>
     <Preview>היועץ שלח לך הודעת דחייה על מסמכים</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={card}>
-          <Heading style={h1}>שלום {clientName},</Heading>
-          <Text style={text}>
+    <Body style={{ ...main, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+      <Container style={{ ...container, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+        <Section style={{ ...card, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+          <Heading style={{ ...h1, textAlign: 'right' }} dir="rtl">שלום {clientName},</Heading>
+          <Text style={{ ...text, direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">
             {advisorName ? `${advisorName} שלח/ה לך הודעת דחייה` : 'התקבלה הודעת דחייה'} על המסמכים הבאים:
           </Text>
-          <Section style={docsWrap}>
+          <Section style={{ ...docsWrap, direction: 'rtl', textAlign: 'right' }} dir="rtl">
             {rejectedDocs.map((d, i) => (
-              <Section key={i} style={docBox}>
-                <Text style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#1e293b' }}>{d.doc_name}</Text>
-                {d.case_title && <Text style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>תיק: {d.case_title}</Text>}
-                {d.rejection_reason && <Text style={{ margin: '6px 0 0', fontSize: '13px', color: '#dc2626' }}>סיבת דחייה: {d.rejection_reason}</Text>}
+              <Section key={i} style={{ ...docBox, direction: 'rtl', textAlign: 'right' }} dir="rtl">
+                <Text style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#1e293b', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">{d.doc_name}</Text>
+                {d.case_title && <Text style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">תיק: {d.case_title}</Text>}
+                {d.rejection_reason && <Text style={{ margin: '6px 0 0', fontSize: '13px', color: '#dc2626', direction: 'rtl', textAlign: 'right', unicodeBidi: 'embed' }} dir="rtl">סיבת דחייה: {d.rejection_reason}</Text>}
               </Section>
             ))}
           </Section>
@@ -30,7 +30,7 @@ const DailyRejectionEmail = ({ clientName = 'לקוח/ה יקר/ה', advisorName
             <Button href={portalUrl} style={button}>תיקון המסמכים</Button>
           </Section>
         </Section>
-        <Section style={footer}>EasyDocs</Section>
+        <Section style={{ ...footer, direction: 'rtl' }} dir="rtl">EasyDocs</Section>
       </Container>
     </Body>
   </Html>

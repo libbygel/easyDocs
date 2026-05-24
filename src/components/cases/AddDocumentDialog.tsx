@@ -35,6 +35,7 @@ export function AddDocumentDialog({
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       setActiveTab(defaultTab);
+      setJustAdded(false);
     }
     onOpenChange(isOpen);
   };
@@ -49,6 +50,7 @@ export function AddDocumentDialog({
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   
   const [loading, setLoading] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
   const { toast } = useToast();
 
   const handleSubmitUploadDoc = async (e: React.FormEvent) => {
@@ -91,9 +93,9 @@ export function AddDocumentDialog({
       });
     } else {
       toast({ title: 'המסמך נוסף בהצלחה' });
-      onOpenChange(false);
       onSuccess();
       resetForm();
+      setJustAdded(true);
     }
 
     setLoading(false);
@@ -197,9 +199,9 @@ export function AddDocumentDialog({
       }
 
       toast({ title: 'מסמך לחתימה נוסף בהצלחה' });
-      onOpenChange(false);
       onSuccess();
       resetForm();
+      setJustAdded(true);
     } catch (error: any) {
       toast({
         title: 'שגיאה בהעלאת המסמך',
@@ -218,6 +220,7 @@ export function AddDocumentDialog({
     setSignatureDocName('');
     setSignatureFile(null);
     setActiveTab('upload');
+    setJustAdded(false);
   };
 
   return (
@@ -227,6 +230,25 @@ export function AddDocumentDialog({
           <DialogTitle>הוספת מסמך חדש</DialogTitle>
         </DialogHeader>
         
+        {justAdded && (
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="flex items-center gap-2 text-green-600 font-medium">
+              <Plus className="h-5 w-5" />
+              המסמך נוסף בהצלחה!
+            </div>
+            <div className="flex gap-2 w-full">
+              <Button className="flex-1" onClick={() => setJustAdded(false)}>
+                <Plus className="ml-2 h-4 w-4" />
+                הוסף מסמך נוסף
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+                סגור
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!justAdded && (
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'upload' | 'signature')}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload" className="gap-2">
@@ -343,6 +365,7 @@ export function AddDocumentDialog({
             </form>
           </TabsContent>
         </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );

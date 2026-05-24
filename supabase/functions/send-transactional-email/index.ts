@@ -30,6 +30,39 @@ function generateToken(): string {
     .join('')
 }
 
+// Strip characters that cause garbled/replacement-character rendering in email clients:
+// U+FFFD (replacement character), invisible Unicode directional/control chars, BOM, soft hyphen.
+const GARBLE_RE = /[\uFFFD\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g
+
+function cleanStr(s: string): string {
+  return s.normalize('NFC').replace(GARBLE_RE, '').trim()
+}
+
+// Recursively normalize all string values inside templateData so that
+// garbled bytes from any field (caseTitle, advisorName, doc_name, etc.)
+// never reach the React Email renderer.
+function normalizeTemplateData(data: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(data)) {
+    if (typeof v === 'string') {
+      out[k] = cleanStr(v)
+    } else if (Array.isArray(v)) {
+      out[k] = v.map((item) =>
+        typeof item === 'string'
+          ? cleanStr(item)
+          : item !== null && typeof item === 'object'
+          ? normalizeTemplateData(item as Record<string, unknown>)
+          : item
+      )
+    } else if (v !== null && typeof v === 'object') {
+      out[k] = normalizeTemplateData(v as Record<string, unknown>)
+    } else {
+      out[k] = v
+    }
+  }
+  return out
+}
+
 // Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
 // gateway validates the caller's JWT (anon or service_role) before the request
 // reaches this code. No in-function auth check is needed.
@@ -84,7 +117,7 @@ Deno.serve(async (req) => {
     messageId = crypto.randomUUID()
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {
-      templateData = body.templateData
+      templateData = normalizeTemplateData(body.templateData)
     }
     senderName = body.senderName || body.sender_name
     replyTo = body.replyTo || body.reply_to
@@ -333,7 +366,8 @@ Deno.serve(async (req) => {
   }
 
   // Sanitize sender display name — strip characters that break RFC 5322 From headers
-  const safeSenderName = (senderName || SITE_NAME)
+  // Also apply Unicode normalization to remove garble-causing chars from Hebrew names.
+  const safeSenderName = cleanStr(senderName || SITE_NAME)
     .replace(/[\r\n"<>]/g, '')
     .trim() || SITE_NAME
 
