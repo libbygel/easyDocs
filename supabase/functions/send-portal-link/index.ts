@@ -37,10 +37,14 @@ serve(async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ error: "חסרים פרטים נדרשים" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    // Normalize clientName: strip invisible/control Unicode characters that can cause rendering artifacts
-    const cleanClientName = (clientName || '')
-      .normalize('NFC')
-      .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g, '')
+    // Normalize clientName: NFKC decomposition + TextEncoder round-trip to flush
+    // any C1 control characters (U+0080-U+009F) that arrive from legacy Hebrew
+    // software (Windows-1255/1252 copy-paste) before stripping known-bad chars.
+    const _nfkc = (clientName || '').normalize('NFKC')
+    const _bytes = new TextEncoder().encode(_nfkc)
+    const _safe = new TextDecoder('utf-8', { fatal: false }).decode(_bytes)
+    const cleanClientName = _safe
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\uFFFD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u061C\uFEFF\u00AD\uFFF9-\uFFFB]/g, '')
       .trim();
 
     let caseId: string | null = typeof caseIdRaw === "string" && caseIdRaw ? caseIdRaw : null;

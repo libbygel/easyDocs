@@ -30,12 +30,27 @@ function generateToken(): string {
     .join('')
 }
 
-// Strip characters that cause garbled/replacement-character rendering in email clients:
-// U+FFFD (replacement character), invisible Unicode directional/control chars, BOM, soft hyphen.
-const GARBLE_RE = /[\uFFFD\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF\u00AD]/g
+// Characters that cause garbled rendering in email clients:
+// - C0 control chars (except tab U+0009, LF U+000A, CR U+000D)
+// - DEL (U+007F)
+// - C1 control chars U+0080-U+009F — this range is the #1 cause of garbling:
+//   legacy Hebrew/Windows-1255 text copy-pasted into the app lands here
+//   (e.g. U+0091/U+0092 = curly-quote bytes in Windows-1252 that never got
+//   converted to proper Unicode U+2018/U+2019)
+// - U+FFFD replacement character
+// - Invisible directional / formatting controls
+const GARBLE_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\uFFFD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u061C\uFEFF\u00AD\uFFF9-\uFFFB]/g
 
 function cleanStr(s: string): string {
-  return s.normalize('NFC').replace(GARBLE_RE, '').trim()
+  // 1. NFKC decomposes Hebrew Presentation Forms (U+FB00-U+FB4F) and other
+  //    compatibility characters that NFC leaves intact.
+  // 2. Round-trip through TextEncoder/TextDecoder forces any lone surrogates or
+  //    other unpaired code units to U+FFFD so the GARBLE_RE below catches them.
+  // 3. Strip all known-bad characters.
+  const nfkc = s.normalize('NFKC')
+  const bytes = new TextEncoder().encode(nfkc)
+  const safe = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+  return safe.replace(GARBLE_RE, '').trim()
 }
 
 // Recursively normalize all string values inside templateData so that
