@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { renderAsync } from 'npm:@react-email/components@0.0.22'
+import { renderToStaticMarkup } from 'npm:react-dom@18.3.1/server'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
 
@@ -334,14 +334,29 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 4. Render React Email template to HTML and plain text
-  const html = await renderAsync(
+  // 4. Render React Email template to HTML and plain text.
+  // We use React's native renderToStaticMarkup instead of renderAsync from
+  // @react-email/components@0.0.22 because that package's render pipeline
+  // (specifically its html-to-text post-processing) can corrupt multi-byte
+  // UTF-8 sequences in Hebrew strings inside Deno's npm compatibility layer.
+  const rawHtml = renderToStaticMarkup(
     React.createElement(template.component, templateData)
   )
-  const plainText = await renderAsync(
-    React.createElement(template.component, templateData),
-    { plainText: true }
-  )
+  // Prepend the standard email HTML doctype that react-email normally adds.
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">${rawHtml}`
+  // Build plain-text fallback by stripping HTML tags and decoding entities.
+  // Avoids the html-to-text library that was the source of the garbling.
+  const plainText = rawHtml
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 
   // Resolve subject — supports static string or dynamic function
   const resolvedSubject =
