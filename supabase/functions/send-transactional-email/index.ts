@@ -30,6 +30,20 @@ function generateToken(): string {
     .join('')
 }
 
+/**
+ * Diagnostic helper — logs every Unicode code point in a string so that
+ * garbled / invisible / control characters are visible in Supabase edge logs.
+ * Output example:  [email-dbg] subject.raw: "שלום" → ש(U+05E9) ל(U+05DC) ו(U+05D5) מ(U+05DE)
+ * Search for U+FFFD in the output: if present the data is corrupted upstream
+ * of this function and encoding will only preserve the corruption.
+ */
+function dbgStr(label: string, s: string): void {
+  const points = [...s]
+    .map((c) => `${c}(U+${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')})`)
+    .join(' ')
+  console.log(`[email-dbg] ${label}: "${s}" → ${points}`)
+}
+
 // Characters that cause garbled rendering in email clients:
 // - C0 control chars (except tab U+0009, LF U+000A, CR U+000D)
 // - DEL (U+007F)
@@ -51,6 +65,43 @@ function cleanStr(s: string): string {
   const bytes = new TextEncoder().encode(nfkc)
   const safe = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
   return safe.replace(GARBLE_RE, '').trim()
+}
+
+/**
+ * RFC 2047 §4 encoded-word encoding (Base64 variant).
+ *
+ * Converts non-ASCII header values (Hebrew names, subjects) to the form
+ *   =?UTF-8?B?BASE64?=
+ * so they survive SMTP header transit without garbling in any email client.
+ *
+ * Key properties:
+ * - Pure-ASCII input is returned unchanged → no double-encoding risk if Resend
+ *   also encodes: once encoded the result is ASCII, so Resend leaves it alone.
+ * - Strings longer than 45 UTF-8 bytes are chunked into multiple 75-char
+ *   encoded-words (RFC 2047 §4.2 limit) separated by a single space.
+ * - UTF-8 multi-byte sequences are never split across chunk boundaries.
+ */
+export function encodeEmailHeader(value: string): string {
+  // Printable ASCII only → return as-is
+  if (!/[^\x20-\x7E]/.test(value)) return value
+
+  // 75-char max per encoded-word: =?UTF-8?B?(10) + base64 + ?=(2) = 12 overhead
+  // → max 63 base64 chars → encodes ⌊63 × 3/4⌋ = 47 raw bytes.  Use 45 to stay safe.
+  const MAX_BYTES = 45
+  const bytes = new TextEncoder().encode(value)
+  const words: string[] = []
+  let i = 0
+  while (i < bytes.length) {
+    let end = Math.min(i + MAX_BYTES, bytes.length)
+    // Don't split inside a multi-byte UTF-8 continuation byte (10xxxxxx)
+    while (end < bytes.length && (bytes[end] & 0xC0) === 0x80) end++
+    const chunk = bytes.slice(i, end)
+    let bin = ''
+    for (const b of chunk) bin += String.fromCharCode(b)
+    words.push(`=?UTF-8?B?${btoa(bin)}?=`)
+    i = end
+  }
+  return words.join(' ')
 }
 
 // Recursively normalize all string values inside templateData so that
@@ -401,6 +452,26 @@ Deno.serve(async (req) => {
     .replace(/[\r\n"<>]/g, '')
     .trim() || SITE_NAME
 
+  // ── Diagnostic: log every code point at each pipeline stage ──────────────
+  // Check for U+FFFD in any value: if present, the corruption is upstream
+  // (database / frontend / caller) and encoding will only preserve it.
+  dbgStr('senderName.raw', senderName ?? '(none)')
+  dbgStr('safeSenderName.afterClean', safeSenderName)
+  dbgStr('templateData.advisorName.afterNormalize', String(templateData.advisorName ?? '(none)'))
+  dbgStr('templateData.caseTitle.afterNormalize', String(templateData.caseTitle ?? '(none)'))
+
+  // RFC 2047-encode headers that may contain Hebrew (or any non-ASCII).
+  // The encoded form is pure ASCII, so Resend's own encoding layer will
+  // leave it unchanged — no double-encoding risk.
+  const encodedSubject = encodeEmailHeader(resolvedSubject)
+  const encodedSenderName = encodeEmailHeader(safeSenderName)
+
+  dbgStr('resolvedSubject.beforeEncode', resolvedSubject)
+  console.log('[email-dbg] encodedSubject.rfc2047:', encodedSubject)
+  console.log('[email-dbg] from-field:', `${encodedSenderName} <noreply@libbygel.com>`)
+  console.log('[email-dbg] to-field (no display name):', effectiveRecipient)
+  // ─────────────────────────────────────────────────────────────────────────
+
   // Log pending BEFORE send so we have a record even if request crashes
   await supabase.from('email_send_log').insert({
     message_id: messageId,
@@ -417,9 +488,9 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: `${safeSenderName} <noreply@libbygel.com>`,
+        from: `${encodedSenderName} <noreply@libbygel.com>`,
         to: [effectiveRecipient],
-        subject: resolvedSubject,
+        subject: encodedSubject,
         html,
         text: plainText,
         ...(replyTo ? { reply_to: replyTo } : {}),
