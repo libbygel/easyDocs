@@ -18,7 +18,8 @@ import {
   CreditCard,
   Clock
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase as defaultSupabase } from '@/lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { embedSignatureInPdf, getSignedFileName } from '@/lib/pdfSignature';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,10 @@ interface SignatureDocumentCardProps {
   clientName: string;
   clientIdNumber?: string;
   clientSignedUrl?: string; // URL of the signed PDF uploaded by client
+  /** Pass the portal-specific Supabase client (createPortalClient) so that
+   *  storage uploads and DB writes use the portal's anon session, not any
+   *  stale advisor JWT that might be sitting in localStorage. */
+  supabaseClient?: SupabaseClient;
   onSignComplete: () => void;
 }
 
@@ -53,8 +58,11 @@ export function SignatureDocumentCard({
   clientName,
   clientIdNumber,
   clientSignedUrl,
+  supabaseClient,
   onSignComplete,
 }: SignatureDocumentCardProps) {
+  // Use portal-specific client if supplied; fall back to default only as last resort.
+  const supabase = supabaseClient ?? defaultSupabase;
   const { toast } = useToast();
 
   console.log('SignatureDocumentCard render:', { docId, docName, fileUrl: !!fileUrl, fileName, reviewStatus, clientSignedUrl: !!clientSignedUrl });

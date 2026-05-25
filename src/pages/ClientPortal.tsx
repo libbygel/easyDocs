@@ -607,6 +607,7 @@ export default function ClientPortal() {
                     clientName={caseData.clients?.full_name || ''}
                     clientIdNumber={caseData.clients?.id_number || ''}
                     clientSignedUrl={doc.clientUpload?.file_url}
+                    supabaseClient={supabase}
                     onSignComplete={fetchData}
                   />
                 </div>
