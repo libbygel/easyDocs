@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createPortalClient } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
-import { fetchAdvisorProfileByUserId } from '@/lib/advisorProfile';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -403,8 +402,6 @@ export default function ClientPortal() {
       const clientName = caseData?.clients?.full_name || 'לקוח';
       const caseTitle = caseData?.title || '';
 
-      const advisorProfile = await fetchAdvisorProfileByUserId(caseData.advisor_id);
-
       // Insert individual notifications per document
       let notificationErrors = 0;
       for (const docName of documentNames) {
@@ -423,21 +420,20 @@ export default function ClientPortal() {
         }
       }
 
-      // Call edge function only for email sending (no DB access needed)
-      if (advisorProfile.notifyOnClientUpload !== false) {
-        try {
-          await invokeEdgeFunction('send-documents-to-advisor', {
-            mode: 'client-submission',
-            clientName,
-            caseTitle,
-            documentNames,
-            advisorEmail: advisorProfile.email,
-            advisorName: advisorProfile.displayName,
-            portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
-          });
-        } catch (emailErr) {
-          console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
-        }
+      // Send advisor email via edge function.
+      // Pass advisorId so the function can resolve the email with service role
+      // (the portal anon client cannot read profiles via RLS).
+      try {
+        await invokeEdgeFunction('send-documents-to-advisor', {
+          mode: 'client-submission',
+          clientName,
+          caseTitle,
+          documentNames,
+          advisorId: caseData.advisor_id,   // looked up server-side
+          portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+        });
+      } catch (emailErr) {
+        console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
       }
 
       // Update case status

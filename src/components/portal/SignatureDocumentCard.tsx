@@ -264,7 +264,7 @@ export function SignatureDocumentCard({
       // Success!
       toast({
         title: 'המסמך נחתם בהצלחה! ✍️',
-        description: 'החתימה נשמרה והיועץ קיבל התראה',
+        description: 'החתימה נשמרה. לחץ על "שלח ליועץ" כדי לשלוח הודעה ליועץ.',
       });
 
       setShowSignaturePad(false);

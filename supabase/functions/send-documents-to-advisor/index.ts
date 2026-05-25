@@ -15,12 +15,42 @@ serve(async (req: Request): Promise<Response> => {
       clientName,
       caseTitle,
       documentNames = [],
-      advisorEmail,
-      advisorName,
+      advisorEmail: advisorEmailParam,
+      advisorId,            // preferred: pass this from the portal so we can look up server-side
+      advisorName: advisorNameParam,
       note,
       mode, // 'client-submission' | undefined
       portalUrl,
     } = await req.json();
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supa = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Resolve advisor email + name.  The portal (anon) cannot read profiles via
+    // RLS, so if the caller passes advisorId we do the lookup here with service role.
+    let advisorEmail = advisorEmailParam || '';
+    let advisorName  = advisorNameParam  || '';
+
+    if (advisorId && (!advisorEmail || !advisorName)) {
+      const { data: profile } = await supa
+        .from('profiles')
+        .select('email, name, sender_display_name, notify_on_client_upload')
+        .eq('id', advisorId)
+        .maybeSingle();
+
+      if (profile) {
+        advisorEmail = advisorEmail || profile.email || '';
+        advisorName  = advisorName  || profile.sender_display_name || profile.name || '';
+        // Honour advisor's email-notification preference (default: true)
+        if (profile.notify_on_client_upload === false) {
+          return new Response(
+            JSON.stringify({ success: true, skipped: 'notify_on_client_upload=false' }),
+            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+          );
+        }
+      }
+    }
 
     if (!advisorEmail) {
       return new Response(
@@ -28,10 +58,6 @@ serve(async (req: Request): Promise<Response> => {
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supa = createClient(supabaseUrl, supabaseServiceKey);
 
     const documents = (Array.isArray(documentNames) ? documentNames : []).map((doc_name: string) => ({ doc_name }));
     const subjectTitle = caseTitle || "מסמך חדש";
