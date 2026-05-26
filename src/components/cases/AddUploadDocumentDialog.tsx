@@ -213,6 +213,12 @@ export function AddUploadDocumentDialog({
     }, 200);
   };
 
+  const handleAddAnother = () => {
+    setSuccess(false);
+    setDocName('');
+    setAttachedFiles([]);
+  };
+
   const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -376,6 +382,11 @@ export function AddUploadDocumentDialog({
             </p>
             
             <div className="space-y-3">
+              <Button onClick={handleAddAnother} className="w-full gap-2">
+                <Plus className="h-4 w-4" />
+                הוסף מסמך נוסף
+              </Button>
+
               {portalToken && (
                 <Button onClick={handleCopyLink} variant="outline" className="w-full gap-2">
                   <Copy className="h-4 w-4" />

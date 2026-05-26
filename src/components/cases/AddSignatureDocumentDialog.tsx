@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PenTool, FileText, Send, CheckCircle, Copy } from 'lucide-react';
+import { Loader2, PenTool, FileText, Send, CheckCircle, Copy, Plus } from 'lucide-react';
 
 interface AddSignatureDocumentDialogProps {
   open: boolean;
@@ -211,6 +211,13 @@ export function AddSignatureDocumentDialog({
     }, 200);
   };
 
+  const handleAddAnother = () => {
+    setSuccess(false);
+    setDocName('');
+    setDeclarationStatement('');
+    setFile(null);
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
@@ -286,6 +293,11 @@ export function AddSignatureDocumentDialog({
             <p className="font-medium">המסמך נוסף בהצלחה!</p>
             
             <div className="space-y-3">
+              <Button onClick={handleAddAnother} className="w-full gap-2">
+                <Plus className="h-4 w-4" />
+                הוסף מסמך נוסף
+              </Button>
+
               {portalToken && (
                 <Button 
                   onClick={handleCopyLink} 
