@@ -48,6 +48,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function Cases() {
   const [cases, setCases] = useState<CaseWithRelations[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showClosed, setShowClosed] = useState(false);
@@ -111,6 +112,22 @@ export default function Cases() {
   useEffect(() => {
     fetchCases();
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('client_categories' as any)
+      .select('id, name')
+      .eq('advisor_id', user.id)
+      .order('name')
+      .then(({ data }) => setCategories(((data as any) || []) as { id: string; name: string }[]));
+  }, [user]);
+
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((category) => map.set(category.id, category.name));
+    return map;
+  }, [categories]);
 
   useEffect(() => {
     setShowPendingDocsOnly(hasPendingDocFilter);
@@ -306,6 +323,7 @@ export default function Cases() {
                         <SortableTableHead<CaseWithRelations> sortKey="clients" sortConfig={sortConfig} onSort={requestSort}>
                           לקוח
                         </SortableTableHead>
+                        <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">סיווג לקוח</th>
                         <SortableTableHead<CaseWithRelations> sortKey="case_types" sortConfig={sortConfig} onSort={requestSort}>
                           סוג תיק
                         </SortableTableHead>
@@ -336,6 +354,15 @@ export default function Cases() {
                           </TableCell>
                           <TableCell>
                             {caseItem.clients?.full_name || '-'}
+                          </TableCell>
+                          <TableCell>
+                            {caseItem.clients?.category_id ? (
+                              <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                {categoryNameById.get(caseItem.clients.category_id) || '—'}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {caseItem.case_types?.name || '-'}
