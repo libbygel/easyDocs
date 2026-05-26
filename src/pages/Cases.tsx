@@ -68,6 +68,14 @@ export default function Cases() {
   const { toast } = useToast();
 
   const hasPendingDocFilter = searchParams.get('docStatus') === 'pending';
+  const hasActiveFilters =
+    !!searchTerm.trim() ||
+    categoryFilter !== 'all' ||
+    caseTypeFilter !== 'all' ||
+    statusFilter !== 'not_submitted' ||
+    urgencyFilter !== 'all' ||
+    sentFilter !== 'all' ||
+    showPendingDocsOnly;
 
   const fetchCases = async () => {
     if (!user) return;
@@ -258,6 +266,19 @@ export default function Cases() {
     setSearchParams(nextParams, { replace: true });
   };
 
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter('all');
+    setCaseTypeFilter('all');
+    setStatusFilter('not_submitted');
+    setUrgencyFilter('all');
+    setSentFilter('all');
+    setShowPendingDocsOnly(false);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('docStatus');
+    setSearchParams(nextParams, { replace: true });
+  };
+
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
@@ -320,6 +341,11 @@ export default function Cases() {
               >
                 ממתינים לבדיקה
               </Button>
+              {hasActiveFilters && (
+                <Button type="button" variant="outline" onClick={resetAllFilters}>
+                  איפוס סינון
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -337,21 +363,19 @@ export default function Cases() {
               <div className="text-center py-8 text-muted-foreground">
                 טוען תיקים...
               </div>
-            ) : filteredCases.length === 0 ? (
+            ) : cases.length === 0 ? (
               <div className="text-center py-12">
                 <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                  {searchTerm ? 'לא נמצאו תיקים התואמים לחיפוש' : 'עדיין אין תיקים'}
+                  עדיין אין תיקים
                 </p>
-                {!searchTerm && (
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setDialogOpen(true)}
-                  >
-                    צור תיק ראשון
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setDialogOpen(true)}
+                >
+                  צור תיק ראשון
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -448,7 +472,7 @@ export default function Cases() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedData.map((caseItem) => (
+                      {paginatedData.length > 0 ? paginatedData.map((caseItem) => (
                         <TableRow 
                           key={caseItem.id} 
                           className="cursor-pointer hover:bg-muted/50"
@@ -542,7 +566,18 @@ export default function Cases() {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )) : (
+                        <TableRow>
+                          <TableCell colSpan={9} className="py-8 text-center">
+                            <p className="text-muted-foreground">לא נמצאו תיקים לפי הסינון שנבחר</p>
+                            {hasActiveFilters && (
+                              <Button variant="outline" className="mt-3" onClick={resetAllFilters}>
+                                איפוס סינון והצג הכל
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
