@@ -65,25 +65,52 @@ export default function PendingDocuments() {
 
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('case_documents')
+        const { data: casesData, error: casesError } = await supabase
+          .from('cases')
           .select(`
             id,
-            doc_name,
-            review_status,
-            created_at,
-            due_date,
-            case_id,
-            cases!inner(title, advisor_id, clients(full_name)),
-            uploads(file_url, file_name)
+            title,
+            clients!cases_client_id_fkey ( full_name ),
+            case_documents (id, doc_name, review_status, created_at, due_date, case_id)
           `)
-          .in('review_status', statuses)
-          .eq('cases.advisor_id', user.id)
-          .order('created_at', { ascending: false });
+          .eq('advisor_id', user.id);
 
-        if (error) throw error;
+        if (casesError) throw casesError;
 
-        const rows = ((data || []) as PendingDocument[]).sort((a, b) => {
+        const flattenedDocs: PendingDocument[] = (casesData || []).flatMap((caseItem: any) =>
+          ((caseItem.case_documents || []) as PendingDocument[])
+            .filter((doc) => statuses.includes(doc.review_status))
+            .map((doc) => ({
+              ...doc,
+              cases: {
+                title: caseItem.title,
+                clients: caseItem.clients,
+              },
+            }))
+        );
+
+        const docIds = flattenedDocs.map((doc) => doc.id);
+        let uploadsByDocId = new Map<string, { file_url?: string; file_name?: string }[]>();
+
+        if (docIds.length > 0) {
+          const { data: uploadsData } = await supabase
+            .from('uploads')
+            .select('case_document_id, file_url, file_name, created_at')
+            .in('case_document_id', docIds)
+            .order('created_at', { ascending: false });
+
+          uploadsByDocId = (uploadsData || []).reduce((map, upload: any) => {
+            const existing = map.get(upload.case_document_id) || [];
+            existing.push({ file_url: upload.file_url, file_name: upload.file_name });
+            map.set(upload.case_document_id, existing);
+            return map;
+          }, new Map<string, { file_url?: string; file_name?: string }[]>());
+        }
+
+        const rows = flattenedDocs.map((doc) => ({
+          ...doc,
+          uploads: uploadsByDocId.get(doc.id) || [],
+        })).sort((a, b) => {
           const caseA = a.cases?.title || '';
           const caseB = b.cases?.title || '';
           const caseCompare = caseA.localeCompare(caseB, 'he');
