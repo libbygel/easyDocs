@@ -50,13 +50,10 @@ export default function Cases() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [titleFilter, setTitleFilter] = useState('all');
-  const [clientFilter, setClientFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [caseTypeFilter, setCaseTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('not_submitted');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
-  const [createdAtFilter, setCreatedAtFilter] = useState('all');
   const [sentFilter, setSentFilter] = useState('all');
   const [showPendingDocsOnly, setShowPendingDocsOnly] = useState(false);
 
@@ -137,18 +134,6 @@ export default function Cases() {
     setShowPendingDocsOnly(hasPendingDocFilter);
   }, [hasPendingDocFilter]);
 
-  const titleOptions = useMemo(() => {
-    return Array.from(new Set(cases.map((c) => c.title).filter(Boolean))).sort((a, b) =>
-      a.localeCompare(b, 'he')
-    );
-  }, [cases]);
-
-  const clientOptions = useMemo(() => {
-    return Array.from(new Set(cases.map((c) => c.clients?.full_name || '').filter(Boolean))).sort((a, b) =>
-      a.localeCompare(b, 'he')
-    );
-  }, [cases]);
-
   const categoryOptions = useMemo(() => {
     const idsInCases = new Set(
       cases
@@ -172,37 +157,34 @@ export default function Cases() {
     );
   }, [cases]);
 
-  const createdAtOptions = useMemo(() => {
-    return Array.from(new Set(cases.map((c) => format(new Date(c.created_at), 'dd/MM/yyyy')))).sort((a, b) =>
-      b.localeCompare(a, 'he')
-    );
-  }, [cases]);
-
   // Reset to first page when filters/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [
     searchTerm,
-    titleFilter,
-    clientFilter,
     categoryFilter,
     caseTypeFilter,
     statusFilter,
     urgencyFilter,
-    createdAtFilter,
     sentFilter,
     showPendingDocsOnly,
   ]);
 
   const filteredCases = cases.filter((c) => {
     const status = c.derived_status || c.status;
-    if (statusFilter === 'not_submitted' && status === 'הוגש') return false;
-    if (statusFilter !== 'all' && statusFilter !== 'not_submitted' && status !== statusFilter) return false;
+    const requiredDocs = (c.case_documents || []).filter((doc) => doc.required);
+    const isCompletedByDocs = requiredDocs.length > 0 && requiredDocs.every((doc) => doc.review_status === 'תקין');
 
-    if (titleFilter !== 'all' && c.title !== titleFilter) return false;
+    if (statusFilter === 'completed_ready' && !isCompletedByDocs) return false;
+    if (statusFilter === 'not_submitted' && status === 'הוגש') return false;
+    if (
+      statusFilter !== 'all' &&
+      statusFilter !== 'not_submitted' &&
+      statusFilter !== 'completed_ready' &&
+      status !== statusFilter
+    ) return false;
 
     const clientName = c.clients?.full_name || '';
-    if (clientFilter !== 'all' && clientName !== clientFilter) return false;
 
     const clientCategoryId = c.clients?.category_id || null;
     if (categoryFilter === '__none__' && clientCategoryId) return false;
@@ -212,9 +194,6 @@ export default function Cases() {
     if (caseTypeFilter !== 'all' && caseTypeName !== caseTypeFilter) return false;
 
     if (urgencyFilter !== 'all' && ((c as any).urgency || 'normal') !== urgencyFilter) return false;
-
-    const createdDate = format(new Date(c.created_at), 'dd/MM/yyyy');
-    if (createdAtFilter !== 'all' && createdDate !== createdAtFilter) return false;
 
     const hasSent = !!c.last_portal_link_sent_at;
     if (sentFilter === 'sent' && !hasSent) return false;
@@ -380,38 +359,8 @@ export default function Cases() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <span>כותרת</span>
-                            <Select value={titleFilter} onValueChange={setTitleFilter}>
-                              <SelectTrigger className="h-7 w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">הכל</SelectItem>
-                                {titleOptions.map((value) => (
-                                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <span>לקוח</span>
-                            <Select value={clientFilter} onValueChange={setClientFilter}>
-                              <SelectTrigger className="h-7 w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">הכל</SelectItem>
-                                {clientOptions.map((value) => (
-                                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </TableHead>
+                        <TableHead>כותרת</TableHead>
+                        <TableHead>לקוח</TableHead>
                         <TableHead>
                           <div className="flex items-center gap-2">
                             <span>סיווג לקוח</span>
@@ -454,6 +403,7 @@ export default function Cases() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="not_submitted">לא הוגש</SelectItem>
+                                <SelectItem value="completed_ready">הושלם (כל המסמכים תקינים)</SelectItem>
                                 <SelectItem value="all">הכל</SelectItem>
                                 {statusOptions.map((value) => (
                                   <SelectItem key={value} value={value}>{value}</SelectItem>
@@ -478,22 +428,7 @@ export default function Cases() {
                             </Select>
                           </div>
                         </TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <span>נוצר בתאריך</span>
-                            <Select value={createdAtFilter} onValueChange={setCreatedAtFilter}>
-                              <SelectTrigger className="h-7 w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">הכל</SelectItem>
-                                {createdAtOptions.map((value) => (
-                                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </TableHead>
+                        <TableHead>נוצר בתאריך</TableHead>
                         <TableHead>
                           <div className="flex items-center gap-2">
                             <span>נשלח ללקוח</span>
