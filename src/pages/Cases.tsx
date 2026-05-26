@@ -11,6 +11,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
@@ -21,8 +22,6 @@ import { he } from 'date-fns/locale';
 import { CreateCaseDialog } from '@/components/cases/CreateCaseDialog';
 import { BulkCreateCasesDialog } from '@/components/cases/BulkCreateCasesDialog';
 import { deriveCaseStatus } from '@/lib/caseStatusSync';
-import { useTableSort } from '@/hooks/useTableSort';
-import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
   Pagination,
   PaginationContent,
@@ -51,11 +50,16 @@ export default function Cases() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showClosed, setShowClosed] = useState(false);
+  const [titleFilter, setTitleFilter] = useState('all');
+  const [clientFilter, setClientFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [caseTypeFilter, setCaseTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('not_submitted');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
+  const [createdAtFilter, setCreatedAtFilter] = useState('all');
+  const [sentFilter, setSentFilter] = useState('all');
   const [showPendingDocsOnly, setShowPendingDocsOnly] = useState(false);
 
-  const CLOSED_STATUSES = ['הוגש'];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -133,30 +137,109 @@ export default function Cases() {
     setShowPendingDocsOnly(hasPendingDocFilter);
   }, [hasPendingDocFilter]);
 
-  // Reset to first page when search term changes
+  const titleOptions = useMemo(() => {
+    return Array.from(new Set(cases.map((c) => c.title).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'he')
+    );
+  }, [cases]);
+
+  const clientOptions = useMemo(() => {
+    return Array.from(new Set(cases.map((c) => c.clients?.full_name || '').filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'he')
+    );
+  }, [cases]);
+
+  const categoryOptions = useMemo(() => {
+    const idsInCases = new Set(
+      cases
+        .map((c) => c.clients?.category_id)
+        .filter((id): id is string => Boolean(id))
+    );
+    return categories
+      .filter((category) => idsInCases.has(category.id))
+      .sort((a, b) => a.name.localeCompare(b.name, 'he'));
+  }, [cases, categories]);
+
+  const caseTypeOptions = useMemo(() => {
+    return Array.from(new Set(cases.map((c) => c.case_types?.name || '').filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'he')
+    );
+  }, [cases]);
+
+  const statusOptions = useMemo(() => {
+    return Array.from(new Set(cases.map((c) => c.derived_status || c.status).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'he')
+    );
+  }, [cases]);
+
+  const createdAtOptions = useMemo(() => {
+    return Array.from(new Set(cases.map((c) => format(new Date(c.created_at), 'dd/MM/yyyy')))).sort((a, b) =>
+      b.localeCompare(a, 'he')
+    );
+  }, [cases]);
+
+  // Reset to first page when filters/search change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [
+    searchTerm,
+    titleFilter,
+    clientFilter,
+    categoryFilter,
+    caseTypeFilter,
+    statusFilter,
+    urgencyFilter,
+    createdAtFilter,
+    sentFilter,
+    showPendingDocsOnly,
+  ]);
 
   const filteredCases = cases.filter((c) => {
     const status = c.derived_status || c.status;
-    if (!showClosed && CLOSED_STATUSES.includes(status)) return false;
+    if (statusFilter === 'not_submitted' && status === 'הוגש') return false;
+    if (statusFilter !== 'all' && statusFilter !== 'not_submitted' && status !== statusFilter) return false;
+
+    if (titleFilter !== 'all' && c.title !== titleFilter) return false;
+
+    const clientName = c.clients?.full_name || '';
+    if (clientFilter !== 'all' && clientName !== clientFilter) return false;
+
+    const clientCategoryId = c.clients?.category_id || null;
+    if (categoryFilter === '__none__' && clientCategoryId) return false;
+    if (categoryFilter !== 'all' && categoryFilter !== '__none__' && clientCategoryId !== categoryFilter) return false;
+
+    const caseTypeName = c.case_types?.name || '';
+    if (caseTypeFilter !== 'all' && caseTypeName !== caseTypeFilter) return false;
+
     if (urgencyFilter !== 'all' && ((c as any).urgency || 'normal') !== urgencyFilter) return false;
+
+    const createdDate = format(new Date(c.created_at), 'dd/MM/yyyy');
+    if (createdAtFilter !== 'all' && createdDate !== createdAtFilter) return false;
+
+    const hasSent = !!c.last_portal_link_sent_at;
+    if (sentFilter === 'sent' && !hasSent) return false;
+    if (sentFilter === 'not_sent' && hasSent) return false;
+
     if (showPendingDocsOnly) {
       const hasPendingDocs = (c.case_documents || []).some(
         (doc) => doc.review_status === 'הועלה' || doc.review_status === 'נחתם'
       );
       if (!hasPendingDocs) return false;
     }
+
     if (!searchTerm.trim()) return true;
     const search = searchTerm.toLowerCase().trim();
-    const title = c.title?.toLowerCase() || '';
-    const clientName = c.clients?.full_name?.toLowerCase() || '';
-    const caseType = c.case_types?.name?.toLowerCase() || '';
-    return title.includes(search) || clientName.includes(search) || caseType.includes(search);
+    const title = c.title.toLowerCase();
+    const client = clientName.toLowerCase();
+    const caseType = caseTypeName.toLowerCase();
+    return title.includes(search) || client.includes(search) || caseType.includes(search);
   });
 
-  const { sortedData, sortConfig, requestSort } = useTableSort(filteredCases, 'created_at', 'desc');
+  const sortedData = useMemo(() => {
+    return [...filteredCases].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [filteredCases]);
 
   // Pagination logic
   const totalPages = Math.ceil(sortedData.length / ITEMS_PER_PAGE);
@@ -258,17 +341,6 @@ export default function Cases() {
               >
                 ממתינים לבדיקה
               </Button>
-              <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="דחיפות" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הדחיפויות</SelectItem>
-                  <SelectItem value="normal">רגיל</SelectItem>
-                  <SelectItem value="urgent">דחוף</SelectItem>
-                  <SelectItem value="critical">דחוף מאוד</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
@@ -276,19 +348,10 @@ export default function Cases() {
         {/* Cases Table */}
         <Card className="shadow-sm">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <FolderOpen className="h-5 w-5" />
-                רשימת תיקים ({filteredCases.length})
-              </CardTitle>
-              <Button
-                variant={showClosed ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setShowClosed((v) => !v)}
-              >
-                {showClosed ? 'הסתר סגורים' : 'הצג סגורים'}
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <FolderOpen className="h-5 w-5" />
+              רשימת תיקים ({filteredCases.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -317,29 +380,136 @@ export default function Cases() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <SortableTableHead<CaseWithRelations> sortKey="title" sortConfig={sortConfig} onSort={requestSort}>
-                          כותרת
-                        </SortableTableHead>
-                        <SortableTableHead<CaseWithRelations> sortKey="clients" sortConfig={sortConfig} onSort={requestSort}>
-                          לקוח
-                        </SortableTableHead>
-                        <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">סיווג לקוח</th>
-                        <SortableTableHead<CaseWithRelations> sortKey="case_types" sortConfig={sortConfig} onSort={requestSort}>
-                          סוג תיק
-                        </SortableTableHead>
-                        <SortableTableHead<CaseWithRelations> sortKey="status" sortConfig={sortConfig} onSort={requestSort}>
-                          סטטוס
-                        </SortableTableHead>
-                        <SortableTableHead<CaseWithRelations> sortKey="urgency" sortConfig={sortConfig} onSort={requestSort}>
-                          דחיפות
-                        </SortableTableHead>
-                        <SortableTableHead<CaseWithRelations> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
-                          נוצר בתאריך
-                        </SortableTableHead>
-                        <SortableTableHead<CaseWithRelations> sortKey="last_portal_link_sent_at" sortConfig={sortConfig} onSort={requestSort}>
-                          נשלח ללקוח
-                        </SortableTableHead>
-                        <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">פעולות</th>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>כותרת</span>
+                            <Select value={titleFilter} onValueChange={setTitleFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                {titleOptions.map((value) => (
+                                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>לקוח</span>
+                            <Select value={clientFilter} onValueChange={setClientFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                {clientOptions.map((value) => (
+                                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>סיווג לקוח</span>
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                <SelectItem value="__none__">ללא סיווג</SelectItem>
+                                {categoryOptions.map((category) => (
+                                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>סוג תיק</span>
+                            <Select value={caseTypeFilter} onValueChange={setCaseTypeFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                {caseTypeOptions.map((value) => (
+                                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>סטטוס</span>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="not_submitted">לא הוגש</SelectItem>
+                                <SelectItem value="all">הכל</SelectItem>
+                                {statusOptions.map((value) => (
+                                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>דחיפות</span>
+                            <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                <SelectItem value="normal">רגיל</SelectItem>
+                                <SelectItem value="urgent">דחוף</SelectItem>
+                                <SelectItem value="critical">דחוף מאוד</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>נוצר בתאריך</span>
+                            <Select value={createdAtFilter} onValueChange={setCreatedAtFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                {createdAtOptions.map((value) => (
+                                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <span>נשלח ללקוח</span>
+                            <Select value={sentFilter} onValueChange={setSentFilter}>
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">הכל</SelectItem>
+                                <SelectItem value="sent">נשלח</SelectItem>
+                                <SelectItem value="not_sent">לא נשלח</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableHead>
+                        <TableHead>פעולות</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
