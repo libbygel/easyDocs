@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -34,16 +34,33 @@ type PendingDocument = {
 const statusLabelMap: Record<string, string> = {
   'הועלה': 'הועלה לבדיקה',
   'נחתם': 'נחתם וממתין',
+  'חסר': 'חסר',
+  'לא תקין': 'לא תקין',
 };
 
 export default function PendingDocuments() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useState<PendingDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const view = searchParams.get('view') === 'missing' ? 'missing' : 'pending';
+  const statuses = useMemo(
+    () => (view === 'missing' ? ['חסר', 'לא תקין'] : ['הועלה', 'נחתם']),
+    [view]
+  );
+
+  const pageTitle = view === 'missing' ? 'מסמכים חסרים / לא תקינים' : 'מסמכים ממתינים לבדיקה';
+  const pageSubtitle =
+    view === 'missing'
+      ? 'רשימה מרוכזת של מסמכים שדורשים השלמה או תיקון, לפי תיק'
+      : 'רשימה מרוכזת של מסמכים ממתינים, לפי תיק';
+  const countLabel = view === 'missing' ? 'לטיפול' : 'ממתינים';
+  const emptyMessage = view === 'missing' ? 'אין מסמכים חסרים כרגע' : 'אין מסמכים ממתינים כרגע';
+
   useEffect(() => {
-    const fetchPendingDocuments = async () => {
+    const fetchDocuments = async () => {
       if (!user) return;
 
       setLoading(true);
@@ -60,22 +77,31 @@ export default function PendingDocuments() {
             cases!inner(title, advisor_id, clients(full_name)),
             uploads(file_url, file_name)
           `)
-          .in('review_status', ['הועלה', 'נחתם'])
+          .in('review_status', statuses)
           .eq('cases.advisor_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setDocuments((data || []) as PendingDocument[]);
+
+        const rows = ((data || []) as PendingDocument[]).sort((a, b) => {
+          const caseA = a.cases?.title || '';
+          const caseB = b.cases?.title || '';
+          const caseCompare = caseA.localeCompare(caseB, 'he');
+          if (caseCompare !== 0) return caseCompare;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        setDocuments(rows);
       } catch (err) {
-        console.error('Error fetching pending documents:', err);
+        console.error('Error fetching documents:', err);
         setDocuments([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPendingDocuments();
-  }, [user]);
+    fetchDocuments();
+  }, [user, statuses]);
 
   const getClientName = (doc: PendingDocument) => {
     const clients = doc.cases?.clients;
@@ -88,12 +114,17 @@ export default function PendingDocuments() {
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">מסמכים ממתינים לבדיקה</h1>
-            <p className="text-muted-foreground mt-1">רשימה מרוכזת של כל המסמכים הממתינים מכל התיקים</p>
+            <h1 className="text-2xl font-bold">{pageTitle}</h1>
+            <p className="text-muted-foreground mt-1">{pageSubtitle}</p>
           </div>
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            {documents.length} ממתינים
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {documents.length} {countLabel}
+            </Badge>
+            <Button variant="outline" onClick={() => navigate('/dashboard')}>
+              חזרה לדשבורד
+            </Button>
+          </div>
         </div>
 
         <Card className="shadow-sm">
@@ -110,17 +141,15 @@ export default function PendingDocuments() {
                 טוען מסמכים...
               </div>
             ) : documents.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground">
-                אין מסמכים ממתינים כרגע
-              </div>
+              <div className="text-center py-10 text-muted-foreground">{emptyMessage}</div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>תיק</TableHead>
                       <TableHead>מסמך</TableHead>
                       <TableHead>לקוח</TableHead>
-                      <TableHead>תיק</TableHead>
                       <TableHead>סטטוס</TableHead>
                       <TableHead>הועלה בתאריך</TableHead>
                       <TableHead>פעולות</TableHead>
@@ -131,22 +160,16 @@ export default function PendingDocuments() {
                       const upload = doc.uploads?.[0];
                       return (
                         <TableRow key={doc.id}>
+                          <TableCell>{doc.cases?.title || '-'}</TableCell>
                           <TableCell className="font-medium">{doc.doc_name}</TableCell>
                           <TableCell>{getClientName(doc)}</TableCell>
-                          <TableCell>{doc.cases?.title || '-'}</TableCell>
                           <TableCell>
                             <Badge variant="outline">{statusLabelMap[doc.review_status] || doc.review_status}</Badge>
                           </TableCell>
-                          <TableCell className="tabular-nums">
-                            {format(new Date(doc.created_at), 'dd/MM/yyyy')}
-                          </TableCell>
+                          <TableCell className="tabular-nums">{format(new Date(doc.created_at), 'dd/MM/yyyy')}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => navigate(`/cases/${doc.case_id}`)}
-                              >
+                              <Button size="sm" variant="outline" onClick={() => navigate(`/cases/${doc.case_id}`)}>
                                 פתח תיק
                               </Button>
                               {upload?.file_url && (

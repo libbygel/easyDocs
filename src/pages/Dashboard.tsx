@@ -269,7 +269,7 @@ export default function Dashboard() {
 
           <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigate('/pending-documents')}
+            onClick={() => navigate('/pending-documents?view=pending')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">ממתינים לבדיקה</CardTitle>
@@ -283,7 +283,7 @@ export default function Dashboard() {
 
           <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigate('/pending-documents')}
+            onClick={() => navigate('/pending-documents?view=missing')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">מסמכים חסרים</CardTitle>
@@ -291,7 +291,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-destructive">{stats.missingDocuments + stats.rejectedDocuments}</div>
-              <p className="text-xs text-muted-foreground">לחצי כדי לעבור לרשימת המסמכים הממתינים</p>
+              <p className="text-xs text-muted-foreground">לחצי כדי לעבור לרשימת המסמכים החסרים</p>
             </CardContent>
           </Card>
         </div>
