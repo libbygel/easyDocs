@@ -23,6 +23,7 @@ import ClientPortal from "./pages/ClientPortal";
 import ClientMasterPortal from "./pages/ClientMasterPortal";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import PendingDocuments from "./pages/PendingDocuments";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const AppRoutes = () => (
     <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/pending-documents" element={<ProtectedRoute><PendingDocuments /></ProtectedRoute>} />
     <Route path="/cases" element={<ProtectedRoute><Cases /></ProtectedRoute>} />
     <Route path="/cases/:id" element={<ProtectedRoute><CaseDetails /></ProtectedRoute>} />
     <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />

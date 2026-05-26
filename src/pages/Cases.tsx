@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import type { Case, Client, CaseType } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,6 +52,7 @@ export default function Cases() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showClosed, setShowClosed] = useState(false);
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
+  const [showPendingDocsOnly, setShowPendingDocsOnly] = useState(false);
 
   const CLOSED_STATUSES = ['הושלם', 'הוגש'];
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -61,7 +62,10 @@ export default function Cases() {
   const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const hasPendingDocFilter = searchParams.get('docStatus') === 'pending';
 
   const fetchCases = async () => {
     if (!user) return;
@@ -108,6 +112,10 @@ export default function Cases() {
     fetchCases();
   }, [user]);
 
+  useEffect(() => {
+    setShowPendingDocsOnly(hasPendingDocFilter);
+  }, [hasPendingDocFilter]);
+
   // Reset to first page when search term changes
   useEffect(() => {
     setCurrentPage(1);
@@ -117,6 +125,12 @@ export default function Cases() {
     const status = c.derived_status || c.status;
     if (!showClosed && CLOSED_STATUSES.includes(status)) return false;
     if (urgencyFilter !== 'all' && ((c as any).urgency || 'normal') !== urgencyFilter) return false;
+    if (showPendingDocsOnly) {
+      const hasPendingDocs = (c.case_documents || []).some(
+        (doc) => doc.review_status === 'הועלה' || doc.review_status === 'נחתם'
+      );
+      if (!hasPendingDocs) return false;
+    }
     if (!searchTerm.trim()) return true;
     const search = searchTerm.toLowerCase().trim();
     const title = c.title?.toLowerCase() || '';
@@ -152,6 +166,17 @@ export default function Cases() {
     setDeleteDialogOpen(false);
     setCaseToDelete(null);
     fetchCases();
+  };
+
+  const handlePendingDocsFilterToggle = (nextValue: boolean) => {
+    setShowPendingDocsOnly(nextValue);
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextValue) {
+      nextParams.set('docStatus', 'pending');
+    } else {
+      nextParams.delete('docStatus');
+    }
+    setSearchParams(nextParams, { replace: true });
   };
 
   // Generate page numbers to display
@@ -209,6 +234,13 @@ export default function Cases() {
                   className="pr-10"
                 />
               </div>
+              <Button
+                type="button"
+                variant={showPendingDocsOnly ? 'default' : 'outline'}
+                onClick={() => handlePendingDocsFilterToggle(!showPendingDocsOnly)}
+              >
+                ממתינים לבדיקה
+              </Button>
               <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="דחיפות" />

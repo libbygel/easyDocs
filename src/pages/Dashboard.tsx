@@ -267,14 +267,17 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/pending-documents')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">ממתינים לבדיקה</CardTitle>
               <Clock className="h-5 w-5 text-warning" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-warning">{stats.pendingDocuments}</div>
-              <p className="text-xs text-muted-foreground">מסמכים שהועלו</p>
+              <p className="text-xs text-muted-foreground">לחצי כדי לראות את התיקים הרלוונטיים</p>
             </CardContent>
           </Card>
 
