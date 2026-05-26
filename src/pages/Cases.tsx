@@ -55,7 +55,7 @@ export default function Cases() {
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
   const [showPendingDocsOnly, setShowPendingDocsOnly] = useState(false);
 
-  const CLOSED_STATUSES = ['הושלם', 'הוגש'];
+  const CLOSED_STATUSES = ['הוגש'];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
