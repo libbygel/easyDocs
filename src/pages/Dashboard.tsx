@@ -277,18 +277,21 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-warning">{stats.pendingDocuments}</div>
-              <p className="text-xs text-muted-foreground">לחצי כדי לראות את התיקים הרלוונטיים</p>
+              <p className="text-xs text-muted-foreground">לחצי כדי לראות את רשימת המסמכים הממתינים</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/pending-documents')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">מסמכים חסרים</CardTitle>
               <AlertTriangle className="h-5 w-5 text-destructive" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-destructive">{stats.missingDocuments + stats.rejectedDocuments}</div>
-              <p className="text-xs text-muted-foreground">דורשים טיפול</p>
+              <p className="text-xs text-muted-foreground">לחצי כדי לעבור לרשימת המסמכים הממתינים</p>
             </CardContent>
           </Card>
         </div>
