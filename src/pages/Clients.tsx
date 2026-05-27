@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Users, Trash2, Edit2, Eye, CheckSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Edit2, Eye, CheckSquare, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -45,6 +45,8 @@ export default function Clients() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [selectedChildYearByClient, setSelectedChildYearByClient] = useState<Record<string, string>>({});
   const [savingChildYearsByClient, setSavingChildYearsByClient] = useState<Record<string, boolean>>({});
+  const [addingChildYearByClient, setAddingChildYearByClient] = useState<Record<string, boolean>>({});
+  const [newChildYearByClient, setNewChildYearByClient] = useState<Record<string, string>>({});
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -155,10 +157,12 @@ export default function Clients() {
     setBulkDeleting(false);
   };
 
-  const handleAddChildBirthYear = async (client: Client) => {
-    const year = window.prompt('הזן שנת לידה ב-4 ספרות (למשל 2017):');
-    if (!year) return;
-    const cleaned = year.trim();
+  const handleSaveChildBirthYear = async (client: Client) => {
+    const cleaned = (newChildYearByClient[client.id] || '').trim();
+    if (!cleaned) {
+      toast({ title: 'יש להזין שנה' });
+      return;
+    }
 
     if (!/^\d{4}$/.test(cleaned)) {
       toast({ title: 'שנה לא תקינה', description: 'יש להזין 4 ספרות בלבד', variant: 'destructive' });
@@ -185,6 +189,8 @@ export default function Clients() {
 
       setClients((prev) => prev.map((c) => (c.id === client.id ? ({ ...c, children_birth_years: updatedYears } as any) : c)));
       setSelectedChildYearByClient((prev) => ({ ...prev, [client.id]: cleaned }));
+      setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: false }));
+      setNewChildYearByClient((prev) => ({ ...prev, [client.id]: '' }));
       toast({ title: 'שנת הלידה נוספה' });
     } catch (err: any) {
       toast({ title: 'שגיאה בשמירה', description: err?.message, variant: 'destructive' });
@@ -421,56 +427,85 @@ export default function Clients() {
                               )}
                             </TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
-                              {childBirthYears.length > 0 ? (
+                              <div className="space-y-1">
                                 <div className="flex items-center gap-1">
-                                  <Select
-                                    value={selectedChildYearByClient[client.id]}
-                                    onValueChange={(value) =>
-                                      setSelectedChildYearByClient((prev) => ({ ...prev, [client.id]: value }))
-                                    }
-                                  >
-                                    <SelectTrigger className="h-8 w-36 text-xs">
-                                      <SelectValue placeholder={`${childBirthYears.length} ילדים`} />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-popover">
-                                      {childBirthYears.map((year) => (
-                                        <SelectItem key={`${client.id}-${year}`} value={year}>
-                                          {year}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  {childBirthYears.length > 0 ? (
+                                    <Select
+                                      value={selectedChildYearByClient[client.id]}
+                                      onValueChange={(value) =>
+                                        setSelectedChildYearByClient((prev) => ({ ...prev, [client.id]: value }))
+                                      }
+                                    >
+                                      <SelectTrigger className="h-8 w-36 text-xs">
+                                        <SelectValue placeholder={`${childBirthYears.length} ילדים`} />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-popover">
+                                        {childBirthYears.map((year) => (
+                                          <SelectItem key={`${client.id}-${year}`} value={year}>
+                                            {year}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground w-36">—</span>
+                                  )}
+
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 p-0"
-                                    onClick={() => handleAddChildBirthYear(client)}
-                                    disabled={!!savingChildYearsByClient[client.id]}
+                                    onClick={() => setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: true }))}
                                     title="הוסף שנת לידה"
                                   >
-                                    {savingChildYearsByClient[client.id] ? (
-                                      <span className="h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                                    ) : (
-                                      <Plus className="h-4 w-4" />
-                                    )}
+                                    <Plus className="h-4 w-4" />
                                   </Button>
                                 </div>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">—</span>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() => handleAddChildBirthYear(client)}
-                                    disabled={!!savingChildYearsByClient[client.id]}
-                                  >
-                                    + הוסף
-                                  </Button>
-                                </div>
-                              )}
+
+                                {addingChildYearByClient[client.id] && (
+                                  <div className="flex items-center gap-1">
+                                    <Input
+                                      value={newChildYearByClient[client.id] || ''}
+                                      onChange={(e) =>
+                                        setNewChildYearByClient((prev) => ({ ...prev, [client.id]: e.target.value }))
+                                      }
+                                      placeholder="YYYY"
+                                      className="h-8 w-24 text-xs"
+                                      dir="ltr"
+                                      maxLength={4}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => handleSaveChildBirthYear(client)}
+                                      disabled={!!savingChildYearsByClient[client.id]}
+                                      title="שמור"
+                                    >
+                                      {savingChildYearsByClient[client.id] ? (
+                                        <span className="h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                      ) : (
+                                        <Check className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => {
+                                        setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: false }));
+                                        setNewChildYearByClient((prev) => ({ ...prev, [client.id]: '' }));
+                                      }}
+                                      title="ביטול"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
