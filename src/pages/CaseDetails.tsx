@@ -181,8 +181,8 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
     if (!id) return;
 
     try {
-      // Parallel fetch for case data and documents+uploads
-      const [caseResult, docsResult, uploadsResult] = await Promise.all([
+      // First fetch case and docs, then fetch uploads by document ids for reliable matching
+      const [caseResult, docsResult] = await Promise.all([
         supabase
           .from('cases')
           .select(`
@@ -197,14 +197,21 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
           .from('case_documents')
           .select('*')
           .eq('case_id', id)
-          .order('display_order'),
-        
-        supabase
+          .order('display_order')
+      ]);
+
+      const docIds = (docsResult.data || []).map((doc) => doc.id);
+      let uploadsData: Upload[] = [];
+
+      if (docIds.length > 0) {
+        const { data: uploadsResultData } = await supabase
           .from('uploads')
           .select('*')
-          .eq('case_id', id)
-          .order('created_at')
-      ]);
+          .in('case_document_id', docIds)
+          .order('created_at');
+
+        uploadsData = (uploadsResultData || []) as Upload[];
+      }
 
       if (caseResult.data) {
         setCaseData(caseResult.data as CaseWithRelations);
@@ -213,7 +220,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
 
       // Merge uploads into documents efficiently
       const uploadsByDoc = new Map<string, Upload[]>();
-      (uploadsResult.data || []).forEach((u) => {
+      uploadsData.forEach((u) => {
         const existing = uploadsByDoc.get(u.case_document_id) || [];
         existing.push(u);
         uploadsByDoc.set(u.case_document_id, existing);
@@ -501,16 +508,6 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       .filter(doc => {
         const hasClientUpload = doc.uploads?.some((u: Upload) => u.uploaded_by === 'לקוח');
         return hasClientUpload || doc.review_status === 'הועלה' || doc.review_status === 'תקין' || doc.review_status === 'נחתם';
-      })
-      .map(doc => {
-        // For signature documents, only show client uploads (not the advisor's original PDF)
-        if (doc.document_type === 'signature') {
-          return {
-            ...doc,
-            uploads: (doc.uploads || []).filter((u: Upload) => u.uploaded_by === 'לקוח'),
-          };
-        }
-        return doc;
       });
   }, [documents]);
 

@@ -35,6 +35,7 @@ interface ClientRow {
   phone: string | null;
   id_number: string | null;
   hourly_rate: number | null;
+  children_birth_years?: string[] | null;
   notes: string | null;
   created_at: string;
 }
@@ -74,6 +75,8 @@ export default function ClientDetail() {
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [hourlyRateInput, setHourlyRateInput] = useState('');
   const [savingRate, setSavingRate] = useState(false);
+  const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
+  const [savingChildrenYears, setSavingChildrenYears] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -99,6 +102,10 @@ export default function ClientDetail() {
         const effectiveRate = clientData?.hourly_rate != null ? Number(clientData.hourly_rate) : profile.hourlyRate;
         setHourlyRate(effectiveRate ?? null);
         setHourlyRateInput(effectiveRate != null ? String(effectiveRate) : '');
+        const years = Array.isArray((clientData as any)?.children_birth_years)
+          ? (clientData as any).children_birth_years.filter(Boolean)
+          : [];
+        setChildrenBirthYearsInput(years.join(', '));
         setAdvisorName(profile.displayName || '');
 
         if (caseList.length > 0) {
@@ -179,6 +186,48 @@ export default function ClientDetail() {
       toast({ title: 'שגיאה בעדכון תעריף', description: err?.message, variant: 'destructive' });
     } finally {
       setSavingRate(false);
+    }
+  };
+
+  const saveChildrenBirthYears = async () => {
+    if (!client) return;
+
+    const parts = childrenBirthYearsInput
+      .split(/[\s,;\n]+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    const uniqueYears = Array.from(new Set(parts));
+    const invalidYear = uniqueYears.find((year) => !/^\d{4}$/.test(year));
+    if (invalidYear) {
+      toast({
+        title: 'שנת לידה לא תקינה',
+        description: 'יש להזין שנים ב-4 ספרות בלבד, למשל 2014',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSavingChildrenYears(true);
+    try {
+      const payload = uniqueYears.length > 0 ? uniqueYears : null;
+      const { error } = await supabase
+        .from('clients')
+        .update({ children_birth_years: payload } as any)
+        .eq('id', client.id);
+      if (error) throw error;
+
+      setClient((prev) => (prev ? ({ ...prev, children_birth_years: payload } as any) : prev));
+      setChildrenBirthYearsInput((payload || []).join(', '));
+      toast({ title: 'שנות הלידה נשמרו' });
+    } catch (err: any) {
+      toast({
+        title: 'שגיאה בשמירת שנות לידה',
+        description: err?.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingChildrenYears(false);
     }
   };
 
@@ -457,6 +506,36 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">שנות לידה של ילדים</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                  <div className="space-y-1 sm:w-full">
+                    <div className="text-xs text-muted-foreground">הזנה מופרדת בפסיק או רווח (למשל: 2012, 2015, 2019)</div>
+                    <Input
+                      value={childrenBirthYearsInput}
+                      onChange={(e) => setChildrenBirthYearsInput(e.target.value)}
+                      placeholder="2012, 2015"
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button onClick={saveChildrenBirthYears} disabled={savingChildrenYears}>
+                    {savingChildrenYears ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    שמור
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setChildrenBirthYearsInput('')}
+                    disabled={savingChildrenYears}
+                  >
+                    נקה
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">תעריף עבודה ללקוח</CardTitle>

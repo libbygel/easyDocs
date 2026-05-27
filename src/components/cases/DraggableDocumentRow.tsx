@@ -66,9 +66,11 @@ export function DraggableDocumentRow({
   const isSignatureDoc = (doc as any).document_type === 'signature';
   const hasClientUpload = uploads.some(u => u.uploaded_by === 'לקוח');
   
-  // For signature docs, only count client uploads (the merged signed PDF)
-  const clientUploads = isSignatureDoc ? uploads.filter(u => u.uploaded_by === 'לקוח') : uploads;
-  const displayUploads = isSignatureDoc ? clientUploads : uploads;
+  // For signature docs, prefer client upload when present, otherwise fallback to any existing file.
+  const clientUploads = uploads.filter(u => u.uploaded_by === 'לקוח');
+  const displayUploads = isSignatureDoc
+    ? (clientUploads.length > 0 ? clientUploads : uploads)
+    : uploads;
   const latestUpload = displayUploads[displayUploads.length - 1];
   
   const effectiveSentStatus = isSignatureDoc && uploads.some(u => u.uploaded_by === 'יועץ') && !hasClientUpload
