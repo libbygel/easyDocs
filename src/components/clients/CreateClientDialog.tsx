@@ -28,6 +28,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const [spouseIdNumber, setSpouseIdNumber] = useState('');
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
+  const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -63,6 +64,22 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       }
     }
 
+    const childrenBirthYears = Array.from(
+      new Set(
+        childrenBirthYearsInput
+          .split(/[\s,;\n]+/)
+          .map((part) => part.trim())
+          .filter(Boolean)
+      )
+    );
+
+    const invalidYear = childrenBirthYears.find((year) => !/^\d{4}$/.test(year));
+    if (invalidYear) {
+      toast({ title: 'שגיאה', description: 'שנות לידה חייבות להיות ב-4 ספרות, לדוגמה 2014', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
     const insertPayload: any = {
       advisor_id: user.id,
       full_name: fullName,
@@ -74,6 +91,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       spouse_id_number: spouseIdNumber || null,
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
+      children_birth_years: childrenBirthYears.length > 0 ? childrenBirthYears : null,
     };
     let { error } = await supabase.from('clients').insert(insertPayload);
     // Resilience: if newer columns don't exist on a remote/external DB
@@ -84,6 +102,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       delete fallback.spouse_id_number;
       delete fallback.spouse_phone;
       delete fallback.spouse_email;
+      delete fallback.children_birth_years;
       const retry = await supabase.from('clients').insert(fallback);
       error = retry.error;
     }
@@ -95,7 +114,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       onOpenChange(false);
       onSuccess();
       setFullName(''); setPhone(''); setEmail(''); setIdNumber('');
-      setCategoryId(''); setSpouseFullName(''); setSpouseIdNumber(''); setSpousePhone(''); setSpouseEmail('');
+      setCategoryId(''); setSpouseFullName(''); setSpouseIdNumber(''); setSpousePhone(''); setSpouseEmail(''); setChildrenBirthYearsInput('');
     }
     setLoading(false);
   };
@@ -145,6 +164,17 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">לניהול הסיווגים: הגדרות → סיווגי לקוחות</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="childrenBirthYears">שנות לידה של ילדים</Label>
+            <Input
+              id="childrenBirthYears"
+              value={childrenBirthYearsInput}
+              onChange={(e) => setChildrenBirthYearsInput(e.target.value)}
+              placeholder="למשל: 2012, 2015"
+              dir="ltr"
+            />
+            <p className="text-xs text-muted-foreground">אפשר להפריד עם פסיק, רווח או שורה חדשה</p>
           </div>
 
           <Separator />

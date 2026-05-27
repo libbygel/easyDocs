@@ -31,6 +31,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
   const [spouseIdNumber, setSpouseIdNumber] = useState('');
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
+  const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -48,6 +49,10 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       setSpouseIdNumber((client as any).spouse_id_number || '');
       setSpousePhone((client as any).spouse_phone || '');
       setSpouseEmail((client as any).spouse_email || '');
+      const years = Array.isArray((client as any).children_birth_years)
+        ? (client as any).children_birth_years.filter(Boolean)
+        : [];
+      setChildrenBirthYearsInput(years.join(', '));
       setHourlyRate((client as any).hourly_rate != null ? String((client as any).hourly_rate) : '');
     }
   }, [client]);
@@ -67,6 +72,21 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
     if (!client) return;
     setLoading(true);
 
+    const childrenBirthYears = Array.from(
+      new Set(
+        childrenBirthYearsInput
+          .split(/[\s,;\n]+/)
+          .map((part) => part.trim())
+          .filter(Boolean)
+      )
+    );
+    const invalidYear = childrenBirthYears.find((year) => !/^\d{4}$/.test(year));
+    if (invalidYear) {
+      toast({ title: 'שגיאה', description: 'שנות לידה חייבות להיות ב-4 ספרות, לדוגמה 2014', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
     const fullPayload: any = {
       full_name: fullName,
       phone: phone || null,
@@ -78,6 +98,7 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       spouse_id_number: spouseIdNumber || null,
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
+      children_birth_years: childrenBirthYears.length > 0 ? childrenBirthYears : null,
       hourly_rate: hourlyRate.trim() === '' ? null : parseFloat(hourlyRate),
     };
 
@@ -147,6 +168,17 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="childrenBirthYears">שנות לידה של ילדים</Label>
+            <Input
+              id="childrenBirthYears"
+              value={childrenBirthYearsInput}
+              onChange={(e) => setChildrenBirthYearsInput(e.target.value)}
+              placeholder="למשל: 2012, 2015"
+              dir="ltr"
+            />
+            <p className="text-xs text-muted-foreground">אפשר להפריד עם פסיק, רווח או שורה חדשה</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">הערות</Label>
