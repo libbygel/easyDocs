@@ -383,6 +383,35 @@ export default function ClientPortal() {
     setDeleting(null);
   };
 
+  const handleOpenFile = async (fileUrl: string) => {
+    try {
+      const urlParts = fileUrl.split('/documents/');
+      const filePath = urlParts[1] ? decodeURIComponent(urlParts[1]) : null;
+
+      if (!filePath) {
+        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(filePath, 60 * 10);
+
+      if (error || !data?.signedUrl) {
+        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    } catch (error: any) {
+      toast({
+        title: 'לא ניתן לפתוח את הקובץ',
+        description: error?.message || 'אירעה שגיאה בפתיחת המסמך',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Get list of documents ready for sending - only NEW/pending docs, not already approved
   const getReadyDocuments = () => {
     return documents.filter(doc => {
@@ -652,6 +681,7 @@ export default function ClientPortal() {
                     deleting={deleting}
                     onUpload={(file) => handleUpload(doc.id, doc.doc_name, file)}
                     onDelete={(uploadId, fileUrl) => handleDeleteFile(uploadId, doc.id, fileUrl)}
+                    onOpenFile={handleOpenFile}
                     readOnly={readOnly}
                   />
                 );
@@ -730,7 +760,14 @@ export default function ClientPortal() {
                       {docUploads.files.map(file => (
                         <div key={file.id} className="flex items-center gap-2 text-xs group">
                           <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
-                          <span className="truncate flex-1">{file.fileName}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenFile(file.fileUrl)}
+                            className="truncate flex-1 text-start text-primary hover:underline"
+                            title={`פתח את ${file.fileName}`}
+                          >
+                            {file.fileName}
+                          </button>
                           <Button
                             variant="ghost"
                             size="sm"

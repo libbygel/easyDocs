@@ -21,6 +21,7 @@ interface DocumentStatusCardProps {
   deleting: string | null;
   onUpload: (file: File) => void;
   onDelete: (uploadId: string, fileUrl: string) => void;
+  onOpenFile: (fileUrl: string) => void;
   readOnly?: boolean;
 }
 
@@ -62,6 +63,7 @@ export function DocumentStatusCard({
   deleting,
   onUpload,
   onDelete,
+  onOpenFile,
   readOnly = false,
 }: DocumentStatusCardProps) {
   const status = statusConfig[reviewStatus as keyof typeof statusConfig] || statusConfig['חסר'];
@@ -115,15 +117,14 @@ export function DocumentStatusCard({
             {uploadedFiles.map((file) => (
               <div key={file.id} className="flex items-center gap-2 p-2 bg-background rounded group">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <a
-                  href={file.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => onOpenFile(file.fileUrl)}
                   className="text-sm flex-1 truncate text-primary hover:underline"
                   title={`פתח את ${file.fileName}`}
                 >
                   {file.fileName}
-                </a>
+                </button>
                 {canUpload && !readOnly && (
                   <Button
                     variant="ghost"
