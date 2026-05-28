@@ -115,7 +115,15 @@ export function DocumentStatusCard({
             {uploadedFiles.map((file) => (
               <div key={file.id} className="flex items-center gap-2 p-2 bg-background rounded group">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm flex-1 truncate">{file.fileName}</span>
+                <a
+                  href={file.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm flex-1 truncate text-primary hover:underline"
+                  title={`פתח את ${file.fileName}`}
+                >
+                  {file.fileName}
+                </a>
                 {canUpload && !readOnly && (
                   <Button
                     variant="ghost"
