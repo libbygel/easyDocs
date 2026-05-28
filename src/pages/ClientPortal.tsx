@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createPortalClient } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
@@ -37,7 +37,6 @@ export default function ClientPortal() {
   const [passwordError, setPasswordError] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const { toast } = useToast();
-  const savedSessionRef = useRef<string | null>(null);
 
   const fetchData = async (bypassPasswordCheck = false) => {
     if (!token) {
@@ -173,25 +172,6 @@ export default function ClientPortal() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    // Public portal must not inherit an active advisor session.
-    // Save current session, clear it, and restore on unmount to keep advisor logged in elsewhere.
-    const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-    const currentSession = localStorage.getItem(sessionKey);
-    if (currentSession) {
-      savedSessionRef.current = currentSession;
-      localStorage.removeItem(sessionKey);
-    }
-
-    return () => {
-      // Restore advisor session when leaving portal
-      if (savedSessionRef.current) {
-        localStorage.setItem(sessionKey, savedSessionRef.current);
-        savedSessionRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     fetchData();

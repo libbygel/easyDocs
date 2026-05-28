@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createPortalClient } from '@/lib/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -68,26 +68,6 @@ export default function ClientMasterPortal() {
   const [pwInput, setPwInput] = useState('');
   const [pwError, setPwError] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const savedSessionRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    // Public portal must not inherit an active advisor session.
-    // Save current session, clear it, and restore on unmount to keep advisor logged in elsewhere.
-    const sessionKey = 'sb-hndzejkwwpwrtzqpnqme-auth-token';
-    const currentSession = localStorage.getItem(sessionKey);
-    if (currentSession) {
-      savedSessionRef.current = currentSession;
-      localStorage.removeItem(sessionKey);
-    }
-
-    return () => {
-      // Restore advisor session when leaving portal
-      if (savedSessionRef.current) {
-        localStorage.setItem(sessionKey, savedSessionRef.current);
-        savedSessionRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!token) {
