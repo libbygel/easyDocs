@@ -52,6 +52,10 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
+function isBlank(value: unknown): boolean {
+  return typeof value !== 'string' || value.trim().length === 0
+}
+
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
   supabase: ReturnType<typeof createClient>,
@@ -249,6 +253,16 @@ Deno.serve(async (req) => {
       }
 
       try {
+        if (isBlank(payload.subject) || (isBlank(payload.html) && isBlank(payload.text))) {
+          await moveToDlq(
+            supabase,
+            queue,
+            msg,
+            'Blank email payload: subject and body must not be empty'
+          )
+          continue
+        }
+
         await sendLovableEmail(
           {
             run_id: payload.run_id,

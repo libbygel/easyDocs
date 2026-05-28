@@ -424,11 +424,31 @@ Deno.serve(async (req) => {
     .replace(/\s+/g, ' ')
     .trim()
 
+  if (!rawHtml.trim() || !plainText) {
+    await supabase.from('email_send_log').insert({
+      message_id: messageId,
+      template_name: templateName,
+      recipient_email: effectiveRecipient,
+      status: 'failed',
+      error_message: 'Rendered email content was empty',
+    })
+
+    return new Response(
+      JSON.stringify({ error: 'Rendered email content was empty' }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
   // Resolve subject — supports static string or dynamic function
   const resolvedSubject =
     typeof template.subject === 'function'
       ? template.subject(templateData)
       : template.subject
+
+  const finalSubject = (resolvedSubject || template.displayName || templateName).trim()
 
   // 5. Send via Resend directly (libbygel.com)
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
@@ -463,10 +483,10 @@ Deno.serve(async (req) => {
   // RFC 2047-encode headers that may contain Hebrew (or any non-ASCII).
   // The encoded form is pure ASCII, so Resend's own encoding layer will
   // leave it unchanged — no double-encoding risk.
-  const encodedSubject = encodeEmailHeader(resolvedSubject)
+  const encodedSubject = encodeEmailHeader(finalSubject)
   const encodedSenderName = encodeEmailHeader(safeSenderName)
 
-  dbgStr('resolvedSubject.beforeEncode', resolvedSubject)
+  dbgStr('resolvedSubject.beforeEncode', finalSubject)
   console.log('[email-dbg] encodedSubject.rfc2047:', encodedSubject)
   console.log('[email-dbg] from-field:', `${encodedSenderName} <noreply@libbygel.com>`)
   console.log('[email-dbg] to-field (no display name):', effectiveRecipient)

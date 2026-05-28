@@ -62,6 +62,7 @@ export function ClientProgressHeader({
   const missingDocs = documents.filter(d => d.review_status === 'חסר').length;
 
   const allComplete = validDocs === totalDocs && totalDocs > 0;
+  const hasDocuments = totalDocs > 0;
 
   return (
     <Card className="shadow-sm">
@@ -78,7 +79,7 @@ export function ClientProgressHeader({
           </div>
         </div>
         <CardTitle className="text-xl">
-          {allComplete ? 'כל המסמכים התקבלו!' : 'העלאת מסמכים לתיק'}
+          {allComplete ? 'כל המסמכים התקבלו!' : hasDocuments ? 'העלאת מסמכים לתיק' : 'אין מסמכים נדרשים כרגע'}
         </CardTitle>
         <p className="text-muted-foreground mt-2">{caseTitle}</p>
         {clientName && (
@@ -87,20 +88,26 @@ export function ClientProgressHeader({
       </CardHeader>
       <CardContent>
         {/* Progress bar */}
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-sm">
-            <span className="font-medium">נשלחו {actualUploadsCount} מתוך {totalDocs} מסמכים</span>
-            <span className="text-muted-foreground">{Math.round(progress)}%</span>
+        {hasDocuments ? (
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between text-sm">
+              <span className="font-medium">נשלחו {actualUploadsCount} מתוך {totalDocs} מסמכים</span>
+              <span className="text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-500 ${
+                  allComplete ? 'bg-success' : 'bg-primary'
+                }`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-500 ${
-                allComplete ? 'bg-success' : 'bg-primary'
-              }`}
-              style={{ width: `${progress}%` }}
-            />
+        ) : (
+          <div className="mb-4 rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+            אין כרגע מסמכים נדרשים לתיק הזה.
           </div>
-        </div>
+        )}
 
         {/* Status summary */}
         <div className="grid grid-cols-2 gap-3 text-sm">

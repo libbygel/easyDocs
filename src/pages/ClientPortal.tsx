@@ -97,13 +97,10 @@ export default function ClientPortal() {
       if (docsResult.error) {
         console.error('ClientPortal: failed to fetch case_documents', docsResult.error);
         toast({
-          title: 'שגיאה בטעינת המסמכים',
-          description: docsResult.error.message,
+          title: 'בעיה זמנית בטעינת רשימת המסמכים',
+          description: 'המערכת מציגה כרגע את הקבצים שהועלו. אנא נסו לרענן בעוד רגע.',
           variant: 'destructive',
         });
-        setDocuments([]);
-        setLoading(false);
-        return;
       }
 
       // Build uploads map efficiently
@@ -114,8 +111,29 @@ export default function ClientPortal() {
         uploadsByDoc.set(u.case_document_id, existing);
       });
 
+      // Fallback: if the document list is unexpectedly empty but uploads exist,
+      // derive a visible document list from the uploaded files so the client
+      // still sees the advisor's work instead of a misleading 0/0 state.
+      const rawDocs = docsResult.data || [];
+      const sourceDocs = rawDocs.length > 0 ? rawDocs : Array.from(uploadsByDoc.entries()).map(([docId, docUploads]) => {
+        const firstUpload = docUploads[0];
+        const baseName = String(firstUpload?.file_name || 'מסמך').replace(/\.[^/.]+$/, '').trim() || 'מסמך';
+
+        return {
+          id: docId,
+          doc_name: baseName,
+          required: true,
+          review_status: 'הועלה',
+          document_type: 'request',
+          uploads: docUploads,
+          isSignatureDoc: false,
+          advisorUpload: docUploads.find((u: any) => u.uploaded_by === 'יועץ'),
+          clientUpload: docUploads.find((u: any) => u.uploaded_by === 'לקוח'),
+        };
+      });
+
       // Merge and process documents
-      const mergedDocs = (docsResult.data || []).map((doc: any) => {
+      const mergedDocs = sourceDocs.map((doc: any) => {
         const docUploads = uploadsByDoc.get(doc.id) || [];
         const advisorUpload = docUploads.find((u: any) => u.uploaded_by === 'יועץ');
         const isSignatureDoc = doc.document_type === 'signature';

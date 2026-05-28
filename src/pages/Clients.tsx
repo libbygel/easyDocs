@@ -17,7 +17,6 @@ import { EditClientDialog } from '@/components/clients/EditClientDialog';
 import { SendGroupEmailDialog } from '@/components/clients/SendGroupEmailDialog';
 import { ImportClientsDialog } from '@/components/clients/ImportClientsDialog';
 import { BulkCreateCasesDialog } from '@/components/cases/BulkCreateCasesDialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTableSort } from '@/hooks/useTableSort';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
@@ -43,10 +42,6 @@ export default function Clients() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [selectedChildYearByClient, setSelectedChildYearByClient] = useState<Record<string, string>>({});
-  const [savingChildYearsByClient, setSavingChildYearsByClient] = useState<Record<string, boolean>>({});
-  const [addingChildYearByClient, setAddingChildYearByClient] = useState<Record<string, boolean>>({});
-  const [newChildYearByClient, setNewChildYearByClient] = useState<Record<string, string>>({});
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -155,48 +150,6 @@ export default function Clients() {
     setSelectedIds(new Set());
     setBulkDeleteOpen(false);
     setBulkDeleting(false);
-  };
-
-  const handleSaveChildBirthYear = async (client: Client) => {
-    const cleaned = (newChildYearByClient[client.id] || '').trim();
-    if (!cleaned) {
-      toast({ title: 'יש להזין שנה' });
-      return;
-    }
-
-    if (!/^\d{4}$/.test(cleaned)) {
-      toast({ title: 'שנה לא תקינה', description: 'יש להזין 4 ספרות בלבד', variant: 'destructive' });
-      return;
-    }
-
-    const existingYears = Array.isArray((client as any).children_birth_years)
-      ? ((client as any).children_birth_years as string[]).filter(Boolean)
-      : [];
-
-    if (existingYears.includes(cleaned)) {
-      toast({ title: 'השנה כבר קיימת' });
-      return;
-    }
-
-    const updatedYears = [...existingYears, cleaned].sort();
-    setSavingChildYearsByClient((prev) => ({ ...prev, [client.id]: true }));
-    try {
-      const { error } = await supabase
-        .from('clients')
-        .update({ children_birth_years: updatedYears } as any)
-        .eq('id', client.id);
-      if (error) throw error;
-
-      setClients((prev) => prev.map((c) => (c.id === client.id ? ({ ...c, children_birth_years: updatedYears } as any) : c)));
-      setSelectedChildYearByClient((prev) => ({ ...prev, [client.id]: cleaned }));
-      setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: false }));
-      setNewChildYearByClient((prev) => ({ ...prev, [client.id]: '' }));
-      toast({ title: 'שנת הלידה נוספה' });
-    } catch (err: any) {
-      toast({ title: 'שגיאה בשמירה', description: err?.message, variant: 'destructive' });
-    } finally {
-      setSavingChildYearsByClient((prev) => ({ ...prev, [client.id]: false }));
-    }
   };
 
   const handleExportDebtors = async () => {
@@ -387,7 +340,6 @@ export default function Clients() {
                         אימייל
                       </SortableTableHead>
                       <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">סיווג</th>
-                      <th className="h-12 px-4 text-start align-middle font-medium text-muted-foreground">שנות לידת ילדים</th>
                       <SortableTableHead<Client> sortKey="created_at" sortConfig={sortConfig} onSort={requestSort}>
                         נוצר
                       </SortableTableHead>
@@ -398,9 +350,6 @@ export default function Clients() {
                     {sortedData.map((client) => {
                       const isExpanded = expandedIds.has(client.id);
                       const hasSpouse = (client as any).spouse_full_name || (client as any).spouse_id_number || (client as any).spouse_phone || (client as any).spouse_email;
-                      const childBirthYears = Array.isArray((client as any).children_birth_years)
-                        ? ((client as any).children_birth_years as string[]).filter(Boolean)
-                        : [];
                       return (
                         <React.Fragment key={client.id}>
                           <TableRow
@@ -425,87 +374,6 @@ export default function Clients() {
                               ) : (
                                 <span className="text-xs text-muted-foreground">—</span>
                               )}
-                            </TableCell>
-                            <TableCell onClick={(e) => e.stopPropagation()}>
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-1">
-                                  {childBirthYears.length > 0 ? (
-                                    <Select
-                                      value={selectedChildYearByClient[client.id]}
-                                      onValueChange={(value) =>
-                                        setSelectedChildYearByClient((prev) => ({ ...prev, [client.id]: value }))
-                                      }
-                                    >
-                                      <SelectTrigger className="h-8 w-36 text-xs">
-                                        <SelectValue placeholder={`${childBirthYears.length} ילדים`} />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-popover">
-                                        {childBirthYears.map((year) => (
-                                          <SelectItem key={`${client.id}-${year}`} value={year}>
-                                            {year}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground w-36">—</span>
-                                  )}
-
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: true }))}
-                                    title="הוסף שנת לידה"
-                                  >
-                                    <Plus className="h-4 w-4" />
-                                  </Button>
-                                </div>
-
-                                {addingChildYearByClient[client.id] && (
-                                  <div className="flex items-center gap-1">
-                                    <Input
-                                      value={newChildYearByClient[client.id] || ''}
-                                      onChange={(e) =>
-                                        setNewChildYearByClient((prev) => ({ ...prev, [client.id]: e.target.value }))
-                                      }
-                                      placeholder="YYYY"
-                                      className="h-8 w-24 text-xs"
-                                      dir="ltr"
-                                      maxLength={4}
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleSaveChildBirthYear(client)}
-                                      disabled={!!savingChildYearsByClient[client.id]}
-                                      title="שמור"
-                                    >
-                                      {savingChildYearsByClient[client.id] ? (
-                                        <span className="h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                                      ) : (
-                                        <Check className="h-4 w-4" />
-                                      )}
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => {
-                                        setAddingChildYearByClient((prev) => ({ ...prev, [client.id]: false }));
-                                        setNewChildYearByClient((prev) => ({ ...prev, [client.id]: '' }));
-                                      }}
-                                      title="ביטול"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
                             </TableCell>
                             <TableCell className="tabular-nums">{format(new Date(client.created_at), 'dd/MM/yyyy')}</TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
