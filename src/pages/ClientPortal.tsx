@@ -52,7 +52,6 @@ export default function ClientPortal() {
         .select(`
           *,
           clients!cases_client_id_fkey (*),
-          profiles!cases_advisor_id_fkey (id, email, name, sender_display_name),
           case_types!cases_case_type_id_fkey (*)
         `)
         .eq('portal_token', token)
