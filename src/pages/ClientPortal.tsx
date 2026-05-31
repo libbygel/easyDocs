@@ -478,15 +478,32 @@ export default function ClientPortal() {
       let emailSent = false;
       let emailSkippedReason = '';
       try {
-        const advisorEmailFromCase = caseData?.profiles?.email || caseData?.advisor_email || undefined;
-        const advisorNameFromCase = caseData?.profiles?.sender_display_name || caseData?.profiles?.name || undefined;
+        let advisorIdForEmail = caseData?.advisor_id;
+        let advisorEmailFromCase = caseData?.advisor_email || undefined;
+        let advisorNameFromCase: string | undefined = undefined;
+
+        if (token) {
+          const { data: portalCtxData, error: portalCtxError } = await supabase.rpc('get_portal_case_context', {
+            p_portal_token: token,
+          } as any);
+
+          if (!portalCtxError) {
+            const portalCtx = Array.isArray(portalCtxData) ? portalCtxData[0] : (portalCtxData as any);
+            if (portalCtx?.case_id && caseData?.id && portalCtx.case_id !== caseData.id) {
+              throw new Error('Portal context mismatch');
+            }
+            advisorIdForEmail = portalCtx?.advisor_id || advisorIdForEmail;
+            advisorEmailFromCase = portalCtx?.advisor_email || advisorEmailFromCase;
+            advisorNameFromCase = portalCtx?.advisor_name || advisorNameFromCase;
+          }
+        }
 
         const emailRes = await invokeEdgeFunction<{ success?: boolean; skipped?: string }>('send-documents-to-advisor', {
           mode: 'client-submission',
           clientName,
           caseTitle,
           documentNames,
-          advisorId: caseData.advisor_id,   // looked up server-side
+          advisorId: advisorIdForEmail,   // tied to the case via portal context
           advisorEmail: advisorEmailFromCase,
           advisorName: advisorNameFromCase,
           portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,

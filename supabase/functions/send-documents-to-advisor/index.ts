@@ -121,6 +121,16 @@ serve(async (req: Request): Promise<Response> => {
           );
         }
       }
+
+      // Extra fallback: if profile row is missing, resolve from Auth user directly.
+      if (!advisorEmail) {
+        const { data: authData, error: authError } = await supa.auth.admin.getUserById(advisorIdValidation.value);
+        if (!authError && authData?.user) {
+          advisorEmail = advisorEmail || authData.user.email || '';
+          const metaName = (authData.user.user_metadata as Record<string, unknown> | null)?.name;
+          if (!advisorName && typeof metaName === 'string') advisorName = metaName;
+        }
+      }
     }
 
     if (!advisorEmail) {
