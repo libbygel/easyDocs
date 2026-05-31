@@ -52,6 +52,7 @@ export default function ClientPortal() {
         .select(`
           *,
           clients!cases_client_id_fkey (*),
+          profiles!cases_advisor_id_fkey (id, email, name, sender_display_name),
           case_types!cases_case_type_id_fkey (*)
         `)
         .eq('portal_token', token)
@@ -475,17 +476,26 @@ export default function ClientPortal() {
       // Send advisor email via edge function.
       // Pass advisorId so the function can resolve the email with service role
       // (the portal anon client cannot read profiles via RLS).
+      let emailSent = false;
       try {
-        await invokeEdgeFunction('send-documents-to-advisor', {
+        const advisorEmailFromCase = caseData?.profiles?.email || caseData?.advisor_email || undefined;
+        const advisorNameFromCase = caseData?.profiles?.sender_display_name || caseData?.profiles?.name || undefined;
+
+        const emailRes = await invokeEdgeFunction<{ success?: boolean; skipped?: string }>('send-documents-to-advisor', {
           mode: 'client-submission',
           clientName,
           caseTitle,
           documentNames,
           advisorId: caseData.advisor_id,   // looked up server-side
+          advisorEmail: advisorEmailFromCase,
+          advisorName: advisorNameFromCase,
           portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
         });
+
+        emailSent = emailRes?.success !== false;
       } catch (emailErr) {
-        console.warn('[ClientPortal] Email sending failed (non-critical):', emailErr);
+        emailSent = false;
+        console.error('[ClientPortal] Email sending failed:', emailErr);
       }
 
       // Update case status
@@ -511,7 +521,7 @@ export default function ClientPortal() {
           title: 'המסמכים נשלחו בהצלחה!',
           description: notificationErrors > 0 
             ? `${documentNames.length - notificationErrors} מתוך ${documentNames.length} התראות נשלחו`
-            : 'היועץ יקבל הודעה',
+            : (emailSent ? 'היועץ קיבל התראה במייל ובהתראות המערכת' : 'היועץ קיבל התראה במערכת. שליחת מייל נכשלה - נסו שוב בעוד רגע'),
         });
       }
     } catch (error: any) {

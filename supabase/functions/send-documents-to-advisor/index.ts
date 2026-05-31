@@ -88,18 +88,33 @@ serve(async (req: Request): Promise<Response> => {
     let advisorEmail = advisorEmailValidation.value || '';
     let advisorName  = advisorNameValidation.value || '';
 
-    if (advisorId && (!advisorEmail || !advisorName)) {
-      const { data: profile } = await supa
+    if (advisorIdValidation.value && (!advisorEmail || !advisorName)) {
+      let profile: Record<string, any> | null = null;
+
+      const ext = await supa
         .from('profiles')
         .select('email, name, sender_display_name, notify_on_client_upload')
-        .eq('id', advisorId)
+        .eq('id', advisorIdValidation.value)
         .maybeSingle();
+
+      if (ext.error && /notify_on_client_upload|column .* does not exist|schema cache/i.test(ext.error.message || '')) {
+        // Backward compatibility for environments where notify_on_client_upload does not exist yet.
+        const fallback = await supa
+          .from('profiles')
+          .select('email, name, sender_display_name')
+          .eq('id', advisorIdValidation.value)
+          .maybeSingle();
+        profile = (fallback.data as any) || null;
+      } else {
+        profile = (ext.data as any) || null;
+      }
 
       if (profile) {
         advisorEmail = advisorEmail || profile.email || '';
-        advisorName  = advisorName  || profile.sender_display_name || profile.name || '';
-        // Honour advisor's email-notification preference (default: true)
-        if (profile.notify_on_client_upload === false) {
+        advisorName = advisorName || profile.sender_display_name || profile.name || '';
+
+        // Honour advisor's email-notification preference (default: true).
+        if (Object.prototype.hasOwnProperty.call(profile, 'notify_on_client_upload') && profile.notify_on_client_upload === false) {
           return new Response(
             JSON.stringify({ success: true, skipped: 'notify_on_client_upload=false' }),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
