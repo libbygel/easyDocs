@@ -476,6 +476,7 @@ export default function ClientPortal() {
       // Pass advisorId so the function can resolve the email with service role
       // (the portal anon client cannot read profiles via RLS).
       let emailSent = false;
+      let emailSkippedReason = '';
       try {
         const advisorEmailFromCase = caseData?.profiles?.email || caseData?.advisor_email || undefined;
         const advisorNameFromCase = caseData?.profiles?.sender_display_name || caseData?.profiles?.name || undefined;
@@ -491,7 +492,8 @@ export default function ClientPortal() {
           portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
         });
 
-        emailSent = emailRes?.success !== false;
+        emailSkippedReason = emailRes?.skipped || '';
+        emailSent = emailRes?.success !== false && !emailSkippedReason;
       } catch (emailErr) {
         emailSent = false;
         console.error('[ClientPortal] Email sending failed:', emailErr);
@@ -520,7 +522,11 @@ export default function ClientPortal() {
           title: 'המסמכים נשלחו בהצלחה!',
           description: notificationErrors > 0 
             ? `${documentNames.length - notificationErrors} מתוך ${documentNames.length} התראות נשלחו`
-            : (emailSent ? 'היועץ קיבל התראה במייל ובהתראות המערכת' : 'היועץ קיבל התראה במערכת. שליחת מייל נכשלה - נסו שוב בעוד רגע'),
+            : (emailSent
+              ? 'היועץ קיבל התראה במייל ובהתראות המערכת'
+              : (emailSkippedReason
+                ? 'היועץ קיבל התראה במערכת. המייל דולג לפי הגדרות ההתראות של היועץ'
+                : 'היועץ קיבל התראה במערכת. שליחת מייל נכשלה - נסו שוב בעוד רגע')),
         });
       }
     } catch (error: any) {

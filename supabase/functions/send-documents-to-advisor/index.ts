@@ -94,7 +94,7 @@ serve(async (req: Request): Promise<Response> => {
       const ext = await supa
         .from('profiles')
         .select('email, name, sender_display_name, notify_on_client_upload')
-        .eq('id', advisorIdValidation.value)
+        .or(`user_id.eq.${advisorIdValidation.value},id.eq.${advisorIdValidation.value}`)
         .maybeSingle();
 
       if (ext.error && /notify_on_client_upload|column .* does not exist|schema cache/i.test(ext.error.message || '')) {
@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
         const fallback = await supa
           .from('profiles')
           .select('email, name, sender_display_name')
-          .eq('id', advisorIdValidation.value)
+          .or(`user_id.eq.${advisorIdValidation.value},id.eq.${advisorIdValidation.value}`)
           .maybeSingle();
         profile = (fallback.data as any) || null;
       } else {
