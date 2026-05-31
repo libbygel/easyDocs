@@ -56,10 +56,35 @@ export default function Clients() {
   const navigate = useNavigate();
 
   const fetchClients = async () => {
-    if (!user) return;
-    const { data } = await supabase.from('clients').select('*').eq('advisor_id', user.id).order('full_name');
-    if (data) setClients(data);
-    setLoading(false);
+    if (!user) {
+      setClients([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('advisor_id', user.id)
+        .order('full_name');
+
+      if (error) {
+        throw error;
+      }
+
+      setClients(data || []);
+    } catch (err: any) {
+      toast({
+        title: 'שגיאה בטעינת לקוחות',
+        description: err?.message || 'לא ניתן לטעון את רשימת הלקוחות כרגע',
+        variant: 'destructive',
+      });
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -70,7 +95,18 @@ export default function Clients() {
         .select('id, name')
         .eq('advisor_id', user.id)
         .order('name')
-        .then(({ data }) => setCategories(((data as any) || []) as any));
+        .then(({ data, error }) => {
+          if (error) {
+            throw error;
+          }
+          setCategories(((data as any) || []) as any);
+        })
+        .catch((err: any) => {
+          console.error('Clients: failed to fetch categories', err);
+          setCategories([]);
+        });
+    } else {
+      setCategories([]);
     }
   }, [user]);
 
@@ -105,7 +141,11 @@ export default function Clients() {
 
   const handleDeleteConfirm = async () => {
     if (!clientToDelete) return;
-    await supabase.from('clients').delete().eq('id', clientToDelete);
+    const { error } = await supabase.from('clients').delete().eq('id', clientToDelete);
+    if (error) {
+      toast({ title: 'שגיאה במחיקה', description: error.message, variant: 'destructive' });
+      return;
+    }
     toast({ title: 'הלקוח נמחק' });
     setDeleteDialogOpen(false);
     setClientToDelete(null);

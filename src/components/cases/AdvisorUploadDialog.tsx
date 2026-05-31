@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, FileText } from 'lucide-react';
 import { logCaseActivity } from '@/lib/activityLog';
+import { ALLOWED_DOCUMENT_EXTENSIONS, validateUploadFile } from '@/lib/uploadValidation';
 
 interface AdvisorUploadDialogProps {
   open: boolean;
@@ -21,7 +22,19 @@ export function AdvisorUploadDialog({ open, onOpenChange, document, onSuccess }:
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (!file) return;
+
+    const validationError = validateUploadFile(file, {
+      allowedExtensions: ALLOWED_DOCUMENT_EXTENSIONS,
+    });
+
+    if (validationError) {
+      toast({ title: 'קובץ לא תקין', description: validationError, variant: 'destructive' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setSelectedFile(file);
   };
 
   const handleUpload = async () => {
@@ -57,9 +70,11 @@ export function AdvisorUploadDialog({ open, onOpenChange, document, onSuccess }:
       if (insertError) throw insertError;
 
       // Update document status to uploaded
-      await supabase.from('case_documents')
+      const { error: statusError } = await supabase.from('case_documents')
         .update({ review_status: 'הועלה' as const })
         .eq('id', document.id);
+
+      if (statusError) throw statusError;
 
       await logCaseActivity(document.case_id, 'העלאת מסמך', `היועץ העלה את "${document.doc_name}"`);
 

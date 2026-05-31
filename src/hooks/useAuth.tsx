@@ -89,11 +89,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const body = await res.json();
+      let body: any = null;
+      try {
+        body = await res.json();
+      } catch {
+        body = null;
+      }
 
       if (!res.ok) {
-        const error = new Error(body.message || body.msg || 'Login failed');
+        const error = new Error(body?.message || body?.msg || 'Login failed');
         console.error('[Auth] Sign in failed:', error.message);
+        return { error };
+      }
+
+      if (!body?.access_token || !body?.refresh_token) {
+        const error = new Error('שרת האימות החזיר תגובה לא תקינה. נסה/י שוב.');
+        console.error('[Auth] Invalid token payload:', body);
         return { error };
       }
 

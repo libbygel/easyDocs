@@ -29,6 +29,11 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
   const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankNumber, setBankNumber] = useState('');
+  const [bankBranch, setBankBranch] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [bankAccountHolder, setBankAccountHolder] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -92,6 +97,11 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
       children_birth_years: childrenBirthYears.length > 0 ? childrenBirthYears : null,
+      bank_name: bankName || null,
+      bank_number: bankNumber || null,
+      bank_branch: bankBranch || null,
+      bank_account_number: bankAccountNumber || null,
+      bank_account_holder: bankAccountHolder || null,
     };
     let { error } = await supabase.from('clients').insert(insertPayload);
     // Resilience: if newer columns don't exist on a remote/external DB
@@ -103,6 +113,11 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       delete fallback.spouse_phone;
       delete fallback.spouse_email;
       delete fallback.children_birth_years;
+      delete fallback.bank_name;
+      delete fallback.bank_number;
+      delete fallback.bank_branch;
+      delete fallback.bank_account_number;
+      delete fallback.bank_account_holder;
       const retry = await supabase.from('clients').insert(fallback);
       error = retry.error;
     }
@@ -115,6 +130,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       onSuccess();
       setFullName(''); setPhone(''); setEmail(''); setIdNumber('');
       setCategoryId(''); setSpouseFullName(''); setSpouseIdNumber(''); setSpousePhone(''); setSpouseEmail(''); setChildrenBirthYearsInput('');
+      setBankName(''); setBankNumber(''); setBankBranch(''); setBankAccountNumber(''); setBankAccountHolder('');
     }
     setLoading(false);
   };
@@ -175,6 +191,38 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               dir="ltr"
             />
             <p className="text-xs text-muted-foreground">אפשר להפריד עם פסיק, רווח או שורה חדשה</p>
+          </div>
+
+          <Separator />
+          <div className="space-y-3">
+            <div>
+              <Label className="text-base">פרטי בנק (אופציונלי)</Label>
+              <p className="text-xs text-muted-foreground mt-1">לא מוצג במסך הלקוחות הראשי</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankAccountHolder" className="text-sm">שם בעל החשבון</Label>
+              <Input id="bankAccountHolder" value={bankAccountHolder} onChange={(e) => setBankAccountHolder(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="bankName" className="text-sm">שם הבנק</Label>
+                <Input id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankNumber" className="text-sm">מספר בנק</Label>
+                <Input id="bankNumber" value={bankNumber} onChange={(e) => setBankNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="bankBranch" className="text-sm">סניף</Label>
+                <Input id="bankBranch" value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountNumber" className="text-sm">מספר חשבון</Label>
+                <Input id="bankAccountNumber" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
           </div>
 
           <Separator />

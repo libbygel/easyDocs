@@ -35,6 +35,11 @@ interface ClientRow {
   phone: string | null;
   id_number: string | null;
   hourly_rate: number | null;
+  bank_name?: string | null;
+  bank_number?: string | null;
+  bank_branch?: string | null;
+  bank_account_number?: string | null;
+  bank_account_holder?: string | null;
   children_birth_years?: string[] | null;
   notes: string | null;
   created_at: string;
@@ -163,6 +168,13 @@ export default function ClientDetail() {
     ? totals.totalCharged - (totals.totalSeconds / 3600) * hourlyRate
     : null;
   const hasPersonalRate = client?.hourly_rate != null;
+  const hasBankDetails = Boolean(
+    client?.bank_name ||
+    client?.bank_number ||
+    client?.bank_branch ||
+    client?.bank_account_number ||
+    client?.bank_account_holder
+  );
 
   const saveClientHourlyRate = async () => {
     if (!client) return;
@@ -506,6 +518,40 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">פרטי בנק</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!hasBankDetails ? (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בנק ללקוח זה.</div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם בעל החשבון</div>
+                      <div className="font-medium">{client.bank_account_holder || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם הבנק</div>
+                      <div className="font-medium">{client.bank_name || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">מספר בנק</div>
+                      <div className="font-medium" dir="ltr">{client.bank_number || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">סניף</div>
+                      <div className="font-medium" dir="ltr">{client.bank_branch || '—'}</div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-xs text-muted-foreground">מספר חשבון</div>
+                      <div className="font-medium" dir="ltr">{client.bank_account_number || '—'}</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">שנות לידה של ילדים</CardTitle>

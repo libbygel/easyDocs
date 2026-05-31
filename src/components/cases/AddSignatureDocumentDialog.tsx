@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, PenTool, FileText, Send, CheckCircle, Copy, Plus } from 'lucide-react';
+import { ALLOWED_SIGNATURE_EXTENSIONS, validateUploadFile } from '@/lib/uploadValidation';
 
 interface AddSignatureDocumentDialogProps {
   open: boolean;
@@ -57,6 +58,14 @@ export function AddSignatureDocumentDialog({
         description: 'יש לבחור קובץ PDF',
         variant: 'destructive',
       });
+      return;
+    }
+
+    const validationError = validateUploadFile(file, {
+      allowedExtensions: ALLOWED_SIGNATURE_EXTENSIONS,
+    });
+    if (validationError) {
+      toast({ title: 'קובץ לא תקין', description: validationError, variant: 'destructive' });
       return;
     }
 
@@ -120,32 +129,23 @@ export function AddSignatureDocumentDialog({
         .getPublicUrl(storagePath);
 
       // Create upload record
-      const { error: uploadRecordError } = await supabase.from('uploads').insert({
+      const { data: uploadRecord, error: uploadRecordError } = await supabase.from('uploads').insert({
         case_id: caseId,
         case_document_id: docData.id,
         file_name: file.name,
         file_url: urlData.publicUrl,
         file_type: file.type,
         uploaded_by: 'יועץ',
-      });
+      }).select('id').single();
 
       if (uploadRecordError) throw uploadRecordError;
 
-      // Update document with last_upload_id
-      const { data: uploadData } = await supabase
-        .from('uploads')
-        .select('id')
-        .eq('case_document_id', docData.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const { error: lastUploadError } = await supabase
+        .from('case_documents')
+        .update({ last_upload_id: uploadRecord.id })
+        .eq('id', docData.id);
 
-      if (uploadData) {
-        await supabase
-          .from('case_documents')
-          .update({ last_upload_id: uploadData.id })
-          .eq('id', docData.id);
-      }
+      if (lastUploadError) throw lastUploadError;
 
       setSuccess(true);
       onSuccess();
@@ -261,7 +261,25 @@ export function AddSignatureDocumentDialog({
                 id="signatureFile"
                 type="file"
                 accept=".pdf"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const next = e.target.files?.[0] || null;
+                  if (!next) {
+                    setFile(null);
+                    return;
+                  }
+
+                  const fileValidation = validateUploadFile(next, {
+                    allowedExtensions: ALLOWED_SIGNATURE_EXTENSIONS,
+                  });
+                  if (fileValidation) {
+                    toast({ title: 'קובץ לא תקין', description: fileValidation, variant: 'destructive' });
+                    e.target.value = '';
+                    setFile(null);
+                    return;
+                  }
+
+                  setFile(next);
+                }}
                 required
               />
             </div>

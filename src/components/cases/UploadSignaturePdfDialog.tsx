@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload as UploadIcon, FileText } from 'lucide-react';
+import { ALLOWED_SIGNATURE_EXTENSIONS, validateUploadFile } from '@/lib/uploadValidation';
 
 type DocumentWithUpload = CaseDocument & { uploads: Upload[] };
 
@@ -39,6 +40,14 @@ export function UploadSignaturePdfDialog({
     e.preventDefault();
     if (!file || !document) return;
 
+    const validationError = validateUploadFile(file, {
+      allowedExtensions: ALLOWED_SIGNATURE_EXTENSIONS,
+    });
+    if (validationError) {
+      toast({ title: 'קובץ לא תקין', description: validationError, variant: 'destructive' });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -56,14 +65,14 @@ export function UploadSignaturePdfDialog({
         .from('documents')
         .getPublicUrl(storagePath);
 
-      const { error: uploadRecordError } = await supabase.from('uploads').insert({
+      const { data: uploadRecord, error: uploadRecordError } = await supabase.from('uploads').insert({
         case_id: document.case_id,
         case_document_id: document.id,
         file_name: file.name,
         file_url: urlData.publicUrl,
         file_type: file.type,
         uploaded_by: 'יועץ',
-      });
+      }).select('id').single();
 
       if (uploadRecordError) throw uploadRecordError;
 
@@ -73,18 +82,7 @@ export function UploadSignaturePdfDialog({
         updateData.declaration_statement = declarationStatement.trim();
       }
 
-      // Get the upload ID for last_upload_id
-      const { data: uploadData } = await supabase
-        .from('uploads')
-        .select('id')
-        .eq('case_document_id', document.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (uploadData) {
-        updateData.last_upload_id = uploadData.id;
-      }
+      updateData.last_upload_id = uploadRecord.id;
 
       await supabase
         .from('case_documents')
@@ -130,7 +128,25 @@ export function UploadSignaturePdfDialog({
               id="signaturePdf"
               type="file"
               accept=".pdf"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const next = e.target.files?.[0] || null;
+                if (!next) {
+                  setFile(null);
+                  return;
+                }
+
+                const fileValidation = validateUploadFile(next, {
+                  allowedExtensions: ALLOWED_SIGNATURE_EXTENSIONS,
+                });
+                if (fileValidation) {
+                  toast({ title: 'קובץ לא תקין', description: fileValidation, variant: 'destructive' });
+                  e.target.value = '';
+                  setFile(null);
+                  return;
+                }
+
+                setFile(next);
+              }}
               required
             />
           </div>

@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  isValidEmail,
+  isValidHttpUrl,
+  isValidUuid,
+  validateTextField,
+} from "../_shared/input-validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,14 +29,64 @@ serve(async (req: Request): Promise<Response> => {
       portalUrl,
     } = await req.json();
 
+    const clientNameValidation = validateTextField('clientName', clientName, { maxLength: 120 });
+    const caseTitleValidation = validateTextField('caseTitle', caseTitle, { maxLength: 160 });
+    const advisorNameValidation = validateTextField('advisorName', advisorNameParam, { maxLength: 120 });
+    const noteValidation = validateTextField('note', note, { maxLength: 2000, allowNewLines: true });
+    const advisorEmailValidation = validateTextField('advisorEmail', advisorEmailParam, { maxLength: 255 });
+    const advisorIdValidation = validateTextField('advisorId', advisorId, { maxLength: 64 });
+    const portalUrlValidation = validateTextField('portalUrl', portalUrl, { maxLength: 500 });
+
+    if (!clientNameValidation.ok || !caseTitleValidation.ok || !advisorNameValidation.ok || !noteValidation.ok || !advisorEmailValidation.ok || !advisorIdValidation.ok || !portalUrlValidation.ok) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'אחד או יותר מהשדות אינו תקין' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    if (advisorEmailValidation.value && !isValidEmail(advisorEmailValidation.value)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'advisorEmail לא תקין' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    if (advisorIdValidation.value && !isValidUuid(advisorIdValidation.value)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'advisorId לא תקין' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    if (portalUrlValidation.value && !isValidHttpUrl(portalUrlValidation.value)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'portalUrl לא תקין' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    const safeDocumentNames = Array.isArray(documentNames)
+      ? documentNames
+          .map((d: unknown) => validateTextField('documentName', d, { required: true, maxLength: 250 }))
+          .filter((r) => r.ok && r.value)
+          .map((r) => r.value)
+      : [];
+
+    if (Array.isArray(documentNames) && safeDocumentNames.length !== documentNames.length) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'documentNames מכיל ערכים לא תקינים' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supa = createClient(supabaseUrl, supabaseServiceKey);
 
     // Resolve advisor email + name.  The portal (anon) cannot read profiles via
     // RLS, so if the caller passes advisorId we do the lookup here with service role.
-    let advisorEmail = advisorEmailParam || '';
-    let advisorName  = advisorNameParam  || '';
+    let advisorEmail = advisorEmailValidation.value || '';
+    let advisorName  = advisorNameValidation.value || '';
 
     if (advisorId && (!advisorEmail || !advisorName)) {
       const { data: profile } = await supa
@@ -59,24 +115,27 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const documents = (Array.isArray(documentNames) ? documentNames : []).map((doc_name: string) => ({ doc_name }));
-    const subjectTitle = caseTitle || "מסמך חדש";
+    const documents = safeDocumentNames.map((doc_name: string) => ({ doc_name }));
+    const subjectTitle = caseTitleValidation.value || "מסמך חדש";
+    const safeClientName = clientNameValidation.value;
+    const safeNote = noteValidation.value;
+    const safePortalUrl = portalUrlValidation.value;
 
     const isClientSubmission = mode === 'client-submission';
     const templateName = isClientSubmission ? 'client-submission-notification' : 'documents-to-advisor';
     const templateData: Record<string, any> = isClientSubmission
       ? {
           recipientName: advisorName || 'יועץ',
-          clientName: clientName || 'לקוח',
+          clientName: safeClientName || 'לקוח',
           caseTitle: subjectTitle,
           documents,
-          portalUrl,
+          portalUrl: safePortalUrl || undefined,
         }
       : {
           recipientName: advisorName || 'יועץ',
           caseTitle: subjectTitle,
-          senderName: clientName || 'EasyDocs',
-          note: note || (clientName ? `הלקוח ${clientName} שלח מסמכים חדשים` : 'התקבלו מסמכים חדשים'),
+          senderName: safeClientName || 'EasyDocs',
+          note: safeNote || (safeClientName ? `הלקוח ${safeClientName} שלח מסמכים חדשים` : 'התקבלו מסמכים חדשים'),
           documents,
         };
 

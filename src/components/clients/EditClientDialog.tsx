@@ -32,6 +32,11 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
   const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankNumber, setBankNumber] = useState('');
+  const [bankBranch, setBankBranch] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [bankAccountHolder, setBankAccountHolder] = useState('');
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -53,6 +58,11 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
         ? (client as any).children_birth_years.filter(Boolean)
         : [];
       setChildrenBirthYearsInput(years.join(', '));
+      setBankName((client as any).bank_name || '');
+      setBankNumber((client as any).bank_number || '');
+      setBankBranch((client as any).bank_branch || '');
+      setBankAccountNumber((client as any).bank_account_number || '');
+      setBankAccountHolder((client as any).bank_account_holder || '');
       setHourlyRate((client as any).hourly_rate != null ? String((client as any).hourly_rate) : '');
     }
   }, [client]);
@@ -99,6 +109,11 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
       children_birth_years: childrenBirthYears.length > 0 ? childrenBirthYears : null,
+      bank_name: bankName || null,
+      bank_number: bankNumber || null,
+      bank_branch: bankBranch || null,
+      bank_account_number: bankAccountNumber || null,
+      bank_account_holder: bankAccountHolder || null,
       hourly_rate: hourlyRate.trim() === '' ? null : parseFloat(hourlyRate),
     };
 
@@ -203,6 +218,38 @@ export function EditClientDialog({ open, onOpenChange, client, onSuccess }: Edit
               dir="ltr"
             />
           </div>
+          <Separator />
+          <div className="space-y-3">
+            <div>
+              <Label className="text-base">פרטי בנק (אופציונלי)</Label>
+              <p className="text-xs text-muted-foreground mt-1">לא מוצג במסך הלקוחות הראשי</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankAccountHolder" className="text-sm">שם בעל החשבון</Label>
+              <Input id="bankAccountHolder" value={bankAccountHolder} onChange={(e) => setBankAccountHolder(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="bankName" className="text-sm">שם הבנק</Label>
+                <Input id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankNumber" className="text-sm">מספר בנק</Label>
+                <Input id="bankNumber" value={bankNumber} onChange={(e) => setBankNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="bankBranch" className="text-sm">סניף</Label>
+                <Input id="bankBranch" value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountNumber" className="text-sm">מספר חשבון</Label>
+                <Input id="bankAccountNumber" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
+          </div>
+
           <Separator />
           <div className="space-y-3">
             <Label className="text-base">פרטי בן/בת זוג (אופציונלי)</Label>

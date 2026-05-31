@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { isValidSafeToken } from '../_shared/input-validation.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +66,10 @@ Deno.serve(async (req) => {
 
   if (!token) {
     return jsonResponse({ error: 'Token is required' }, 400)
+  }
+
+  if (!isValidSafeToken(token)) {
+    return jsonResponse({ error: 'Invalid token format' }, 400)
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)

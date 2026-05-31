@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ClientProgressHeader } from '@/components/portal/ClientProgressHeader';
 import { DocumentStatusCard } from '@/components/portal/DocumentStatusCard';
 import { SignatureDocumentCard } from '@/components/portal/SignatureDocumentCard';
+import { ALLOWED_DOCUMENT_EXTENSIONS, validateUploadFile } from '@/lib/uploadValidation';
 
 interface DocUploads {
   docId: string;
@@ -98,6 +99,15 @@ export default function ClientPortal() {
         toast({
           title: 'בעיה זמנית בטעינת רשימת המסמכים',
           description: 'המערכת מציגה כרגע את הקבצים שהועלו. אנא נסו לרענן בעוד רגע.',
+          variant: 'destructive',
+        });
+      }
+
+      if (uploadsResult.error) {
+        console.error('ClientPortal: failed to fetch uploads', uploadsResult.error);
+        toast({
+          title: 'בעיה זמנית בטעינת קבצים',
+          description: 'ייתכן שחלק מהקבצים לא יוצגו כעת. נסו לרענן בעוד רגע.',
           variant: 'destructive',
         });
       }
@@ -212,6 +222,15 @@ export default function ClientPortal() {
 
   const handleUpload = async (docId: string, docName: string, file: File) => {
     if (!caseData) return;
+
+    const validationError = validateUploadFile(file, {
+      allowedExtensions: ALLOWED_DOCUMENT_EXTENSIONS,
+    });
+    if (validationError) {
+      toast({ title: 'קובץ לא תקין', description: validationError, variant: 'destructive' });
+      return;
+    }
+
     setUploading(docId);
 
     // Sanitize filename: remove Hebrew/special chars, use timestamp for uniqueness
@@ -219,7 +238,7 @@ export default function ClientPortal() {
     const sanitizedName = `${Date.now()}_${crypto.randomUUID()}.${ext}`;
     const fileName = `${caseData.id}/${docId}/${sanitizedName}`;
     
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(fileName, file);
 
@@ -246,10 +265,16 @@ export default function ClientPortal() {
       return;
     }
 
-    await supabase
+    const { error: docStatusError } = await supabase
       .from('case_documents')
       .update({ review_status: 'הועלה', sent_status: 'נשלח' })
       .eq('id', docId);
+
+    if (docStatusError) {
+      toast({ title: 'שגיאה בעדכון סטטוס מסמך', description: docStatusError.message, variant: 'destructive' });
+      setUploading(null);
+      return;
+    }
 
     await supabase
       .from('cases')

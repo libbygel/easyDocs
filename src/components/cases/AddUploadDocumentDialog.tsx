@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Send, CheckCircle, Copy, Upload, FileText, X, Pencil } from 'lucide-react';
+import { ALLOWED_DOCUMENT_EXTENSIONS, validateUploadFile } from '@/lib/uploadValidation';
 
 interface AttachedFile {
   file: File;
@@ -144,7 +145,7 @@ export function AddUploadDocumentDialog({
           .from('documents')
           .getPublicUrl(filePath);
 
-        await supabase.from('uploads').insert({
+        const { error: uploadInsertError } = await supabase.from('uploads').insert({
           case_document_id: insertedDoc.id,
           case_id: caseId,
           file_url: urlData.publicUrl,
@@ -152,10 +153,18 @@ export function AddUploadDocumentDialog({
           file_type: af.file.type,
           uploaded_by: 'יועץ' as const,
         });
+
+        if (uploadInsertError) throw uploadInsertError;
         successCount++;
       } catch (uploadErr: any) {
         toast({ title: `שגיאה בהעלאת "${af.displayName}"`, description: uploadErr.message, variant: 'destructive' });
       }
+    }
+
+    if (successCount === 0) {
+      toast({ title: 'שגיאה בהעלאה', description: 'לא הועלה אף קובץ. נסי שוב.', variant: 'destructive' });
+      setLoading(false);
+      return;
     }
 
     if (successCount > 0) {
@@ -222,12 +231,31 @@ export function AddUploadDocumentDialog({
   const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newFiles: AttachedFile[] = Array.from(files).map(f => ({
-      file: f,
-      displayName: f.name,
-      editing: false,
-    }));
-    setAttachedFiles(prev => [...prev, ...newFiles]);
+
+    const validFiles: AttachedFile[] = [];
+    Array.from(files).forEach((f) => {
+      const validationError = validateUploadFile(f, {
+        allowedExtensions: ALLOWED_DOCUMENT_EXTENSIONS,
+      });
+
+      if (validationError) {
+        toast({
+          title: `הקובץ "${f.name}" לא תקין`,
+          description: validationError,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      validFiles.push({ file: f, displayName: f.name, editing: false });
+    });
+
+    if (validFiles.length === 0) {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setAttachedFiles(prev => [...prev, ...validFiles]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

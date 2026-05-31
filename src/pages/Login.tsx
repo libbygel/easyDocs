@@ -32,7 +32,7 @@ export default function Login() {
     if (error) {
       toast({
         title: 'שגיאת התחברות',
-        description: 'אימייל או סיסמה שגויים',
+        description: error.message || 'אימייל או סיסמה שגויים',
         variant: 'destructive',
       });
     } else {

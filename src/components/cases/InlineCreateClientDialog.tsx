@@ -37,6 +37,11 @@ export function InlineCreateClientDialog({
   const [spouseIdNumber, setSpouseIdNumber] = useState('');
   const [spousePhone, setSpousePhone] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankNumber, setBankNumber] = useState('');
+  const [bankBranch, setBankBranch] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [bankAccountHolder, setBankAccountHolder] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -55,6 +60,8 @@ export function InlineCreateClientDialog({
     setFullName(''); setIdNumber(''); setPhone(''); setEmail('');
     setCategoryId(''); setSpouseFullName(''); setSpouseIdNumber('');
     setSpousePhone(''); setSpouseEmail('');
+    setBankName(''); setBankNumber(''); setBankBranch('');
+    setBankAccountNumber(''); setBankAccountHolder('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,6 +99,11 @@ export function InlineCreateClientDialog({
       spouse_id_number: spouseIdNumber || null,
       spouse_phone: spousePhone || null,
       spouse_email: spouseEmail || null,
+      bank_name: bankName || null,
+      bank_number: bankNumber || null,
+      bank_branch: bankBranch || null,
+      bank_account_number: bankAccountNumber || null,
+      bank_account_holder: bankAccountHolder || null,
     };
 
     let { data, error } = await supabase
@@ -107,6 +119,11 @@ export function InlineCreateClientDialog({
       delete fallback.spouse_id_number;
       delete fallback.spouse_phone;
       delete fallback.spouse_email;
+      delete fallback.bank_name;
+      delete fallback.bank_number;
+      delete fallback.bank_branch;
+      delete fallback.bank_account_number;
+      delete fallback.bank_account_holder;
       const retry = await supabase.from('clients').insert(fallback).select().single();
       data = retry.data;
       error = retry.error;
@@ -172,6 +189,38 @@ export function InlineCreateClientDialog({
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">לניהול הסיווגים: הגדרות → סיווגי לקוחות</p>
+          </div>
+
+          <Separator />
+          <div className="space-y-3">
+            <div>
+              <Label className="text-base">פרטי בנק (אופציונלי)</Label>
+              <p className="text-xs text-muted-foreground mt-1">לא מוצג במסך הלקוחות הראשי</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="inline-bankAccountHolder" className="text-sm">שם בעל החשבון</Label>
+              <Input id="inline-bankAccountHolder" value={bankAccountHolder} onChange={(e) => setBankAccountHolder(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="inline-bankName" className="text-sm">שם הבנק</Label>
+                <Input id="inline-bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="inline-bankNumber" className="text-sm">מספר בנק</Label>
+                <Input id="inline-bankNumber" value={bankNumber} onChange={(e) => setBankNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="inline-bankBranch" className="text-sm">סניף</Label>
+                <Input id="inline-bankBranch" value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="inline-bankAccountNumber" className="text-sm">מספר חשבון</Label>
+                <Input id="inline-bankAccountNumber" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} dir="ltr" />
+              </div>
+            </div>
           </div>
 
           <Separator />

@@ -124,6 +124,17 @@ export default function ClientMasterPortal() {
       supabase.from('case_time_entries' as any).select('*').in('case_id', ids).not('ended_at', 'is', null).order('started_at', { ascending: false }),
       supabase.from('case_activity_log').select('*').in('case_id', ids).order('created_at', { ascending: false }).limit(100),
     ]);
+
+    if (docsRes.error || chargesRes.error || paymentsRes.error || timeRes.error || activityRes.error) {
+      console.error('ClientMasterPortal: loadAll failed', {
+        docsError: docsRes.error,
+        chargesError: chargesRes.error,
+        paymentsError: paymentsRes.error,
+        timeError: timeRes.error,
+        activityError: activityRes.error,
+      });
+    }
+
     const docsMap = new Map<string, DocRow[]>();
     (docsRes.data || []).forEach((d: any) => {
       const arr = docsMap.get(d.case_id) || [];
