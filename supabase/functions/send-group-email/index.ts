@@ -29,6 +29,22 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function extractErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    const error = typeof record.error === "string" ? record.error : null;
+    const details = typeof record.details === "string" ? record.details : null;
+    const reason = typeof record.reason === "string" ? record.reason : null;
+    return error || details || reason || `HTTP ${status}`;
+  }
+
+  if (typeof payload === "string" && payload.trim()) {
+    return payload;
+  }
+
+  return `HTTP ${status}`;
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -66,8 +82,6 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const supa = createClient(supabaseUrl, supabaseServiceKey);
-
     const settled = await Promise.allSettled(
       recipients.map(async (recipient, index) => {
         const normalizedEmail = recipient.email.trim().toLowerCase();
@@ -82,8 +96,14 @@ serve(async (req: Request): Promise<Response> => {
         const idempotencySuffix = crypto.randomUUID();
         const idempotencyKey = `group-${normalizedEmail}-${Date.now()}-${index}-${idempotencySuffix}`;
 
-        const { data, error } = await supa.functions.invoke<Record<string, unknown>>("send-transactional-email", {
-          body: {
+        const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+            apikey: supabaseServiceKey,
+          },
+          body: JSON.stringify({
             templateName: "group-message",
             recipientEmail: normalizedEmail,
             idempotencyKey,
@@ -96,14 +116,22 @@ serve(async (req: Request): Promise<Response> => {
               portalLink: recipient.portalLink || undefined,
               subjectLine: subject,
             },
-          },
+          }),
         });
 
-        if (error) {
+        const rawBody = await response.text();
+        let data: Record<string, unknown> | null = null;
+        try {
+          data = rawBody ? JSON.parse(rawBody) as Record<string, unknown> : null;
+        } catch {
+          data = rawBody ? { error: rawBody } : null;
+        }
+
+        if (!response.ok) {
           return {
             email: normalizedEmail,
             status: "failed",
-            reason: error.message || "send-transactional-email failed",
+            reason: extractErrorMessage(data, response.status),
           } as RecipientResult;
         }
 
