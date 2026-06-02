@@ -1,9 +1,8 @@
-// Helper to call Edge Functions on Lovable Cloud
-// The main supabase client points to aegw (external project for data),
-// but edge functions are deployed on Lovable Cloud.
+import { AEGW_ANON_KEY, AEGW_URL, supabase } from '@/lib/supabaseClient';
 
-const LOVABLE_CLOUD_URL = 'https://secsdczrrrdncibhpbhs.supabase.co';
-const LOVABLE_CLOUD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InNlY3NkY3pycnJkbmNpYmhwYmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTU2NDMsImV4cCI6MjA5NDA5MTY0M30.dBWnIYFNZpYvt_1BL_Wkb5eSmsk_U14rnzHAWE9NlE8';
+// Helper to call Edge Functions on the same Supabase project used by auth/data.
+const EDGE_FUNCTIONS_URL = AEGW_URL;
+const EDGE_FUNCTIONS_ANON_KEY = AEGW_ANON_KEY;
 
 function safeParseJson(rawText: string) {
   if (!rawText) return null;
@@ -19,15 +18,22 @@ export async function invokeEdgeFunction<T extends Record<string, any> = Record<
   functionName: string,
   body: Record<string, any>
 ): Promise<T> {
-  const url = `${LOVABLE_CLOUD_URL}/functions/v1/${functionName}`;
+  const url = `${EDGE_FUNCTIONS_URL}/functions/v1/${functionName}`;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'apikey': EDGE_FUNCTIONS_ANON_KEY,
+  };
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'apikey': LOVABLE_CLOUD_KEY,
-    },
+    headers,
     body: JSON.stringify(body),
   });
 

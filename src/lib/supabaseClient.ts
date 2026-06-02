@@ -7,8 +7,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-const AEGW_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co";
-const AEGW_ANON_KEY =
+export const AEGW_URL = "https://hndzejkwwpwrtzqpnqme.supabase.co";
+export const AEGW_ANON_KEY =
   "sb_publishable_KK3uDx2kOLcgvFpyTcU3IA_vf7E6x0F";
 
 export const supabase = createClient<Database>(AEGW_URL, AEGW_ANON_KEY, {
