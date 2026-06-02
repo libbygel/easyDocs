@@ -150,9 +150,19 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
 
       if (response?.error) throw new Error(response.error.message || response.error);
 
+      const sentCount = Number(response?.sentCount ?? recipients.length);
+      const failedCount = Number(response?.failedCount ?? 0);
+      const suppressedCount = Number(response?.suppressedCount ?? 0);
+      const failedItems = Array.isArray(response?.failed) ? response.failed as Array<{ email?: string; error?: string }> : [];
+      const failedPreview = failedItems
+        .slice(0, 3)
+        .map((f) => `${f.email || 'unknown'}: ${f.error || 'Unknown error'}`)
+        .join(' | ');
+
       toast({
-        title: 'המיילים נשלחו',
-        description: `${response?.sentCount || recipients.length} נשלחו${response?.failedCount ? `, ${response.failedCount} נכשלו` : ''}`,
+        title: failedCount > 0 ? 'השליחה הושלמה חלקית' : 'המיילים נשלחו',
+        description: `${sentCount} נשלחו${suppressedCount ? `, ${suppressedCount} מדוכאים` : ''}${failedCount ? `, ${failedCount} נכשלו` : ''}${failedPreview ? `. ${failedPreview}` : ''}`,
+        variant: failedCount > 0 ? 'destructive' : 'default',
       });
       onOpenChange(false);
     } catch (err: any) {

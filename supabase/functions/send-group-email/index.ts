@@ -13,10 +13,20 @@ type Recipient = {
   portalLink?: string;
 };
 
+type RecipientResult = {
+  email: string;
+  status: "sent" | "failed" | "suppressed";
+  reason?: string;
+};
+
 function isValidRecipient(value: unknown): value is Recipient {
   if (!value || typeof value !== "object") return false;
   const item = value as Record<string, unknown>;
   return typeof item.email === "string" && item.email.trim().length > 0;
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -60,13 +70,22 @@ serve(async (req: Request): Promise<Response> => {
 
     const settled = await Promise.allSettled(
       recipients.map(async (recipient, index) => {
-        const idempotencySuffix = crypto.randomUUID();
-        const idempotencyKey = `group-${recipient.email}-${Date.now()}-${index}-${idempotencySuffix}`;
+        const normalizedEmail = recipient.email.trim().toLowerCase();
+        if (!isValidEmail(normalizedEmail)) {
+          return {
+            email: normalizedEmail,
+            status: "failed",
+            reason: "Invalid recipient email format",
+          } as RecipientResult;
+        }
 
-        const { data, error } = await supa.functions.invoke("send-transactional-email", {
+        const idempotencySuffix = crypto.randomUUID();
+        const idempotencyKey = `group-${normalizedEmail}-${Date.now()}-${index}-${idempotencySuffix}`;
+
+        const { data, error } = await supa.functions.invoke<Record<string, unknown>>("send-transactional-email", {
           body: {
             templateName: "group-message",
-            recipientEmail: recipient.email,
+            recipientEmail: normalizedEmail,
             idempotencyKey,
             senderName: advisorName || undefined,
             replyTo: advisorEmail || undefined,
@@ -81,29 +100,53 @@ serve(async (req: Request): Promise<Response> => {
         });
 
         if (error) {
-          throw new Error(error.message || "send-transactional-email failed");
+          return {
+            email: normalizedEmail,
+            status: "failed",
+            reason: error.message || "send-transactional-email failed",
+          } as RecipientResult;
         }
 
-        return { email: recipient.email, data };
+        if (data?.success === false && data?.reason === "email_suppressed") {
+          return {
+            email: normalizedEmail,
+            status: "suppressed",
+            reason: "Recipient unsubscribed (suppressed)",
+          } as RecipientResult;
+        }
+
+        return {
+          email: normalizedEmail,
+          status: "sent",
+        } as RecipientResult;
       }),
     );
 
-    const failed = settled
-      .map((result, index) => ({ result, recipient: recipients[index] }))
-      .filter((item) => item.result.status === "rejected")
-      .map((item) => ({
-        email: item.recipient.email,
-        error: item.result.status === "rejected"
-          ? (item.result.reason instanceof Error ? item.result.reason.message : String(item.result.reason))
-          : "unknown",
-      }));
+    const results: RecipientResult[] = settled.map((item, index) => {
+      const fallbackEmail = recipients[index]?.email || "unknown";
+      if (item.status === "fulfilled") {
+        return item.value;
+      }
+      return {
+        email: fallbackEmail,
+        status: "failed",
+        reason: item.reason instanceof Error ? item.reason.message : String(item.reason),
+      };
+    });
 
-    const sentCount = settled.length - failed.length;
+    const failed = results
+      .filter((item) => item.status === "failed")
+      .map((item) => ({ email: item.email, error: item.reason || "Unknown error" }));
+    const suppressed = results.filter((item) => item.status === "suppressed").map((item) => item.email);
+    const sentCount = results.filter((item) => item.status === "sent").length;
+
     return new Response(
       JSON.stringify({
         success: failed.length === 0,
         sentCount,
         failedCount: failed.length,
+        suppressedCount: suppressed.length,
+        suppressed,
         failed,
       }),
       {
