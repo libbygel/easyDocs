@@ -3,10 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { AEGW_ANON_KEY, AEGW_URL } from "@/lib/supabaseClient";
 
-// Lovable Cloud — Edge Functions live here (handle-email-unsubscribe)
-const SUPABASE_URL = "https://secsdczrrrdncibhpbhs.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlY3NkY3pycnJkbmNpYmhwYmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTU2NDMsImV4cCI6MjA5NDA5MTY0M30.dBWnIYFNZpYvt_1BL_Wkb5eSmsk_U14rnzHAWE9NlE8";
+const SUPABASE_URL = AEGW_URL;
+const SUPABASE_ANON_KEY = AEGW_ANON_KEY;
 
 type Status = "loading" | "valid" | "already" | "invalid" | "success" | "error" | "submitting";
 
