@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const FUNCTION_VERSION = "send-group-email@2026-06-02-fetch-v2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -170,6 +171,7 @@ serve(async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({
+        version: FUNCTION_VERSION,
         success: failed.length === 0,
         sentCount,
         failedCount: failed.length,
@@ -184,7 +186,7 @@ serve(async (req: Request): Promise<Response> => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: message, version: FUNCTION_VERSION }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

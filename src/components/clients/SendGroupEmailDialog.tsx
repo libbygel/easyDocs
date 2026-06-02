@@ -153,6 +153,7 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
       const sentCount = Number(response?.sentCount ?? recipients.length);
       const failedCount = Number(response?.failedCount ?? 0);
       const suppressedCount = Number(response?.suppressedCount ?? 0);
+      const version = typeof response?.version === 'string' ? response.version : '';
       const failedItems = Array.isArray(response?.failed) ? response.failed as Array<{ email?: string; error?: string }> : [];
       const failedPreview = failedItems
         .slice(0, 3)
@@ -161,7 +162,7 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
 
       toast({
         title: failedCount > 0 ? 'השליחה הושלמה חלקית' : 'המיילים נשלחו',
-        description: `${sentCount} נשלחו${suppressedCount ? `, ${suppressedCount} מדוכאים` : ''}${failedCount ? `, ${failedCount} נכשלו` : ''}${failedPreview ? `. ${failedPreview}` : ''}`,
+        description: `${sentCount} נשלחו${suppressedCount ? `, ${suppressedCount} מדוכאים` : ''}${failedCount ? `, ${failedCount} נכשלו` : ''}${failedPreview ? `. ${failedPreview}` : ''}${version ? ` [${version}]` : ''}`,
         variant: failedCount > 0 ? 'destructive' : 'default',
       });
       onOpenChange(false);
