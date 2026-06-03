@@ -369,7 +369,7 @@ export default function ClientDetail() {
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <Upload className="h-4 w-4 text-primary" />
-                  קישור להעלאת מסמכים
+                  קישור לפורטל (לתיק ספציפי)
                 </div>
                 <p className="text-xs text-muted-foreground">
                   שולח ללקוח קישור לפורטל של תיק ספציפי שבו הוא יכול להעלות מסמכים
@@ -381,7 +381,7 @@ export default function ClientDetail() {
                   disabled={cases.length === 0}
                 >
                   <Send className="h-4 w-4" />
-                  שלח קישור העלאה
+                  שלח קישור לפורטל
                 </Button>
               </CardContent>
             </Card>
@@ -717,32 +717,60 @@ export default function ClientDetail() {
       <Dialog open={uploadCasePickerOpen} onOpenChange={setUploadCasePickerOpen}>
         <DialogContent className="max-w-md" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-right">בחר תיק לשליחת קישור העלאה</DialogTitle>
+            <DialogTitle className="text-right">שליחת קישור לפורטל ללקוח</DialogTitle>
             <DialogDescription className="text-right">
-              הקישור יישלח ל-{client.email || 'הלקוח'} ויאפשר לו להעלות מסמכים לתיק שתבחר
+              בחר תיק לשליחת קישור הפורטל ל-{client.email || 'הלקוח'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {cases.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">אין תיקים</p>
             ) : (
-              cases.map((c) => (
-                <Button
-                  key={c.id}
-                  variant="outline"
-                  className="w-full justify-between gap-2 h-auto py-3"
-                  disabled={sendingUploadLink}
-                  onClick={() => sendUploadPortalLink(c)}
-                >
-                  <div className="flex flex-col items-start text-right min-w-0">
-                    <span className="font-medium truncate w-full">{c.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(c.created_at), 'dd/MM/yyyy')} • {c.status}
-                    </span>
+              cases.map((c) => {
+                const casePortalLink = c.portal_token ? absoluteAppUrl(`/portal/${c.portal_token}`) : '';
+                return (
+                  <div key={c.id} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex flex-col text-right min-w-0">
+                      <span className="font-medium truncate">{c.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(c.created_at), 'dd/MM/yyyy')} • {c.status}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 gap-2"
+                        disabled={sendingUploadLink || !client.email || !c.portal_token}
+                        onClick={() => sendUploadPortalLink(c)}
+                      >
+                        {sendingUploadLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        שלח במייל
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="העתק קישור"
+                        disabled={!c.portal_token}
+                        onClick={() => {
+                          navigator.clipboard.writeText(casePortalLink);
+                          toast({ title: 'הקישור הועתק' });
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="פתח קישור"
+                        disabled={!c.portal_token}
+                        onClick={() => window.open(casePortalLink, '_blank')}
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  {sendingUploadLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              ))
+                );
+              })
             )}
           </div>
         </DialogContent>

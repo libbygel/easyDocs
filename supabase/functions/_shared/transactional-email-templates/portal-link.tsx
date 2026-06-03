@@ -21,7 +21,7 @@ function getTitle(emailType?: string, advisorName?: string, caseTitle?: string) 
     case 'master_portal':
       return advisorName ? `${advisorName} שלח/ה לך קישור לצפייה בתיקים שלך` : `קישור לצפייה בתיקים שלך`
     default:
-      return `תזכורת: מסמכים ממתינים - ${caseTitle}`
+      return advisorName ? `קיבלת הודעה מ${advisorName} בנוגע לתיק ${caseTitle}` : `תזכורת: מסמכים ממתינים - ${caseTitle}`
   }
 }
 
@@ -41,7 +41,7 @@ function getBody(emailType?: string, advisorName?: string, caseTitle?: string) {
         : `קיבלת קישור לצפייה בכל התיקים שלך באזור האישי. הקישור מיועד לצפייה בלבד.`
     default:
       return advisorName
-        ? `זוהי תזכורת מ-${advisorName} בנוגע לתיק ${caseTitle} — ישנם מסמכים שעדיין ממתינים להעלאה.`
+        ? `${advisorName} שלח/ה לך הודעה בנוגע לתיק ${caseTitle} — ישנם מסמכים שעדיין ממתינים להעלאה.`
         : `זוהי תזכורת בנוגע לתיק ${caseTitle} — ישנם מסמכים שעדיין ממתינים להעלאה.`
   }
 }
