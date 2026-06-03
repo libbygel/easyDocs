@@ -30,6 +30,12 @@ export function createPortalClient(portalToken: string) {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
+      storageKey: `sb-portal-${portalToken}`,
+      storage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
     },
     global: {
       headers: {

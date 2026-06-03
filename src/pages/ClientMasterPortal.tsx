@@ -88,6 +88,7 @@ export default function ClientMasterPortal() {
           .order('created_at', { ascending: false });
 
         if (error || !caseRows || caseRows.length === 0) {
+          console.error('ClientMasterPortal: query failed', { error, caseRows, token });
           setNotFound(true);
           setLoading(false);
           return;
