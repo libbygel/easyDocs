@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { createPortalClient } from '@/lib/supabaseClient';
+import { createMasterPortalClient } from '@/lib/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, FileText, FolderOpen, ExternalLink, AlertCircle, Wallet, Clock, History, Upload } from 'lucide-react';
@@ -55,7 +55,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function ClientMasterPortal() {
   const { token } = useParams<{ token: string }>();
-  const supabase = useMemo(() => createPortalClient(token || ''), [token]);
+  const supabase = useMemo(() => createMasterPortalClient(token || ''), [token]);
   const [client, setClient] = useState<ClientRow | null>(null);
   const [cases, setCases] = useState<CaseRow[]>([]);
   const [docsByCase, setDocsByCase] = useState<Map<string, DocRow[]>>(new Map());

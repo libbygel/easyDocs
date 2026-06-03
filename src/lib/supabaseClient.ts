@@ -44,3 +44,27 @@ export function createPortalClient(portalToken: string) {
     },
   });
 }
+
+/**
+ * Creates a Supabase client for the master portal (client-portal).
+ * Sends client_id via x-portal-client-id header for RLS matching.
+ */
+export function createMasterPortalClient(clientId: string) {
+  return createClient<Database>(AEGW_URL, AEGW_ANON_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      storageKey: `sb-master-portal-${clientId}`,
+      storage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    },
+    global: {
+      headers: {
+        "x-portal-client-id": clientId,
+      },
+    },
+  });
+}
