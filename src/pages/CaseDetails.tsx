@@ -321,18 +321,17 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
     }
     setSendingPortalLink(true);
     try {
-      const portalLink = absoluteAppUrl(`/portal/${caseData.portal_token}`);
+      const portalLink = absoluteAppUrl(`/client-portal/${caseData.client_id}`);
       const response = await invokeEdgeFunction('send-portal-link', {
         clientName: caseData.clients?.full_name || '',
         clientEmail: caseData.clients.email,
-        caseTitle: caseData.title || '',
+        caseTitle: 'אזור אישי - צפייה בכל התיקים',
         portalLink,
         advisorEmail: user?.email || '',
         advisorName: advisorName || user?.email?.split('@')[0] || '',
-        emailType: 'reminder',
+        emailType: 'master_portal',
       });
       if ((response as any)?.error) throw new Error((response as any).error);
-      await supabase.from('cases').update({ last_portal_link_sent_at: new Date().toISOString() } as any).eq('id', caseData.id);
       toast({ title: 'הקישור נשלח', description: `קישור לפורטל נשלח ל-${caseData.clients.email}` });
     } catch (err: any) {
       toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });

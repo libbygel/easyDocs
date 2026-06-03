@@ -51,8 +51,7 @@ export default function ClientPortal() {
         .from('cases')
         .select(`
           *,
-          clients!cases_client_id_fkey (*),
-          case_types!cases_case_type_id_fkey (*)
+          clients!cases_client_id_fkey (*)
         `)
         .eq('portal_token', token)
         .eq('portal_enabled', true)
@@ -69,8 +68,9 @@ export default function ClientPortal() {
         return;
       }
 
-      // Check if password protection is enabled
-      if (caseRes.portal_password && !authenticated && !bypassPasswordCheck) {
+      // Check if password protection is enabled (explicit or via client ID number)
+      const effectivePassword = caseRes.portal_password || (caseRes.clients?.id_number?.trim() || '');
+      if (effectivePassword && !authenticated && !bypassPasswordCheck) {
         setCaseData(caseRes);
         setPasswordRequired(true);
         setLoading(false);
@@ -583,7 +583,8 @@ export default function ClientPortal() {
   if (passwordRequired && !authenticated) {
     const handlePasswordSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      if (passwordInput === caseData.portal_password) {
+      const effectivePassword = caseData.portal_password || (caseData.clients?.id_number?.trim() || '');
+      if (passwordInput === effectivePassword) {
         setAuthenticated(true);
         setPasswordRequired(false);
         setPasswordError(false);

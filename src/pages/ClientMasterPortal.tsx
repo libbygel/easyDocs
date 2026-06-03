@@ -81,7 +81,6 @@ export default function ClientMasterPortal() {
           .from('cases')
           .select(`
             id, title, status, created_at, portal_token,
-            case_types!cases_case_type_id_fkey ( name ),
             clients!cases_client_id_fkey ( id, full_name, id_number )
           `)
           .eq('client_id', token)
