@@ -128,6 +128,7 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
   const [uploadSignaturePdfDoc, setUploadSignaturePdfDoc] = useState<DocumentWithUpload | null>(null);
   const [advisorUploadDoc, setAdvisorUploadDoc] = useState<DocumentWithUpload | null>(null);
   const [previewMode, setPreviewMode] = useState<'new_tab' | 'modal'>('new_tab');
+  const [sendingPortalLink, setSendingPortalLink] = useState(false);
   const [advisorName, setAdvisorName] = useState('');
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
@@ -311,6 +312,33 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
       title: 'קישור פורטל הלקוח הועתק',
       description: 'קישור צפייה בלבד לכל התיקים של הלקוח',
     });
+  };
+
+  const sendPortalLinkToClient = async () => {
+    if (!caseData?.clients?.email) {
+      toast({ title: 'ללקוח אין כתובת מייל', variant: 'destructive' });
+      return;
+    }
+    setSendingPortalLink(true);
+    try {
+      const portalLink = absoluteAppUrl(`/portal/${caseData.portal_token}`);
+      const response = await invokeEdgeFunction('send-portal-link', {
+        clientName: caseData.clients?.full_name || '',
+        clientEmail: caseData.clients.email,
+        caseTitle: caseData.title || '',
+        portalLink,
+        advisorEmail: user?.email || '',
+        advisorName: advisorName || user?.email?.split('@')[0] || '',
+        emailType: 'reminder',
+      });
+      if ((response as any)?.error) throw new Error((response as any).error);
+      await supabase.from('cases').update({ last_portal_link_sent_at: new Date().toISOString() } as any).eq('id', caseData.id);
+      toast({ title: 'הקישור נשלח', description: `קישור לפורטל נשלח ל-${caseData.clients.email}` });
+    } catch (err: any) {
+      toast({ title: 'שגיאה בשליחת המייל', description: err?.message, variant: 'destructive' });
+    } finally {
+      setSendingPortalLink(false);
+    }
   };
 
   const handleApprove = async (docId: string, docName: string) => {
@@ -730,6 +758,14 @@ const CaseDetails = React.forwardRef<HTMLDivElement, Record<string, never>>(func
                       >
                         <ExternalLink className="h-4 w-4" />
                         פתח פורטל לקוח
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={sendPortalLinkToClient}
+                        disabled={sendingPortalLink || !caseData.clients?.email}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <Send className="h-4 w-4" />
+                        שלח לינק לפורטל ללקוח
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
