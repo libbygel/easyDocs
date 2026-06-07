@@ -95,7 +95,12 @@ export default function ClientMasterPortal() {
         }
 
         const c = (caseRows[0] as any).clients;
-        setClient({ id: c.id, full_name: c.full_name, id_number: c.id_number });
+        if (!c) {
+          // clients join failed (RLS) — use client_id from URL as fallback
+          setClient({ id: token!, full_name: '', id_number: null });
+        } else {
+          setClient({ id: c.id, full_name: c.full_name, id_number: c.id_number });
+        }
         setCases(caseRows.map((row: any) => ({
           id: row.id,
           title: row.title,

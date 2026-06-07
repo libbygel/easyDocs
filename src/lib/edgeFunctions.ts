@@ -26,10 +26,8 @@ export async function invokeEdgeFunction<T extends Record<string, any> = Record<
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'apikey': EDGE_FUNCTIONS_ANON_KEY,
+    'Authorization': `Bearer ${session?.access_token || EDGE_FUNCTIONS_ANON_KEY}`,
   };
-  if (session?.access_token) {
-    headers.Authorization = `Bearer ${session.access_token}`;
-  }
 
   const response = await fetch(url, {
     method: 'POST',

@@ -14,6 +14,21 @@ export async function downloadFilesAsZip(
 ): Promise<void> {
   const zip = new JSZip();
 
+  // Deduplicate filenames BEFORE fetching to avoid race conditions
+  const uniqueNames: string[] = [];
+  const nameCount = new Map<string, number>();
+  for (const file of files) {
+    const count = nameCount.get(file.fileName) || 0;
+    if (count === 0) {
+      uniqueNames.push(file.fileName);
+    } else {
+      const ext = file.fileName.substring(file.fileName.lastIndexOf('.'));
+      const base = file.fileName.substring(0, file.fileName.lastIndexOf('.'));
+      uniqueNames.push(`${base}_${count}${ext}`);
+    }
+    nameCount.set(file.fileName, count + 1);
+  }
+
   // Fetch all files in parallel
   const fetchPromises = files.map(async (file, index) => {
     try {
@@ -21,17 +36,7 @@ export async function downloadFilesAsZip(
       if (!response.ok) throw new Error(`Failed to fetch ${file.fileName}`);
       
       const blob = await response.blob();
-      
-      // Handle duplicate filenames by adding index
-      let fileName = file.fileName;
-      const existingFiles = Object.keys(zip.files);
-      if (existingFiles.includes(fileName)) {
-        const ext = fileName.substring(fileName.lastIndexOf('.'));
-        const base = fileName.substring(0, fileName.lastIndexOf('.'));
-        fileName = `${base}_${index}${ext}`;
-      }
-      
-      zip.file(fileName, blob);
+      zip.file(uniqueNames[index], blob);
     } catch (error) {
       console.error(`Error fetching file ${file.fileName}:`, error);
     }
