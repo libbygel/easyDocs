@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Plus, Search, FolderOpen, Eye, Trash2, Send } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { CreateCaseDialog } from '@/components/cases/CreateCaseDialog';
@@ -62,6 +63,8 @@ export default function Cases() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
+  const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -255,6 +258,40 @@ export default function Cases() {
     fetchCases();
   };
 
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedCases.size === 0) return;
+    const ids = Array.from(selectedCases);
+    const { error } = await supabase.from('cases').delete().in('id', ids);
+    if (error) {
+      toast({ title: 'שגיאה במחיקת תיקים', variant: 'destructive' });
+    } else {
+      toast({ title: `${ids.length} תיקים נמחקו בהצלחה` });
+    }
+    setBulkDeleteDialogOpen(false);
+    setSelectedCases(new Set());
+    fetchCases();
+  };
+
+  const toggleSelectCase = (id: string) => {
+    setSelectedCases((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCases.size === paginatedData.length) {
+      setSelectedCases(new Set());
+    } else {
+      setSelectedCases(new Set(paginatedData.map((c) => c.id)));
+    }
+  };
+
   const handlePendingDocsFilterToggle = (nextValue: boolean) => {
     setShowPendingDocsOnly(nextValue);
     const nextParams = new URLSearchParams(searchParams);
@@ -379,10 +416,40 @@ export default function Cases() {
               </div>
             ) : (
               <div className="space-y-4">
+                {selectedCases.size > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                    <span className="text-sm font-medium">
+                      {selectedCases.size} תיקים נבחרו
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => setBulkDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      מחק נבחרים
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedCases(new Set())}
+                    >
+                      בטל בחירה
+                    </Button>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-10">
+                          <Checkbox
+                            checked={paginatedData.length > 0 && selectedCases.size === paginatedData.length}
+                            onCheckedChange={toggleSelectAll}
+                            aria-label="בחר הכל"
+                          />
+                        </TableHead>
                         <TableHead>כותרת</TableHead>
                         <TableHead>לקוח</TableHead>
                         <TableHead>
@@ -478,6 +545,13 @@ export default function Cases() {
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/cases/${caseItem.id}`)}
                         >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedCases.has(caseItem.id)}
+                              onCheckedChange={() => toggleSelectCase(caseItem.id)}
+                              aria-label={`בחר ${caseItem.title}`}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {caseItem.title}
                           </TableCell>
@@ -568,7 +642,7 @@ export default function Cases() {
                         </TableRow>
                       )) : (
                         <TableRow>
-                          <TableCell colSpan={9} className="py-8 text-center">
+                          <TableCell colSpan={10} className="py-8 text-center">
                             <p className="text-muted-foreground">לא נמצאו תיקים לפי הסינון שנבחר</p>
                             {hasActiveFilters && (
                               <Button variant="outline" className="mt-3" onClick={resetAllFilters}>
@@ -643,6 +717,13 @@ export default function Cases() {
         onConfirm={handleDeleteConfirm}
         title="מחיקת תיק"
         description="האם אתה בטוח שברצונך למחוק תיק זה? כל המסמכים והפעילות המשויכים אליו יימחקו גם כן."
+      />
+      <DeleteConfirmationDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        onConfirm={handleBulkDeleteConfirm}
+        title="מחיקת תיקים מרובים"
+        description={`האם אתה בטוח שברצונך למחוק ${selectedCases.size} תיקים? כל המסמכים והפעילות המשויכים אליהם יימחקו גם כן. פעולה זו אינה ניתנת לביטול.`}
       />
     </AppLayout>
   );
