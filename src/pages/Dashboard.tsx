@@ -309,37 +309,37 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {documentPieData.length > 0 ? (
-                <div className="flex items-center gap-4">
-                  <div className="h-48 w-48">
+                <div className="flex flex-col sm:flex-row items-center gap-6" dir="rtl">
+                  <div className="h-56 w-56 min-w-[14rem]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                         <Pie
                           data={documentPieData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={40}
-                          outerRadius={70}
+                          innerRadius={35}
+                          outerRadius={60}
                           dataKey="value"
-                          label={({ name, value }) => `${name}: ${value}`}
+                          label={false}
                           labelLine={false}
                         >
                           {documentPieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip formatter={(value, name) => [`${value}`, `${name}`]} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-2 text-right">
                     {documentPieData.map((item) => (
                       <div key={item.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div 
-                            className="h-3 w-3 rounded-full" 
+                            className="h-3 w-3 rounded-full shrink-0" 
                             style={{ backgroundColor: item.color }} 
                           />
-                          <span className="text-sm">{item.name}</span>
+                          <span className="text-sm whitespace-nowrap">{item.name}</span>
                         </div>
                         <span className="font-medium">{item.value}</span>
                       </div>
