@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { createPortalClient } from '@/lib/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { absoluteAppUrl } from '@/lib/appUrl';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -506,7 +507,8 @@ export default function ClientPortal() {
           advisorId: advisorIdForEmail,   // tied to the case via portal context
           advisorEmail: advisorEmailFromCase,
           advisorName: advisorNameFromCase,
-          portalUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+          // Advisor-facing link to the case page (NOT the client portal URL).
+          portalUrl: caseData?.id ? absoluteAppUrl(`/cases/${caseData.id}`) : undefined,
         });
 
         emailSkippedReason = emailRes?.skipped || '';
