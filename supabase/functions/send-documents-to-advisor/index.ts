@@ -174,7 +174,28 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      // The inner email function failed. Surface the *real* reason (the
+      // FunctionsHttpError only says "non-2xx"; the detail is in the response
+      // body) and DO NOT fail the whole request — the documents were already
+      // saved + the advisor got an in-app notification. Returning 200 lets the
+      // portal show a graceful "email failed" message instead of a hard error.
+      let detail = error?.message || String(error);
+      try {
+        const ctx = (error as any)?.context;
+        if (ctx && typeof ctx.text === "function") {
+          const body = await ctx.text();
+          if (body) detail = body;
+        }
+      } catch (_) {
+        // ignore — keep the generic message
+      }
+      console.error("send-transactional-email failed:", detail);
+      return new Response(
+        JSON.stringify({ success: false, emailError: detail }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
 
     return new Response(JSON.stringify({ success: true, data }), {
       status: 200,

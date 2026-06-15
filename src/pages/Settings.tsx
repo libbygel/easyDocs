@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Settings as SettingsIcon, Bell, Clock, Mail, Save, Loader2, Eye, DollarSign, Timer, Play } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Clock, Mail, Save, Loader2, Eye, DollarSign, Timer } from 'lucide-react';
 import { CategoriesManager } from '@/components/settings/CategoriesManager';
 import { supabase } from '@/lib/supabase';
 
@@ -88,7 +88,7 @@ export default function Settings() {
     setLoading(false);
   };
 
-  const [runningCharges, setRunningCharges] = useState(false);
+
 
   return (
     <AppLayout>
@@ -323,34 +323,12 @@ export default function Settings() {
               <DollarSign className="h-5 w-5" />
               חיובים חודשיים
             </CardTitle>
-            <CardDescription>הרצה ידנית של חיובים חודשיים עבור כל הלקוחות הפעילים</CardDescription>
+            <CardDescription>חיובים חודשיים אוטומטיים עבור כל הלקוחות הפעילים</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
               המערכת מריצה חיובים חודשיים אוטומטית לפי יום החיוב שהוגדר לכל לקוח.
-              לחץ כאן להרצה ידנית מיידית עבור כל הלקוחות שיום החיוב שלהם הגיע.
             </p>
-            <Button
-              variant="outline"
-              className="gap-2"
-              disabled={runningCharges}
-              onClick={async () => {
-                setRunningCharges(true);
-                try {
-                  const { data, error } = await supabase.functions.invoke('run-recurring-charges', { body: {} });
-                  if (error) throw error;
-                  const created = (data as any)?.created ?? 0;
-                  toast({ title: created > 0 ? `נוצרו ${created} חיובים חודשיים` : 'אין חיובים שדורשים יצירה כעת' });
-                } catch (err: any) {
-                  toast({ title: 'שגיאה בהרצת חיובים', description: err?.message, variant: 'destructive' });
-                } finally {
-                  setRunningCharges(false);
-                }
-              }}
-            >
-              {runningCharges ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-              הרץ חיובים חודשיים עכשיו
-            </Button>
           </CardContent>
         </Card>
       </div>

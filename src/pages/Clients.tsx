@@ -27,13 +27,13 @@ import { Mail, FolderPlus, FileSpreadsheet, TrendingDown } from 'lucide-react';
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>(() => sessionStorage.getItem('clients:filterCategory') || 'all');
   const [groupEmailOpen, setGroupEmailOpen] = useState(false);
   const [groupEmailInitialCategory, setGroupEmailInitialCategory] = useState<string | undefined>(undefined);
   const [bulkCasesOpen, setBulkCasesOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(() => sessionStorage.getItem('clients:searchTerm') || '');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -54,6 +54,36 @@ export default function Clients() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Persist filter + search so they survive navigating into a client and back.
+  useEffect(() => {
+    sessionStorage.setItem('clients:filterCategory', filterCategory);
+  }, [filterCategory]);
+  useEffect(() => {
+    sessionStorage.setItem('clients:searchTerm', searchTerm);
+  }, [searchTerm]);
+
+  // Save current scroll position, then open the client page. On returning, the
+  // restore effect below puts the user back where they were.
+  const goToClient = (id: string) => {
+    sessionStorage.setItem('clients:scroll', String(window.scrollY));
+    navigate(`/clients/${id}`);
+  };
+
+  // Restore scroll position once after the list has loaded (only when coming
+  // back from a client page — the value is removed after a single use so
+  // opening the page fresh from the menu still starts at the top).
+  useEffect(() => {
+    if (loading) return;
+    const saved = sessionStorage.getItem('clients:scroll');
+    if (saved !== null) {
+      sessionStorage.removeItem('clients:scroll');
+      const y = parseInt(saved, 10);
+      if (!Number.isNaN(y)) {
+        requestAnimationFrame(() => window.scrollTo(0, y));
+      }
+    }
+  }, [loading]);
 
   const fetchClients = async () => {
     if (!user) {
@@ -395,7 +425,7 @@ export default function Clients() {
                         <React.Fragment key={client.id}>
                           <TableRow
                             className={`cursor-pointer hover:bg-accent/50 ${selectedIds.has(client.id) ? 'bg-accent/30' : ''} ${isExpanded ? 'border-b-0' : ''}`}
-                            onClick={() => navigate(`/clients/${client.id}`)}
+                            onClick={() => goToClient(client.id)}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
@@ -424,7 +454,7 @@ export default function Clients() {
                                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${client.id}`)} title="פתח עמוד לקוח">
+                                <Button variant="ghost" size="sm" onClick={() => goToClient(client.id)} title="פתח עמוד לקוח">
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="sm" onClick={() => handleEditClick(client)}>

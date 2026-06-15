@@ -41,6 +41,10 @@ interface ClientRow {
   bank_account_number?: string | null;
   bank_account_holder?: string | null;
   children_birth_years?: string[] | null;
+  spouse_full_name?: string | null;
+  spouse_id_number?: string | null;
+  spouse_phone?: string | null;
+  spouse_email?: string | null;
   notes: string | null;
   created_at: string;
 }
@@ -174,6 +178,13 @@ export default function ClientDetail() {
     client?.bank_branch ||
     client?.bank_account_number ||
     client?.bank_account_holder
+  );
+
+  const hasSpouseDetails = Boolean(
+    client?.spouse_full_name ||
+    client?.spouse_id_number ||
+    client?.spouse_phone ||
+    client?.spouse_email
   );
 
   const saveClientHourlyRate = async () => {
@@ -518,6 +529,36 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">פרטי בן/בת זוג</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!hasSpouseDetails ? (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בן/בת זוג ללקוח זה.</div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם מלא</div>
+                      <div className="font-medium">{client.spouse_full_name || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">תעודת זהות</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_id_number || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">טלפון</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_phone || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">אימייל</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_email || '—'}</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">פרטי בנק</CardTitle>

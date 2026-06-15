@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { Body, Container, Head, Heading, Html, Preview, Text, Section } from 'npm:@react-email/components@0.0.22'
+import { Body, Container, Head, Heading, Html, Preview, Text, Section, Button } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 import { main, container, card, h1, text, footer, noteBox } from './_styles.ts'
 
@@ -9,9 +9,10 @@ interface Props {
   caseTitle?: string
   clientName?: string
   documents?: DocItem[]
+  portalUrl?: string
 }
 
-const ClientSubmissionNotificationEmail = ({ recipientName = 'יועץ', caseTitle = '', clientName = 'הלקוח', documents = [] }: Props) => (
+const ClientSubmissionNotificationEmail = ({ recipientName = 'יועץ', caseTitle = '', clientName = 'הלקוח', documents = [], portalUrl }: Props) => (
   <Html lang="he" dir="rtl">
     <Head><meta charSet="utf-8" /></Head>
     <Preview>{clientName} שלח מסמכים לתיק {caseTitle}</Preview>
@@ -32,6 +33,11 @@ const ClientSubmissionNotificationEmail = ({ recipientName = 'יועץ', caseTit
             </Section>
           )}
           <Text style={text}>היכנס למערכת כדי לצפות במסמכים ולאשר אותם.</Text>
+          {portalUrl && (
+            <Button href={portalUrl} style={{ background: '#1E3A8A', color: '#fff', padding: '12px 20px', borderRadius: 8, textDecoration: 'none', display: 'inline-block', marginTop: 12 }}>
+              צפייה בתיק
+            </Button>
+          )}
         </Section>
         <Section style={footer}>נשלח מ-EasyDocs</Section>
       </Container>
