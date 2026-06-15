@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { ISRAELI_BANKS, getBankNameByCode } from '@/lib/israeliBanks';
 import { Loader2, UserPlus } from 'lucide-react';
 
 interface InlineCreateClientDialogProps {
@@ -201,15 +202,26 @@ export function InlineCreateClientDialog({
               <Label htmlFor="inline-bankAccountHolder" className="text-sm">שם בעל החשבון</Label>
               <Input id="inline-bankAccountHolder" value={bankAccountHolder} onChange={(e) => setBankAccountHolder(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="inline-bankName" className="text-sm">שם הבנק</Label>
-                <Input id="inline-bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="inline-bankNumber" className="text-sm">מספר בנק</Label>
-                <Input id="inline-bankNumber" value={bankNumber} onChange={(e) => setBankNumber(e.target.value)} dir="ltr" />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="inline-bankName" className="text-sm">שם הבנק</Label>
+              <Select
+                value={bankNumber || undefined}
+                onValueChange={(value) => {
+                  setBankNumber(value);
+                  setBankName(getBankNameByCode(value));
+                }}
+              >
+                <SelectTrigger id="inline-bankName">
+                  <SelectValue placeholder="בחר בנק" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ISRAELI_BANKS.map((bank) => (
+                    <SelectItem key={bank.code} value={String(bank.code)}>
+                      {bank.name} ({bank.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">

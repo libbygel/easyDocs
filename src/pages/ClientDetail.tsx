@@ -515,25 +515,42 @@ export default function ClientDetail() {
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle className="text-base">ילדים</CardTitle>
+                <CardTitle className="text-base">שנות לידה של ילדים</CardTitle>
               </CardHeader>
-              <CardContent>
-                {!(client.children_birth_years && client.children_birth_years.filter(Boolean).length > 0) ? (
-                  <div className="text-sm text-muted-foreground">לא הוגדרו ילדים ללקוח זה.</div>
-                ) : (
-                  <div className="text-sm">
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {client.children_birth_years.filter(Boolean).length} ילדים • שנות לידה
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {client.children_birth_years.filter(Boolean).map((year, i) => (
-                        <span key={i} className="inline-block bg-primary/10 text-primary px-2 py-0.5 rounded text-sm" dir="ltr">
-                          {year}
-                        </span>
-                      ))}
-                    </div>
+              <CardContent className="space-y-3">
+                {client.children_birth_years && client.children_birth_years.filter(Boolean).length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {client.children_birth_years.filter(Boolean).map((year, i) => (
+                      <span key={i} className="inline-block bg-primary/10 text-primary px-2 py-0.5 rounded text-sm" dir="ltr">
+                        {year}
+                      </span>
+                    ))}
                   </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו ילדים ללקוח זה.</div>
                 )}
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                  <div className="space-y-1 sm:w-full">
+                    <div className="text-xs text-muted-foreground">הזנה מופרדת בפסיק או רווח (למשל: 2012, 2015, 2019)</div>
+                    <Input
+                      value={childrenBirthYearsInput}
+                      onChange={(e) => setChildrenBirthYearsInput(e.target.value)}
+                      placeholder="2012, 2015"
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button onClick={saveChildrenBirthYears} disabled={savingChildrenYears}>
+                    {savingChildrenYears ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    שמור
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setChildrenBirthYearsInput('')}
+                    disabled={savingChildrenYears}
+                  >
+                    נקה
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -622,36 +639,6 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">שנות לידה של ילדים</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-                  <div className="space-y-1 sm:w-full">
-                    <div className="text-xs text-muted-foreground">הזנה מופרדת בפסיק או רווח (למשל: 2012, 2015, 2019)</div>
-                    <Input
-                      value={childrenBirthYearsInput}
-                      onChange={(e) => setChildrenBirthYearsInput(e.target.value)}
-                      placeholder="2012, 2015"
-                      dir="ltr"
-                    />
-                  </div>
-                  <Button onClick={saveChildrenBirthYears} disabled={savingChildrenYears}>
-                    {savingChildrenYears ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    שמור
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setChildrenBirthYearsInput('')}
-                    disabled={savingChildrenYears}
-                  >
-                    נקה
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">תעריף עבודה ללקוח</CardTitle>

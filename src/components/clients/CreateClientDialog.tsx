@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { ISRAELI_BANKS, getBankNameByCode } from '@/lib/israeliBanks';
 import { Loader2, Plus } from 'lucide-react';
 
 interface CreateClientDialogProps {
@@ -203,15 +204,26 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Label htmlFor="bankAccountHolder" className="text-sm">שם בעל החשבון</Label>
               <Input id="bankAccountHolder" value={bankAccountHolder} onChange={(e) => setBankAccountHolder(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="bankName" className="text-sm">שם הבנק</Label>
-                <Input id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankNumber" className="text-sm">מספר בנק</Label>
-                <Input id="bankNumber" value={bankNumber} onChange={(e) => setBankNumber(e.target.value)} dir="ltr" />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankName" className="text-sm">שם הבנק</Label>
+              <Select
+                value={bankNumber || undefined}
+                onValueChange={(value) => {
+                  setBankNumber(value);
+                  setBankName(getBankNameByCode(value));
+                }}
+              >
+                <SelectTrigger id="bankName">
+                  <SelectValue placeholder="בחר בנק" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ISRAELI_BANKS.map((bank) => (
+                    <SelectItem key={bank.code} value={String(bank.code)}>
+                      {bank.name} ({bank.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
