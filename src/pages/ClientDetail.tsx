@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare, User } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { absoluteAppUrl } from '@/lib/appUrl';
@@ -461,8 +461,12 @@ export default function ClientDetail() {
           />
         </div>
 
-        <Tabs defaultValue="documents" className="space-y-4">
+        <Tabs defaultValue="personal" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="personal" className="gap-1">
+              <User className="h-4 w-4" />
+              פרטים אישיים
+            </TabsTrigger>
             <TabsTrigger value="documents" className="gap-1">
               <FileText className="h-4 w-4" />
               מסמכי לקוח
@@ -477,12 +481,101 @@ export default function ClientDetail() {
             <TabsTrigger value="activity">היסטוריית פעילות</TabsTrigger>
           </TabsList>
 
+          {/* Personal details: spouse, children, bank */}
+          <TabsContent value="personal" className="space-y-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">פרטי בן/בת זוג</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!hasSpouseDetails ? (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בן/בת זוג ללקוח זה.</div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם מלא</div>
+                      <div className="font-medium">{client.spouse_full_name || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">תעודת זהות</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_id_number || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">טלפון</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_phone || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">אימייל</div>
+                      <div className="font-medium" dir="ltr">{client.spouse_email || '—'}</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">ילדים</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!(client.children_birth_years && client.children_birth_years.filter(Boolean).length > 0) ? (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו ילדים ללקוח זה.</div>
+                ) : (
+                  <div className="text-sm">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {client.children_birth_years.filter(Boolean).length} ילדים • שנות לידה
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {client.children_birth_years.filter(Boolean).map((year, i) => (
+                        <span key={i} className="inline-block bg-primary/10 text-primary px-2 py-0.5 rounded text-sm" dir="ltr">
+                          {year}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">פרטי בנק</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!hasBankDetails ? (
+                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בנק ללקוח זה.</div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם בעל החשבון</div>
+                      <div className="font-medium">{client.bank_account_holder || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">שם הבנק</div>
+                      <div className="font-medium">{client.bank_name || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">מספר בנק</div>
+                      <div className="font-medium" dir="ltr">{client.bank_number || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">סניף</div>
+                      <div className="font-medium" dir="ltr">{client.bank_branch || '—'}</div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-xs text-muted-foreground">מספר חשבון</div>
+                      <div className="font-medium" dir="ltr">{client.bank_account_number || '—'}</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Client documents */}
           <TabsContent value="documents">
             <ClientDocumentsPanel clientId={client.id} />
           </TabsContent>
-
-          {/* Conversation summaries */}
           <TabsContent value="conversations">
             <ClientConversationsPanel clientId={client.id} />
           </TabsContent>
@@ -529,70 +622,6 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">פרטי בן/בת זוג</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!hasSpouseDetails ? (
-                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בן/בת זוג ללקוח זה.</div>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
-                    <div>
-                      <div className="text-xs text-muted-foreground">שם מלא</div>
-                      <div className="font-medium">{client.spouse_full_name || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">תעודת זהות</div>
-                      <div className="font-medium" dir="ltr">{client.spouse_id_number || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">טלפון</div>
-                      <div className="font-medium" dir="ltr">{client.spouse_phone || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">אימייל</div>
-                      <div className="font-medium" dir="ltr">{client.spouse_email || '—'}</div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">פרטי בנק</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!hasBankDetails ? (
-                  <div className="text-sm text-muted-foreground">לא הוגדרו פרטי בנק ללקוח זה.</div>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2 text-sm">
-                    <div>
-                      <div className="text-xs text-muted-foreground">שם בעל החשבון</div>
-                      <div className="font-medium">{client.bank_account_holder || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">שם הבנק</div>
-                      <div className="font-medium">{client.bank_name || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">מספר בנק</div>
-                      <div className="font-medium" dir="ltr">{client.bank_number || '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">סניף</div>
-                      <div className="font-medium" dir="ltr">{client.bank_branch || '—'}</div>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <div className="text-xs text-muted-foreground">מספר חשבון</div>
-                      <div className="font-medium" dir="ltr">{client.bank_account_number || '—'}</div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">שנות לידה של ילדים</CardTitle>
