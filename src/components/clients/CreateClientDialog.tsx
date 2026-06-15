@@ -35,6 +35,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const [bankBranch, setBankBranch] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [bankAccountHolder, setBankAccountHolder] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -103,6 +104,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       bank_branch: bankBranch || null,
       bank_account_number: bankAccountNumber || null,
       bank_account_holder: bankAccountHolder || null,
+      hourly_rate: hourlyRate.trim() === '' ? null : parseFloat(hourlyRate),
     };
     let { error } = await supabase.from('clients').insert(insertPayload);
     // Resilience: if newer columns don't exist on a remote/external DB
@@ -119,6 +121,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       delete fallback.bank_branch;
       delete fallback.bank_account_number;
       delete fallback.bank_account_holder;
+      delete fallback.hourly_rate;
       const retry = await supabase.from('clients').insert(fallback);
       error = retry.error;
     }
@@ -132,6 +135,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       setFullName(''); setPhone(''); setEmail(''); setIdNumber('');
       setCategoryId(''); setSpouseFullName(''); setSpouseIdNumber(''); setSpousePhone(''); setSpouseEmail(''); setChildrenBirthYearsInput('');
       setBankName(''); setBankNumber(''); setBankBranch(''); setBankAccountNumber(''); setBankAccountHolder('');
+      setHourlyRate('');
     }
     setLoading(false);
   };
@@ -181,8 +185,18 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">לניהול הסיווגים: הגדרות → סיווגי לקוחות</p>
-          </div>
-          <div className="space-y-2">
+          </div>          <div className="space-y-2">
+            <Label htmlFor="hourlyRate">תעריף לשעה (₪)</Label>
+            <Input
+              id="hourlyRate"
+              type="number"
+              min={0}
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              placeholder="למשל 350"
+              dir="ltr"
+            />
+          </div>          <div className="space-y-2">
             <Label htmlFor="childrenBirthYears">שנות לידה של ילדים</Label>
             <Input
               id="childrenBirthYears"

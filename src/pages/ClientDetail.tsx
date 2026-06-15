@@ -587,6 +587,38 @@ export default function ClientDetail() {
                 )}
               </CardContent>
             </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">תעריף עבודה ללקוח</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                  <div className="space-y-1 sm:w-56">
+                    <div className="text-xs text-muted-foreground">תעריף לשעה (₪)</div>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={hourlyRateInput}
+                      onChange={(e) => setHourlyRateInput(e.target.value)}
+                      placeholder="למשל 350"
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button onClick={saveClientHourlyRate} disabled={savingRate}>
+                    {savingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    שמור תעריף
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setHourlyRateInput('')}
+                    disabled={savingRate}
+                  >
+                    נקה תעריף
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Client documents */}
@@ -639,38 +671,6 @@ export default function ClientDetail() {
 
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">תעריף עבודה ללקוח</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-                  <div className="space-y-1 sm:w-56">
-                    <div className="text-xs text-muted-foreground">תעריף לשעה (₪)</div>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={hourlyRateInput}
-                      onChange={(e) => setHourlyRateInput(e.target.value)}
-                      placeholder="למשל 350"
-                      dir="ltr"
-                    />
-                  </div>
-                  <Button onClick={saveClientHourlyRate} disabled={savingRate}>
-                    {savingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    שמור תעריף
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setHourlyRateInput('')}
-                    disabled={savingRate}
-                  >
-                    נקה תעריף
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card className="shadow-sm">
               <CardHeader><CardTitle className="text-base">חיובים</CardTitle></CardHeader>
               <CardContent>
