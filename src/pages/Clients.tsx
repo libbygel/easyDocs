@@ -85,14 +85,17 @@ export default function Clients() {
     }
   }, [loading]);
 
-  const fetchClients = async () => {
+  const fetchClients = async (silent = false) => {
     if (!user) {
       setClients([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    // On a silent refresh (e.g. after editing a client) keep the table mounted
+    // so the page doesn't collapse to a "loading" placeholder and lose the
+    // user's scroll position.
+    if (!silent) setLoading(true);
     try {
       const { data, error } = await supabase
         .from('clients')
@@ -505,7 +508,7 @@ export default function Clients() {
         open={editDialogOpen} 
         onOpenChange={setEditDialogOpen} 
         client={editingClient}
-        onSuccess={fetchClients} 
+        onSuccess={() => fetchClients(true)} 
       />
       <SendGroupEmailDialog open={groupEmailOpen} onOpenChange={setGroupEmailOpen} initialCategoryId={groupEmailInitialCategory} />
       <BulkCreateCasesDialog open={bulkCasesOpen} onOpenChange={setBulkCasesOpen} />
