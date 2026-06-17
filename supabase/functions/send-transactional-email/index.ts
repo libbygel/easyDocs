@@ -176,6 +176,7 @@ Deno.serve(async (req) => {
   let templateData: Record<string, any> = {}
   let senderName: string | undefined
   let replyTo: string | undefined
+  let attachments: Array<{ filename: string; content: string }> = []
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
@@ -187,6 +188,22 @@ Deno.serve(async (req) => {
     }
     senderName = body.senderName || body.sender_name
     replyTo = body.replyTo || body.reply_to
+    // Optional file attachments: array of { filename, content (base64) }.
+    if (Array.isArray(body.attachments)) {
+      attachments = body.attachments
+        .filter(
+          (a: unknown): a is { filename: string; content: string } =>
+            !!a &&
+            typeof a === 'object' &&
+            typeof (a as Record<string, unknown>).filename === 'string' &&
+            typeof (a as Record<string, unknown>).content === 'string' &&
+            (a as Record<string, unknown>).content !== '',
+        )
+        .map((a: { filename: string; content: string }) => ({
+          filename: a.filename,
+          content: a.content,
+        }))
+    }
   } catch {
     return new Response(
       JSON.stringify({ error: 'Invalid JSON in request body' }),
@@ -514,6 +531,7 @@ Deno.serve(async (req) => {
         html,
         text: plainText,
         ...(replyTo ? { reply_to: replyTo } : {}),
+        ...(attachments.length > 0 ? { attachments } : {}),
         headers: {
           'List-Unsubscribe': `<https://easydocs.tech/unsubscribe?token=${unsubscribeToken}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

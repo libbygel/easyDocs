@@ -60,6 +60,23 @@ serve(async (req: Request): Promise<Response> => {
     const advisorName = typeof body?.advisorName === "string" ? body.advisorName.trim() : "";
     const advisorEmail = typeof body?.advisorEmail === "string" ? body.advisorEmail.trim() : "";
 
+    // Optional file attachments: array of { filename, content (base64) }.
+    const attachments: Array<{ filename: string; content: string }> = Array.isArray(body?.attachments)
+      ? body.attachments
+          .filter(
+            (a: unknown): a is { filename: string; content: string } =>
+              !!a &&
+              typeof a === "object" &&
+              typeof (a as Record<string, unknown>).filename === "string" &&
+              typeof (a as Record<string, unknown>).content === "string" &&
+              (a as Record<string, unknown>).content !== "",
+          )
+          .map((a: { filename: string; content: string }) => ({
+            filename: a.filename,
+            content: a.content,
+          }))
+      : [];
+
     if (recipients.length === 0) {
       return new Response(JSON.stringify({ error: "No recipients provided" }), {
         status: 400,
@@ -110,6 +127,7 @@ serve(async (req: Request): Promise<Response> => {
             idempotencyKey,
             senderName: advisorName || undefined,
             replyTo: advisorEmail || undefined,
+            ...(attachments.length > 0 ? { attachments } : {}),
             templateData: {
               name: recipient.name || undefined,
               message,

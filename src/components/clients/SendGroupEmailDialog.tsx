@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Search } from 'lucide-react';
+import { Loader2, Send, Search, Paperclip, X } from 'lucide-react';
 
 interface SendGroupEmailDialogProps {
   open: boolean;
@@ -52,6 +52,7 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
   const [includePortal, setIncludePortal] = useState(true);
   const [sending, setSending] = useState(false);
   const [advisorName, setAdvisorName] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   useEffect(() => {
     if (!open || !user) return;
@@ -60,6 +61,7 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
     setFilterCategory(initialCategoryId || 'all');
     setSubject('');
     setMessage('');
+    setAttachments([]);
     Promise.all([
       supabase.from('clients').select('id, full_name, email, category_id').eq('advisor_id', user.id).order('full_name'),
       supabase.from('client_categories' as any).select('id, name').eq('advisor_id', user.id).order('name'),
@@ -106,6 +108,55 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
     setSelected(next);
   };
 
+  // Total attachment size cap (Resend allows up to ~40MB per message; keep a
+  // safe margin since base64 inflates payloads by ~33%).
+  const MAX_TOTAL_ATTACHMENT_BYTES = 15 * 1024 * 1024;
+  const totalAttachmentBytes = attachments.reduce((sum, f) => sum + f.size, 0);
+
+  const handleAddFiles = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const incoming = Array.from(fileList);
+    const next = [...attachments];
+    for (const file of incoming) {
+      // Skip duplicates (same name + size).
+      if (next.some((f) => f.name === file.name && f.size === file.size)) continue;
+      next.push(file);
+    }
+    const newTotal = next.reduce((sum, f) => sum + f.size, 0);
+    if (newTotal > MAX_TOTAL_ATTACHMENT_BYTES) {
+      toast({
+        title: 'הקבצים גדולים מדי',
+        description: `סך כל הקבצים חורג מ-${Math.round(MAX_TOTAL_ATTACHMENT_BYTES / (1024 * 1024))}MB`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setAttachments(next);
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Strip the "data:<mime>;base64," prefix — Resend expects raw base64.
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSend = async () => {
     if (selected.size === 0 || !subject.trim() || !message.trim() || !user) return;
     setSending(true);
@@ -140,12 +191,20 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
         };
       });
 
+      const encodedAttachments = await Promise.all(
+        attachments.map(async (file) => ({
+          filename: file.name,
+          content: await fileToBase64(file),
+        })),
+      );
+
       const response: any = await invokeEdgeFunction('send-group-email', {
         recipients,
         subject,
         message,
         advisorName,
         advisorEmail: user.email || '',
+        ...(encodedAttachments.length > 0 ? { attachments: encodedAttachments } : {}),
       });
 
       if (response?.error) throw new Error(response.error.message || response.error);
@@ -205,6 +264,59 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
           <div className="flex items-center gap-2">
             <Checkbox id="incPortal" checked={includePortal} onCheckedChange={(v) => setIncludePortal(!!v)} />
             <Label htmlFor="incPortal" className="cursor-pointer text-sm">כלול קישור לפורטל האישי של כל לקוח (התיק האחרון שנפתח)</Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label>קבצים מצורפים</Label>
+            <div>
+              <input
+                id="groupEmailFiles"
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  handleAddFiles(e.target.files);
+                  e.target.value = '';
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => document.getElementById('groupEmailFiles')?.click()}
+              >
+                <Paperclip className="h-4 w-4" />
+                צרפי קבצים
+              </Button>
+              {attachments.length > 0 && (
+                <span className="text-xs text-muted-foreground mr-2">
+                  {attachments.length} קבצים · {formatBytes(totalAttachmentBytes)}
+                </span>
+              )}
+            </div>
+            {attachments.length > 0 && (
+              <ul className="space-y-1">
+                {attachments.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-sm"
+                  >
+                    <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="flex-1 truncate" title={file.name}>{file.name}</span>
+                    <span className="text-xs text-muted-foreground shrink-0" dir="ltr">{formatBytes(file.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(index)}
+                      className="text-muted-foreground hover:text-destructive shrink-0"
+                      aria-label={`הסר ${file.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="space-y-2 border-t pt-4">
