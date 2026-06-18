@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const FUNCTION_VERSION = "send-group-email@2026-06-02-fetch-v2";
+const FUNCTION_VERSION = "send-group-email@2026-06-18-attachments-v1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -507,6 +507,7 @@ Deno.serve(async (req) => {
   console.log('[email-dbg] encodedSubject.rfc2047:', encodedSubject)
   console.log('[email-dbg] from-field:', `${encodedSenderName} <noreply@libbygel.com>`)
   console.log('[email-dbg] to-field (no display name):', effectiveRecipient)
+  console.log('[email-dbg] attachments.count:', attachments.length, attachments.map((a) => a.filename))
   // ─────────────────────────────────────────────────────────────────────────
 
   // Log pending BEFORE send so we have a record even if request crashes
