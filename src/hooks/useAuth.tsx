@@ -60,17 +60,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signupRequestRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Keep the `user` object reference stable while the underlying identity is
+    // unchanged. Supabase fires auth events (e.g. TOKEN_REFRESHED) whenever the
+    // browser tab regains focus, each time producing a brand-new user object.
+    // Without this guard, components whose effects depend on `user` would re-run
+    // on every tab switch and reset in-progress forms (e.g. an email being
+    // composed would be wiped when returning from another tab).
+    const applyUser = (next: User | null) =>
+      setUser((prev) => (prev && next && prev.id === next.id ? prev : next));
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        applyUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      applyUser(session?.user ?? null);
       setLoading(false);
     });
 
