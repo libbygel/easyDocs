@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const FUNCTION_VERSION = "send-group-email@2026-06-18-attachments-v1";
+const FUNCTION_VERSION = "send-group-email@2026-06-23-rate-limit-paced-v2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +44,26 @@ function extractErrorMessage(payload: unknown, status: number): string {
   }
 
   return `HTTP ${status}`;
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Resend enforces a default rate limit of ~2 requests/second. Sending every
+// recipient in parallel makes most requests fail with HTTP 429. We dispatch a
+// new request at a fixed interval (slightly slower than the limit) while letting
+// the in-flight requests overlap, then retry any recipient that still hits the
+// rate limit. This keeps throughput high (e.g. ~60 recipients in ~35s) without
+// exceeding the provider limit.
+const DISPATCH_INTERVAL_MS = 550; // ~1.8 requests/sec, just under Resend's 2/sec
+const RATE_LIMIT_RETRY_BASE_MS = 1200;
+const RATE_LIMIT_MAX_RETRIES = 4;
+
+// Detects a rate-limit signal anywhere in the upstream status/body. The
+// underlying send-transactional-email function wraps Resend's 429 inside a 502
+// response whose body still contains the original "Too many requests" text.
+function isRateLimitSignal(status: number, rawBody: string): boolean {
+  if (status === 429) return true;
+  return /\b429\b|too many requests|rate.?limit/i.test(rawBody);
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -100,17 +120,22 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const settled = await Promise.allSettled(
-      recipients.map(async (recipient, index) => {
-        const normalizedEmail = recipient.email.trim().toLowerCase();
-        if (!isValidEmail(normalizedEmail)) {
-          return {
-            email: normalizedEmail,
-            status: "failed",
-            reason: "Invalid recipient email format",
-          } as RecipientResult;
-        }
+    const sendToRecipient = async (
+      recipient: Recipient,
+      index: number,
+    ): Promise<RecipientResult> => {
+      const normalizedEmail = recipient.email.trim().toLowerCase();
+      if (!isValidEmail(normalizedEmail)) {
+        return {
+          email: normalizedEmail,
+          status: "failed",
+          reason: "Invalid recipient email format",
+        };
+      }
 
+      let lastReason = "Unknown error";
+
+      for (let attempt = 0; attempt <= RATE_LIMIT_MAX_RETRIES; attempt++) {
         const idempotencySuffix = crypto.randomUUID();
         const idempotencyKey = `group-${normalizedEmail}-${Date.now()}-${index}-${idempotencySuffix}`;
 
@@ -146,36 +171,58 @@ serve(async (req: Request): Promise<Response> => {
           data = rawBody ? { error: rawBody } : null;
         }
 
-        if (!response.ok) {
+        if (response.ok) {
+          if (data?.success === false && data?.reason === "email_suppressed") {
+            return {
+              email: normalizedEmail,
+              status: "suppressed",
+              reason: "Recipient unsubscribed (suppressed)",
+            };
+          }
+
           return {
             email: normalizedEmail,
-            status: "failed",
-            reason: extractErrorMessage(data, response.status),
-          } as RecipientResult;
+            status: "sent",
+          };
         }
 
-        if (data?.success === false && data?.reason === "email_suppressed") {
-          return {
-            email: normalizedEmail,
-            status: "suppressed",
-            reason: "Recipient unsubscribed (suppressed)",
-          } as RecipientResult;
+        lastReason = extractErrorMessage(data, response.status);
+
+        // Retry with backoff when the provider rate limit was hit.
+        if (isRateLimitSignal(response.status, rawBody) && attempt < RATE_LIMIT_MAX_RETRIES) {
+          await sleep(RATE_LIMIT_RETRY_BASE_MS * (attempt + 1));
+          continue;
         }
 
         return {
           email: normalizedEmail,
-          status: "sent",
-        } as RecipientResult;
-      }),
-    );
+          status: "failed",
+          reason: lastReason,
+        };
+      }
 
+      return {
+        email: normalizedEmail,
+        status: "failed",
+        reason: lastReason,
+      };
+    };
+
+    // Dispatch sends at a fixed interval so the provider receives a steady,
+    // rate-limit-safe stream while letting in-flight requests overlap.
+    const tasks: Promise<RecipientResult>[] = [];
+    for (let i = 0; i < recipients.length; i++) {
+      if (i > 0) await sleep(DISPATCH_INTERVAL_MS);
+      tasks.push(sendToRecipient(recipients[i], i));
+    }
+
+    const settled = await Promise.allSettled(tasks);
     const results: RecipientResult[] = settled.map((item, index) => {
-      const fallbackEmail = recipients[index]?.email || "unknown";
       if (item.status === "fulfilled") {
         return item.value;
       }
       return {
-        email: fallbackEmail,
+        email: recipients[index]?.email || "unknown",
         status: "failed",
         reason: item.reason instanceof Error ? item.reason.message : String(item.reason),
       };
