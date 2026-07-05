@@ -49,7 +49,7 @@ export function SendGroupEmailDialog({ open, onOpenChange, initialCategoryId }: 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [includePortal, setIncludePortal] = useState(true);
+  const [includePortal, setIncludePortal] = useState(false);
   const [sending, setSending] = useState(false);
   const [advisorName, setAdvisorName] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);

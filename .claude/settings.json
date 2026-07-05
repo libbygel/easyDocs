@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify.mjs\")",
+      "Bash(find /c/Users/dvorag/AppData/Local/npm-cache/_npx -maxdepth 3 -iname \"playwright\" 2>/dev/null)",
+      "Read(//c/Users/dvorag/AppData/Local/npm-cache/_npx/**)",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' NODE_PATH=\"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules\" node \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify.mjs\")",
+      "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify.mjs\")",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify.mjs\")",
+      "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify2.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify2.mjs\")",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify2.mjs\")"
+    ]
+  }
+}

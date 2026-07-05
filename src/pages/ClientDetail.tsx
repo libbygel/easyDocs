@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare, User } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare, User, Pencil } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { absoluteAppUrl } from '@/lib/appUrl';
@@ -27,6 +28,9 @@ import {
 import { fetchCurrentAdvisorProfile } from '@/lib/advisorProfile';
 import { ClientDocumentsPanel } from '@/components/clients/ClientDocumentsPanel';
 import { ClientConversationsPanel } from '@/components/clients/ClientConversationsPanel';
+import { EditClientDialog } from '@/components/clients/EditClientDialog';
+import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
+import type { Client } from '@/lib/supabase';
 
 interface ClientRow {
   id: string;
@@ -87,6 +91,20 @@ export default function ClientDetail() {
   const [childrenBirthYearsInput, setChildrenBirthYearsInput] = useState('');
   const [savingChildrenYears, setSavingChildrenYears] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editClientOpen, setEditClientOpen] = useState(false);
+  const [billingCaseId, setBillingCaseId] = useState<string>('');
+
+  const refetchClientBilling = async () => {
+    if (!id) return;
+    const [ch, pa, te] = await Promise.all([
+      listClientCharges(id),
+      listClientPayments(id),
+      listClientTimeEntries(id),
+    ]);
+    setCharges(ch);
+    setPayments(pa);
+    setTimeEntries(te);
+  };
 
   useEffect(() => {
     if (!id || !user) return;
@@ -105,6 +123,7 @@ export default function ClientDetail() {
         setClient(clientData);
         const caseList = (casesRes.data as any[]) || [];
         setCases(caseList);
+        setBillingCaseId((prev) => prev || caseList[0]?.id || '');
         setCharges(ch);
         setPayments(pa);
         setTimeEntries(te);
@@ -346,6 +365,15 @@ export default function ClientDetail() {
             </Button>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{client.full_name}</h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1"
+                onClick={() => setEditClientOpen(true)}
+              >
+                <Pencil className="h-4 w-4" />
+                עריכת לקוח
+              </Button>
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                   hasPersonalRate
@@ -672,7 +700,44 @@ export default function ClientDetail() {
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
             <Card className="shadow-sm">
-              <CardHeader><CardTitle className="text-base">חיובים</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <CardTitle className="text-base">ניהול חיובים ותשלומים</CardTitle>
+                  {cases.length > 0 && (
+                    <div className="w-full sm:w-64">
+                      <Select value={billingCaseId} onValueChange={setBillingCaseId}>
+                        <SelectTrigger><SelectValue placeholder="בחר תיק" /></SelectTrigger>
+                        <SelectContent>
+                          {cases.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {cases.length === 0 ? (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    יש ליצור תיק ללקוח כדי לנהל חיובים ותשלומים
+                  </div>
+                ) : billingCaseId ? (
+                  <CaseFinancePanel
+                    caseId={billingCaseId}
+                    clientId={client.id}
+                    hourlyRate={hourlyRate}
+                    onClientRateChanged={(newRate) => {
+                      setHourlyRate(newRate);
+                      setClient((prev) => (prev ? ({ ...prev, hourly_rate: newRate } as any) : prev));
+                    }}
+                    onChanged={refetchClientBilling}
+                  />
+                ) : null}
+              </CardContent>
+            </Card>
+            <Card className="shadow-sm">
+              <CardHeader><CardTitle className="text-base">כל החיובים (כל התיקים)</CardTitle></CardHeader>
               <CardContent>
                 {charges.length === 0 ? (
                   <div className="text-center py-6 text-sm text-muted-foreground">אין חיובים</div>
@@ -690,7 +755,7 @@ export default function ClientDetail() {
               </CardContent>
             </Card>
             <Card className="shadow-sm">
-              <CardHeader><CardTitle className="text-base">תשלומים</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">כל התשלומים (כל התיקים)</CardTitle></CardHeader>
               <CardContent>
                 {payments.length === 0 ? (
                   <div className="text-center py-6 text-sm text-muted-foreground">אין תשלומים</div>
@@ -832,6 +897,17 @@ export default function ClientDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <EditClientDialog
+        open={editClientOpen}
+        onOpenChange={setEditClientOpen}
+        client={client as unknown as Client}
+        onSuccess={async () => {
+          if (!id) return;
+          const { data } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
+          setClient((data as any) || null);
+        }}
+      />
     </AppLayout>
   );
 }

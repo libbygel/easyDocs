@@ -55,9 +55,10 @@ interface Props {
   hourlyRate: number | null;
   refreshKey?: number;
   onClientRateChanged?: (newRate: number | null) => void;
+  onChanged?: () => void;
 }
 
-export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onClientRateChanged }: Props) {
+export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onClientRateChanged, onChanged }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [charges, setCharges] = useState<CaseCharge[]>([]);
@@ -185,6 +186,7 @@ export function CaseFinancePanel({ caseId, clientId, hourlyRate, refreshKey, onC
       setCharges(c);
       setPayments(p);
       setTimeEntries(t);
+      onChanged?.();
     } catch (err: any) {
       console.error(err);
     } finally {
