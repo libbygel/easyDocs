@@ -30,6 +30,8 @@ import { ClientDocumentsPanel } from '@/components/clients/ClientDocumentsPanel'
 import { ClientConversationsPanel } from '@/components/clients/ClientConversationsPanel';
 import { EditClientDialog } from '@/components/clients/EditClientDialog';
 import { CaseFinancePanel } from '@/components/cases/CaseFinancePanel';
+import { CaseTimerWidget } from '@/components/cases/CaseTimerWidget';
+import { RecurringChargesPanel } from '@/components/cases/RecurringChargesPanel';
 import type { Client } from '@/lib/supabase';
 
 interface ClientRow {
@@ -93,6 +95,8 @@ export default function ClientDetail() {
   const [loading, setLoading] = useState(true);
   const [editClientOpen, setEditClientOpen] = useState(false);
   const [billingCaseId, setBillingCaseId] = useState<string>('');
+  const [timerMode, setTimerMode] = useState<'manual' | 'auto'>('manual');
+  const [financeRefresh, setFinanceRefresh] = useState(0);
 
   const refetchClientBilling = async () => {
     if (!id) return;
@@ -130,6 +134,7 @@ export default function ClientDetail() {
         const effectiveRate = clientData?.hourly_rate != null ? Number(clientData.hourly_rate) : profile.hourlyRate;
         setHourlyRate(effectiveRate ?? null);
         setHourlyRateInput(effectiveRate != null ? String(effectiveRate) : '');
+        setTimerMode(profile.timerMode);
         const years = Array.isArray((clientData as any)?.children_birth_years)
           ? (clientData as any).children_birth_years.filter(Boolean)
           : [];
@@ -505,6 +510,9 @@ export default function ClientDetail() {
               סיכומי שיחה
             </TabsTrigger>
             <TabsTrigger value="finance">סיכום פיננסי</TabsTrigger>
+            <TabsTrigger value="billing" className="gap-1">
+              💰 חיובים וזמן
+            </TabsTrigger>
             <TabsTrigger value="time">זמן עבודה</TabsTrigger>
             <TabsTrigger value="activity">היסטוריית פעילות</TabsTrigger>
           </TabsList>
@@ -700,44 +708,7 @@ export default function ClientDetail() {
           {/* Finance */}
           <TabsContent value="finance" className="space-y-4">
             <Card className="shadow-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <CardTitle className="text-base">ניהול חיובים ותשלומים</CardTitle>
-                  {cases.length > 0 && (
-                    <div className="w-full sm:w-64">
-                      <Select value={billingCaseId} onValueChange={setBillingCaseId}>
-                        <SelectTrigger><SelectValue placeholder="בחר תיק" /></SelectTrigger>
-                        <SelectContent>
-                          {cases.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {cases.length === 0 ? (
-                  <div className="text-center py-6 text-sm text-muted-foreground">
-                    יש ליצור תיק ללקוח כדי לנהל חיובים ותשלומים
-                  </div>
-                ) : billingCaseId ? (
-                  <CaseFinancePanel
-                    caseId={billingCaseId}
-                    clientId={client.id}
-                    hourlyRate={hourlyRate}
-                    onClientRateChanged={(newRate) => {
-                      setHourlyRate(newRate);
-                      setClient((prev) => (prev ? ({ ...prev, hourly_rate: newRate } as any) : prev));
-                    }}
-                    onChanged={refetchClientBilling}
-                  />
-                ) : null}
-              </CardContent>
-            </Card>
-            <Card className="shadow-sm">
-              <CardHeader><CardTitle className="text-base">כל החיובים (כל התיקים)</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">חיובים</CardTitle></CardHeader>
               <CardContent>
                 {charges.length === 0 ? (
                   <div className="text-center py-6 text-sm text-muted-foreground">אין חיובים</div>
@@ -755,7 +726,7 @@ export default function ClientDetail() {
               </CardContent>
             </Card>
             <Card className="shadow-sm">
-              <CardHeader><CardTitle className="text-base">כל התשלומים (כל התיקים)</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">תשלומים</CardTitle></CardHeader>
               <CardContent>
                 {payments.length === 0 ? (
                   <div className="text-center py-6 text-sm text-muted-foreground">אין תשלומים</div>
@@ -772,6 +743,62 @@ export default function ClientDetail() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Billing & time management (moved here as-is from the case page) */}
+          <TabsContent value="billing" className="space-y-4">
+            {cases.length === 0 ? (
+              <Card className="shadow-sm">
+                <CardContent className="text-center py-6 text-sm text-muted-foreground">
+                  יש ליצור תיק ללקוח כדי לנהל חיובים וזמן
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="w-full sm:w-64">
+                  <Select value={billingCaseId} onValueChange={setBillingCaseId}>
+                    <SelectTrigger><SelectValue placeholder="בחר תיק" /></SelectTrigger>
+                    <SelectContent>
+                      {cases.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {billingCaseId && (
+                  <>
+                    <CaseTimerWidget
+                      caseId={billingCaseId}
+                      clientId={client.id}
+                      timerMode={timerMode}
+                      onChange={() => {
+                        setFinanceRefresh((n) => n + 1);
+                        refetchClientBilling();
+                      }}
+                    />
+                    <CaseFinancePanel
+                      caseId={billingCaseId}
+                      clientId={client.id}
+                      hourlyRate={hourlyRate}
+                      refreshKey={financeRefresh}
+                      onClientRateChanged={(newRate) => {
+                        setHourlyRate(newRate);
+                        setClient((prev) => (prev ? ({ ...prev, hourly_rate: newRate } as any) : prev));
+                      }}
+                      onChanged={refetchClientBilling}
+                    />
+                    <RecurringChargesPanel
+                      clientId={client.id}
+                      defaultCaseId={billingCaseId}
+                      onChargesGenerated={() => {
+                        setFinanceRefresh((n) => n + 1);
+                        refetchClientBilling();
+                      }}
+                    />
+                  </>
+                )}
+              </>
+            )}
           </TabsContent>
 
           {/* Time */}
