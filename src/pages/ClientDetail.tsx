@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare, User, Pencil } from 'lucide-react';
+import { ArrowRight, FolderOpen, Receipt, Banknote, TrendingUp, Activity, Mail, Phone, IdCard, Link2, Copy, Eye, Send, Loader2, Upload, FileText, MessageSquare, User, Pencil, StickyNote } from 'lucide-react';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { absoluteAppUrl } from '@/lib/appUrl';
@@ -475,6 +475,18 @@ export default function ClientDetail() {
             </Card>
           </div>
         </div>
+
+        {client.notes && (
+          <Card className="shadow-sm border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+            <CardContent className="p-4 flex items-start gap-3">
+              <StickyNote className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="text-sm font-semibold text-amber-800 dark:text-amber-300">הערה על הלקוח</div>
+                <div className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-wrap">{client.notes}</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Summary cards */}
         <div className="grid gap-4 md:grid-cols-4">

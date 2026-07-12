@@ -8,7 +8,18 @@
       "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify.mjs\")",
       "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify.mjs\")",
       "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify2.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify2.mjs\")",
-      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify2.mjs\")"
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify2.mjs\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8090 --max-time 3)",
+      "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify_note.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify_note.mjs\")",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify_note.mjs\")",
+      "Bash(cp \"C:\\\\Users\\\\dvorag\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--easyDocs-easydocs1\\\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\\\scratchpad\\\\verify_note2.mjs\" \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify_note2.mjs\")",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/d/easyDocs/.pw-browsers TEST_EMAIL='dv4343@gmail.com' TEST_PASSWORD='Aa2026!!' node \"/c/Users/dvorag/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify_note2.mjs\")",
+      "Read(//c/Users/dvorag/AppData/Local/Temp/1/claude/d--easyDocs-easydocs1/aad536ca-1af9-4f5d-a3cb-95bb25734e03/scratchpad/**)",
+      "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter \\\\\"CommandLine LIKE '%vite%port 8090%'\\\\\" | Select-Object ProcessId,CommandLine\")",
+      "Bash(powershell -Command \"Stop-Process -Id 36796 -Force -ErrorAction SilentlyContinue; Write-Output done\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\dvorag\\AppData\\Local\\Temp\\1\\claude\\d--easyDocs-easydocs1\\aad536ca-1af9-4f5d-a3cb-95bb25734e03\\scratchpad"
     ]
   }
 }
